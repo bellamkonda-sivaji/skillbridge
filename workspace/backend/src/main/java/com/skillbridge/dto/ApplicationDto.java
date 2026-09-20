@@ -23,8 +23,8 @@ public record ApplicationDto(
         return new ApplicationDto(
                 a.getId(), a.getJob().getId(), a.getJob().getTitle(),
                 a.getJob().getEmployer().getId(), a.getJob().getEmployer().getName(),
-                a.getJob().getEmployer().getEmployerProfile() != null
-                        ? a.getJob().getEmployer().getEmployerProfile().getBusinessName() : null,
+                a.getJob().getEmployer().getProfile() != null
+                        ? a.getJob().getEmployer().getProfile().getBusinessName() : null,
                 a.getWorker().getId(), a.getWorker().getName(),
                 a.getCoverMessage(), a.getStatus(), a.getAppliedAt(), matchScore);
     }

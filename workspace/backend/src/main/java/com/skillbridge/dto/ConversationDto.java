@@ -1,5 +1,6 @@
 package com.skillbridge.dto;
 
+import com.skillbridge.model.AccountType;
 import com.skillbridge.model.Conversation;
 import com.skillbridge.model.JobPost;
 
@@ -17,19 +18,21 @@ public record ConversationDto(
         String jobTitle,
         LocalDateTime lastMessageAt,
         String lastMessage,
+        AccountType lastSenderType,
         Long lastSenderId,
         long unreadCount
 ) {
-    public static ConversationDto from(Conversation c, String lastMessage, Long lastSenderId, long unreadCount) {
+    public static ConversationDto from(Conversation c, String lastMessage,
+                                       AccountType lastSenderType, Long lastSenderId, long unreadCount) {
         JobPost job = c.getJob();
         return new ConversationDto(
                 c.getId(),
                 c.getWorker().getId(), c.getWorker().getName(), c.getWorker().getPhotoUrl(),
                 c.getEmployer().getId(), c.getEmployer().getName(),
-                c.getEmployer().getEmployerProfile() != null
-                        ? c.getEmployer().getEmployerProfile().getBusinessName() : c.getEmployer().getName(),
+                c.getEmployer().getProfile() != null
+                        ? c.getEmployer().getProfile().getBusinessName() : c.getEmployer().getName(),
                 job != null ? job.getId() : null,
                 job != null ? job.getTitle() : null,
-                c.getLastMessageAt(), lastMessage, lastSenderId, unreadCount);
+                c.getLastMessageAt(), lastMessage, lastSenderType, lastSenderId, unreadCount);
     }
 }

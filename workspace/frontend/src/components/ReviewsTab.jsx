@@ -3,14 +3,14 @@ import { useTranslation } from 'react-i18next'
 import api from '../api'
 import { Stars, EmptyState, Spinner } from './ui'
 
-export function ReviewsTab({ userId, canWrite, targetRole }) {
+export function ReviewsTab({ userId, canWrite, targetRole , targetType = 'WORKER' }) {
   const { t } = useTranslation()
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState({ rating: 5, comment: '' })
 
   const load = () => {
-    api.get(`/users/${userId}/reviews`).then((res) => setReviews(res.data)).catch(() => {})
+    api.get(`/reviews/target/${targetType}/${userId}`).then((res) => setReviews(res.data)).catch(() => {})
       .finally(() => setLoading(false))
   }
 
@@ -18,7 +18,7 @@ export function ReviewsTab({ userId, canWrite, targetRole }) {
 
   const submit = async () => {
     try {
-      await api.post('/reviews', { targetId: userId, rating: form.rating, comment: form.comment })
+      await api.post('/reviews', { targetType, targetId: userId, rating: form.rating, comment: form.comment })
       setForm({ rating: 5, comment: '' })
       load()
     } catch (e) { alert(e.response?.data?.message || 'Error') }

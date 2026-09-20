@@ -18,16 +18,16 @@ public class WalletController {
 
     @GetMapping
     public WalletDto myWallet() {
-        return walletService.myWallet(AuthenticationUtils.currentUser());
+        return walletService.myWallet(AuthenticationUtils.currentAccount());
     }
 
     @PostMapping("/fund")
     public WalletDto fund(@RequestBody WalletFundRequest request) {
-        return walletService.fund(AuthenticationUtils.currentUser(), request.amount());
+        return walletService.fund(AuthenticationUtils.currentAccount(), request.amount());
     }
 
     @PostMapping("/withdraw")
     public WalletDto withdraw(@RequestBody WalletFundRequest request) {
-        return walletService.withdraw(AuthenticationUtils.currentUser(), request.amount());
+        return walletService.withdraw(AuthenticationUtils.currentAccount(), request.amount());
     }
 }

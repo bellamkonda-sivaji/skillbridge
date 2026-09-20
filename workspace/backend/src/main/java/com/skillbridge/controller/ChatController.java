@@ -22,22 +22,22 @@ public class ChatController {
 
     @GetMapping("/conversations")
     public List<ConversationDto> conversations() {
-        return chatService.listConversations(AuthenticationUtils.currentUser());
+        return chatService.listConversations(AuthenticationUtils.currentAccount());
     }
 
     @GetMapping("/conversations/{conversationId}/messages")
     public List<MessageDto> messages(@PathVariable Long conversationId) {
-        return chatService.getMessages(AuthenticationUtils.currentUser(), conversationId);
+        return chatService.getMessages(AuthenticationUtils.currentAccount(), conversationId);
     }
 
     @PostMapping("/send")
     @ResponseStatus(HttpStatus.CREATED)
     public MessageDto send(@RequestBody SendMessageRequest request) {
-        return chatService.sendMessage(AuthenticationUtils.currentUser(), request);
+        return chatService.sendMessage(AuthenticationUtils.currentAccount(), request);
     }
 
     @PatchMapping("/conversations/{conversationId}/read")
     public void markRead(@PathVariable Long conversationId) {
-        chatService.markRead(AuthenticationUtils.currentUser(), conversationId);
+        chatService.markRead(AuthenticationUtils.currentAccount(), conversationId);
     }
 }

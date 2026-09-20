@@ -6,7 +6,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "job_applications", uniqueConstraints = @UniqueConstraint(columnNames = {"worker_id", "job_id"}))
+@Table(name = "job_applications",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"worker_account_id", "job_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,8 +20,8 @@ public class JobApplication {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "worker_id")
-    private User worker;
+    @JoinColumn(name = "worker_account_id")
+    private WorkerAccount worker;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "job_id")
@@ -31,9 +32,24 @@ public class JobApplication {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private ApplicationStatus status = ApplicationStatus.PENDING;
+    private ApplicationStatus status = ApplicationStatus.APPLIED;
 
     @Builder.Default
     @Column(nullable = false)
     private LocalDateTime appliedAt = LocalDateTime.now();
+
+    /** Stage timestamps that drive the worker-facing timeline. */
+    private LocalDateTime viewedAt;
+
+    private LocalDateTime shortlistedAt;
+
+    private LocalDateTime interviewAt;
+
+    /** Set when the application reaches a final decision (accepted / rejected / withdrawn). */
+    private LocalDateTime decisionAt;
+
+    /** Latch that guarantees the wallet transfer happens exactly once per application. */
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean paymentSettled = false;
 }

@@ -1,5 +1,5 @@
 package com.skillbridge.model;
 
 public enum SalaryUnit {
-    PER_DAY, PER_WEEK, PER_MONTH
+    PER_HOUR, PER_SHIFT, PER_DAY, PER_WEEK, PER_MONTH
 }

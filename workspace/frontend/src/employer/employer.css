@@ -1,0 +1,497 @@
+/* ==========================================================================
+   Employer login + onboarding.
+   Uses the same design tokens as the worker side — one SkillBridge theme, not
+   two. These classes only add layouts the worker flow does not have (the split
+   login, plan cards, upload boxes).
+   ========================================================================== */
+
+/* ---------- Split login ---------- */
+.emp-split { min-height: 100vh; display: flex; flex-direction: column; background: #fff; }
+
+.emp-topbar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.emp-topbar .spacer { flex: 1; }
+.emp-topbar .note { font-size: 14px; color: var(--muted); }
+@media (min-width: 900px) { .emp-topbar { border-bottom: 0; padding: 20px 28px; } }
+
+.emp-cols { flex: 1; display: grid; }
+@media (min-width: 900px) { .emp-cols { grid-template-columns: 1.05fr 1fr; } }
+
+/* left marketing panel */
+.emp-pitch { display: none; padding: 8px 28px 48px; }
+@media (min-width: 900px) { .emp-pitch { display: block; align-self: center; } }
+.emp-pitch h1 {
+  font-size: 38px; font-weight: 800; color: var(--ink);
+  letter-spacing: -0.025em; line-height: 1.12;
+}
+@media (min-width: 1150px) { .emp-pitch h1 { font-size: 44px; } }
+.emp-pitch .lede { font-size: 16px; color: var(--body); margin-top: 16px; max-width: 420px; }
+.emp-points { display: grid; gap: 14px; margin-top: 28px; }
+.emp-point { display: flex; align-items: center; gap: 12px; font-size: 15px; color: var(--body); }
+.emp-point .ic {
+  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+  background: var(--blue-50); color: var(--blue);
+  display: grid; place-items: center;
+}
+
+/* trust card */
+.emp-trust {
+  margin-top: 34px;
+  display: inline-flex; align-items: center; gap: 12px;
+  background: #fff; border: 1px solid var(--line);
+  border-radius: 14px; padding: 12px 16px;
+  box-shadow: var(--shadow-md);
+}
+.emp-trust .n { font-size: 17px; font-weight: 800; color: var(--ink); line-height: 1.1; }
+.emp-trust .d { font-size: 12.5px; color: var(--muted); }
+.emp-faces { display: flex; }
+.emp-faces .mk-avatar { border: 2px solid #fff; margin-left: -10px; }
+.emp-faces .mk-avatar:first-child { margin-left: 0; }
+
+/* right form panel */
+.emp-form-wrap {
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 8px 16px 56px;
+}
+@media (min-width: 900px) {
+  .emp-form-wrap {
+    align-items: center; padding: 28px;
+    background: var(--soft); border-left: 1px solid var(--line-soft);
+  }
+}
+.emp-card {
+  width: 100%; max-width: 420px;
+  background: #fff; border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 26px 22px 28px;
+  box-shadow: var(--shadow-md);
+}
+@media (min-width: 720px) { .emp-card { padding: 32px 30px 34px; } }
+.emp-card h2 { font-size: 23px; font-weight: 800; color: var(--ink); }
+.emp-card .sub { font-size: 14px; color: var(--muted); margin-top: 6px; margin-bottom: 22px; }
+
+.emp-row-between {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin: -4px 0 18px;
+}
+
+/* ---------- Password rules ---------- */
+.emp-rules { display: grid; gap: 8px; margin: 12px 0 18px; }
+.emp-rule { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--muted); }
+.emp-rule .tick {
+  width: 17px; height: 17px; border-radius: 50%;
+  display: grid; place-items: center; flex-shrink: 0;
+  background: var(--line); color: #fff;
+}
+.emp-rule.ok { color: #047857; }
+.emp-rule.ok .tick { background: #10b981; }
+
+/* ---------- Success ---------- */
+.emp-success { text-align: center; padding: 56px 20px; max-width: 460px; margin: 0 auto; }
+.emp-success .tick {
+  width: 104px; height: 104px; border-radius: 50%;
+  background: #ecfdf5; border: 3px solid #a7f3d0;
+  color: #059669; display: grid; place-items: center;
+  margin: 0 auto 26px; position: relative;
+}
+.emp-success h1 { font-size: 27px; font-weight: 800; color: var(--ink); }
+.emp-success p { font-size: 15px; color: var(--body); margin-top: 10px; }
+.emp-success .small { font-size: 13px; color: var(--muted); margin-top: 26px; }
+.emp-progress {
+  height: 6px; border-radius: 999px;
+  background: var(--line); overflow: hidden; margin-top: 12px;
+}
+.emp-progress i {
+  display: block; height: 100%; border-radius: 999px;
+  background: var(--blue);
+  transition: width .35s ease;
+}
+/* confetti dots around the tick */
+.emp-confetti { position: absolute; inset: -34px; pointer-events: none; }
+.emp-confetti span {
+  position: absolute; width: 8px; height: 8px; border-radius: 2px;
+  opacity: .85;
+}
+
+/* ---------- Upload boxes ---------- */
+.emp-upload {
+  width: 100%;
+  border: 1.5px dashed var(--line);
+  border-radius: 12px;
+  background: var(--soft);
+  padding: 18px;
+  display: flex; align-items: center; gap: 14px;
+  font-family: inherit; text-align: left; cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+.emp-upload:hover { border-color: var(--blue); background: var(--blue-50); }
+.emp-upload .ic {
+  width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
+  background: #fff; border: 1px solid var(--line);
+  color: var(--blue); display: grid; place-items: center;
+}
+.emp-upload .t { font-size: 13.5px; color: var(--body); }
+.emp-upload .t b { color: var(--blue); font-weight: 600; }
+.emp-upload .h { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.emp-upload.filled { border-style: solid; border-color: #a7f3d0; background: #ecfdf5; }
+.emp-upload.filled .ic { color: #047857; border-color: #a7f3d0; }
+.emp-file-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.emp-file-row .nm { font-size: 13px; color: var(--ink); font-weight: 600; flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.emp-file-row button {
+  border: 0; background: transparent; color: #b91c1c;
+  font-family: inherit; font-size: 13px; cursor: pointer;
+}
+.emp-logo-preview {
+  width: 46px; height: 46px; border-radius: 10px; object-fit: cover;
+  border: 1px solid var(--line); flex-shrink: 0;
+}
+
+/* ---------- Plan cards ---------- */
+.emp-plans { display: grid; gap: 12px; }
+@media (min-width: 780px) { .emp-plans { grid-template-columns: repeat(3, 1fr); } }
+.emp-plan {
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 16px;
+  background: #fff;
+  font-family: inherit; text-align: left; cursor: pointer;
+  display: flex; flex-direction: column;
+  transition: border-color .15s ease, box-shadow .15s ease;
+  position: relative;
+}
+.emp-plan:hover { border-color: var(--blue-100); }
+.emp-plan[aria-pressed='true'] {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .12);
+}
+.emp-plan .nm { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.emp-plan .price { font-size: 21px; font-weight: 800; color: var(--blue-dark); margin-top: 6px; }
+.emp-plan .per { font-size: 12.5px; color: var(--muted); font-weight: 500; }
+.emp-plan ul { list-style: none; padding: 0; margin: 14px 0 0; display: grid; gap: 7px; flex: 1; }
+.emp-plan li { font-size: 12.5px; color: var(--body); display: flex; gap: 7px; }
+.emp-plan li::before { content: '✓'; color: var(--blue); font-weight: 700; }
+.emp-plan .pick {
+  width: 19px; height: 19px; border-radius: 50%;
+  border: 2px solid var(--line); margin: 16px auto 0;
+}
+.emp-plan[aria-pressed='true'] .pick {
+  border-color: var(--blue); background: var(--blue);
+  box-shadow: inset 0 0 0 3px #fff;
+}
+.emp-plan .tag {
+  position: absolute; top: -10px; left: 16px;
+  background: var(--blue); color: #fff;
+  font-size: 10.5px; font-weight: 700;
+  padding: 3px 9px; border-radius: 999px;
+}
+
+/* ---------- Payment method ---------- */
+.emp-pay { display: grid; grid-template-columns: repeat(1, 1fr); gap: 10px; }
+@media (min-width: 560px) { .emp-pay { grid-template-columns: repeat(3, 1fr); } }
+.emp-pay-opt {
+  display: flex; align-items: center; gap: 9px;
+  border: 1.5px solid var(--line); border-radius: 11px;
+  padding: 12px; background: #fff;
+  font-family: inherit; font-size: 14px; color: var(--ink);
+  cursor: pointer;
+}
+.emp-pay-opt:hover { border-color: var(--blue-100); }
+.emp-pay-opt[aria-pressed='true'] { border-color: var(--blue); background: var(--blue-50); }
+.emp-pay-opt .mark {
+  width: 17px; height: 17px; border-radius: 50%;
+  border: 2px solid var(--line); flex-shrink: 0;
+}
+.emp-pay-opt[aria-pressed='true'] .mark {
+  border-color: var(--blue); background: var(--blue);
+  box-shadow: inset 0 0 0 2.5px #fff;
+}
+
+/* ---------- Map ---------- */
+.emp-map-wrap { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
+.emp-map { height: 230px; width: 100%; }
+.emp-map-btn {
+  position: absolute; bottom: 12px; right: 12px; z-index: 500;
+  display: inline-flex; align-items: center; gap: 7px;
+  background: #fff; border: 1px solid var(--line); border-radius: 9px;
+  padding: 8px 12px; font-family: inherit; font-size: 12.5px; font-weight: 600;
+  color: var(--blue); cursor: pointer; box-shadow: var(--shadow-sm);
+}
+.emp-map-wrap .leaflet-top, .emp-map-wrap .leaflet-bottom { z-index: 400; }
+.emp-map-pin {
+  position: absolute; top: 12px; left: 12px; z-index: 500;
+  background: #fff; border: 1px solid var(--line); border-radius: 10px;
+  padding: 8px 12px; box-shadow: var(--shadow-sm);
+  display: flex; align-items: center; gap: 9px;
+  max-width: calc(100% - 24px);
+}
+.emp-map-pin .nm { font-size: 13px; font-weight: 700; color: var(--ink); line-height: 1.2; }
+.emp-map-pin .ct { font-size: 11.5px; color: var(--muted); }
+
+/* ---------- Social auth ---------- */
+.emp-social { display: grid; gap: 10px; }
+.emp-social button {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 11px;
+  border: 1.5px solid var(--line); border-radius: 10px;
+  background: #fff; font-family: inherit;
+  font-size: 14.5px; font-weight: 600; color: var(--ink); cursor: pointer;
+}
+.emp-social button:hover { border-color: var(--blue-100); background: var(--soft); }
+
+/* ---------- Wizard shell ---------- */
+.emp-wizard { min-height: 100vh; background: var(--soft); display: flex; flex-direction: column; }
+.emp-wizard-main {
+  flex: 1; display: flex; justify-content: center; align-items: flex-start;
+  padding: 22px 16px 56px;
+}
+@media (min-width: 720px) { .emp-wizard-main { padding: 34px 24px 64px; } }
+.emp-wizard-card {
+  width: 100%; max-width: 620px;
+  background: #fff; border: 1px solid var(--line);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
+  padding: 24px 20px 26px;
+}
+@media (min-width: 720px) { .emp-wizard-card { padding: 30px 30px 32px; } }
+.emp-wizard-card h1 { font-size: 22px; font-weight: 800; color: var(--ink); }
+.emp-wizard-card .sub { font-size: 14px; color: var(--muted); margin-top: 6px; margin-bottom: 22px; }
+
+.emp-req::after { content: ' *'; color: #dc2626; }
+.emp-two { display: grid; gap: 0 14px; }
+@media (min-width: 560px) { .emp-two { grid-template-columns: 1fr 1fr; } }
+.emp-textarea {
+  width: 100%; border: 1.5px solid var(--line); border-radius: 10px;
+  padding: 11px 13px; font-family: inherit; font-size: 15px;
+  color: var(--ink); background: #fff; min-height: 84px; resize: vertical;
+}
+.emp-textarea:focus {
+  outline: 0; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,.13);
+}
+
+/* ==========================================================================
+   Employer dashboard (screens 1-20). Builds on the shared wk-* dashboard
+   classes; only adds what the employer screens need on top.
+   ========================================================================== */
+
+/* business chip in the top bar */
+.emp-biz-chip {
+  display: none; align-items: center; gap: 7px;
+  border: 1px solid var(--line); border-radius: 999px;
+  padding: 6px 12px; background: #fff;
+  font-size: 13px; font-weight: 600; color: var(--ink);
+  max-width: 230px;
+}
+.emp-biz-chip .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.emp-biz-chip:hover { border-color: var(--blue); color: var(--blue); }
+@media (min-width: 720px) { .emp-biz-chip { display: inline-flex; } }
+
+/* ---------- category tiles (post a job, step 1) ---------- */
+.emp-cats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 640px) { .emp-cats { grid-template-columns: repeat(3, 1fr); } }
+.emp-cat {
+  position: relative;
+  border: 1.5px solid var(--line); border-radius: 14px;
+  background: #fff; padding: 16px 14px;
+  font-family: inherit; text-align: left; cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+.emp-cat:hover { border-color: var(--blue-100); }
+.emp-cat[aria-pressed='true'] { border-color: var(--blue); background: var(--blue-50); }
+.emp-cat .ic {
+  width: 38px; height: 38px; border-radius: 11px;
+  display: grid; place-items: center; margin-bottom: 12px;
+}
+.emp-cat .nm { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.25; }
+.emp-cat .sb { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.emp-cat .chk {
+  position: absolute; top: 12px; right: 12px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--blue); color: #fff;
+  display: grid; place-items: center;
+}
+
+/* ---------- stacked radio rows (employment type, interview type) ---------- */
+.emp-radios { display: grid; gap: 10px; }
+.emp-radio {
+  display: flex; align-items: center; gap: 13px;
+  border: 1.5px solid var(--line); border-radius: 12px;
+  background: #fff; padding: 14px;
+  font-family: inherit; text-align: left; cursor: pointer;
+  transition: border-color .15s ease, background .15s ease;
+}
+.emp-radio:hover { border-color: var(--blue-100); }
+.emp-radio[aria-pressed='true'] { border-color: var(--blue); background: var(--blue-50); }
+.emp-radio .ic {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  background: var(--soft); color: var(--body);
+  display: grid; place-items: center;
+}
+.emp-radio[aria-pressed='true'] .ic { background: #fff; color: var(--blue); }
+.emp-radio .t { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.emp-radio .d { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.emp-radio .mark {
+  margin-left: auto; flex-shrink: 0;
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--line);
+  display: grid; place-items: center; color: #fff;
+}
+.emp-radio[aria-pressed='true'] .mark { border-color: var(--blue); background: var(--blue); }
+
+/* ---------- day toggles ---------- */
+.emp-days { display: flex; flex-wrap: wrap; gap: 8px; }
+.emp-day {
+  min-width: 52px; padding: 9px 12px;
+  border: 1.5px solid var(--line); border-radius: 10px;
+  background: #fff; font-family: inherit;
+  font-size: 13px; font-weight: 600; color: var(--body); cursor: pointer;
+}
+.emp-day:hover { border-color: var(--blue-100); }
+.emp-day[aria-pressed='true'] { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+/* ---------- shift rows ---------- */
+.emp-shift { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.emp-shift .lbl { font-size: 13px; font-weight: 600; color: var(--body); min-width: 54px; }
+.emp-shift select, .emp-shift input[type='time'] {
+  border: 1.5px solid var(--line); border-radius: 9px;
+  padding: 9px 10px; font-family: inherit; font-size: 13.5px;
+  color: var(--ink); background: #fff;
+}
+.emp-shift .del {
+  border: 0; background: transparent; color: #b91c1c;
+  cursor: pointer; padding: 6px; border-radius: 7px; display: grid; place-items: center;
+}
+.emp-shift .del:hover { background: #fef2f2; }
+
+/* ---------- chips with remove ---------- */
+.emp-chipbox {
+  border: 1.5px solid var(--line); border-radius: 11px;
+  padding: 10px; background: #fff;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+}
+.emp-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--blue-50); border: 1px solid var(--blue-100);
+  color: var(--blue-dark); border-radius: 8px;
+  padding: 5px 10px; font-size: 13px;
+}
+.emp-chip button {
+  border: 0; background: transparent; color: inherit;
+  cursor: pointer; padding: 0; display: grid; place-items: center; opacity: .7;
+}
+.emp-chip button:hover { opacity: 1; }
+.emp-chip-add {
+  border: 1px dashed var(--line); background: #fff;
+  border-radius: 8px; padding: 5px 11px;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  color: var(--blue); cursor: pointer;
+}
+
+/* ---------- review summary ---------- */
+.emp-review { border: 1px solid var(--line); border-radius: 13px; overflow: hidden; }
+.emp-review .hd {
+  background: var(--soft); padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  border-bottom: 1px solid var(--line);
+}
+.emp-review .hd .nm { font-size: 14.5px; font-weight: 700; color: var(--ink); flex: 1; }
+.emp-review .r { display: flex; gap: 16px; padding: 11px 16px; border-bottom: 1px solid var(--line-soft); font-size: 13.5px; }
+.emp-review .r:last-child { border-bottom: 0; }
+.emp-review .k { color: var(--muted); width: 150px; flex-shrink: 0; }
+.emp-review .v { color: var(--ink); font-weight: 500; flex: 1; }
+.emp-review .v ul { margin: 0; padding-left: 16px; }
+
+/* ---------- applicant row ---------- */
+.emp-app-row { display: flex; align-items: center; gap: 13px; }
+.emp-app-row .meta { flex: 1; min-width: 0; }
+.emp-app-row .nm { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+.emp-app-row .sb { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.emp-match {
+  display: inline-flex; align-items: center;
+  background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857;
+  border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 700;
+}
+.emp-match.mid { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+.emp-match.low { background: var(--soft); border-color: var(--line); color: var(--muted); }
+
+/* ---------- compare table ---------- */
+.emp-compare-wrap { overflow-x: auto; }
+.emp-compare { border-collapse: collapse; width: 100%; min-width: 620px; }
+.emp-compare th, .emp-compare td {
+  border-bottom: 1px solid var(--line-soft);
+  padding: 12px 14px; text-align: left; font-size: 13.5px; vertical-align: top;
+}
+.emp-compare thead th { background: var(--soft); text-align: center; }
+.emp-compare tbody th { color: var(--muted); font-weight: 500; width: 140px; }
+.emp-compare td { color: var(--ink); text-align: center; }
+.emp-compare .who { display: grid; justify-items: center; gap: 7px; }
+.emp-compare .who .nm { font-size: 13.5px; font-weight: 700; }
+
+/* ---------- calendar ---------- */
+.emp-cal-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.emp-cal-head .grow { flex: 1; }
+.emp-cal-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 13px; background: #fff; }
+.emp-cal { display: grid; grid-template-columns: 62px repeat(7, minmax(108px, 1fr)); min-width: 820px; }
+.emp-cal .hcell {
+  padding: 10px 8px; text-align: center;
+  border-bottom: 1px solid var(--line); border-left: 1px solid var(--line-soft);
+  background: var(--soft); position: sticky; top: 0; z-index: 2;
+}
+.emp-cal .hcell .d { font-size: 12px; color: var(--muted); }
+.emp-cal .hcell .n { font-size: 15px; font-weight: 700; color: var(--ink); }
+.emp-cal .hcell.today .n { color: var(--blue); }
+.emp-cal .tcell {
+  padding: 6px 8px; font-size: 11.5px; color: var(--muted);
+  border-bottom: 1px solid var(--line-soft); text-align: right;
+}
+.emp-cal .cell {
+  min-height: 52px; border-left: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft); padding: 3px;
+}
+.emp-cal-ev {
+  border-radius: 7px; padding: 5px 7px; font-size: 11.5px;
+  border-left: 3px solid; margin-bottom: 3px; cursor: pointer; display: block;
+  width: 100%; text-align: left; font-family: inherit;
+}
+.emp-cal-ev .nm { font-weight: 700; display: block; }
+.emp-cal-ev.in_person { background: #eff6ff; border-color: #2563eb; color: #1e40af; }
+.emp-cal-ev.phone { background: #ecfdf5; border-color: #10b981; color: #065f46; }
+.emp-cal-ev.video { background: #f5f3ff; border-color: #8b5cf6; color: #5b21b6; }
+
+/* ---------- misc ---------- */
+.emp-toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.emp-toolbar .grow { flex: 1; min-width: 180px; }
+.emp-counter { font-size: 12px; color: var(--muted); text-align: right; margin-top: 4px; }
+.emp-kv-grid { display: grid; gap: 10px; }
+.emp-kv-grid .r { display: flex; gap: 14px; font-size: 13.5px; }
+.emp-kv-grid .k { color: var(--muted); width: 150px; flex-shrink: 0; }
+.emp-kv-grid .v { color: var(--ink); font-weight: 500; }
+.emp-menu-btn {
+  border: 0; background: transparent; color: var(--muted);
+  width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.emp-menu-btn:hover { background: var(--soft); color: var(--ink); }
+
+/* ---------- small-screen fixes ---------- */
+.emp-city { max-width: 180px; }
+@media (max-width: 560px) {
+  .emp-toolbar { flex-direction: column; align-items: stretch; }
+  .emp-toolbar > * { width: 100%; }
+  .emp-city { max-width: none; }
+  /* stacked key/value reads better than a 150px label column on a phone */
+  .emp-kv-grid .r { flex-direction: column; gap: 2px; }
+  .emp-kv-grid .k { width: auto; }
+  .emp-review .r { flex-direction: column; gap: 3px; }
+  .emp-review .k { width: auto; }
+}
+
+/* Applicant/worker rows carry an avatar, metadata, badges and an action —
+   on a phone that must wrap instead of forcing the card wider than the screen. */
+.emp-app-row { flex-wrap: wrap; }
+.emp-app-row .meta { flex: 1 1 150px; min-width: 0; }
+@media (max-width: 560px) {
+  .emp-app-row > .mk-btn { width: 100%; }
+}

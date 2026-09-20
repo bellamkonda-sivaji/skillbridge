@@ -63,7 +63,7 @@ public class MatchingService {
         double availabilityScore = computeAvailabilityScore(worker.getAvailability(), job.getWorkType());
         double salaryScore = computeSalaryScore(worker.getExpectedSalary(), worker.getSalaryUnit(),
                 job.getSalary(), job.getSalaryUnit());
-        double ratingScore = Math.min(100.0, worker.getUser().getAvgRating() * 20.0);
+        double ratingScore = Math.min(100.0, worker.getAccount().getAvgRating() * 20.0);
 
         double score = WEIGHT_SKILL * skillScore
                 + WEIGHT_DISTANCE * distanceScore
@@ -179,6 +179,8 @@ public class MatchingService {
     private double toMonthly(double amount, SalaryUnit unit) {
         if (unit == null) return amount;
         return switch (unit) {
+            case PER_HOUR -> amount * 8 * 22;
+            case PER_SHIFT -> amount * 22;
             case PER_DAY -> amount * 22;
             case PER_WEEK -> amount * 4.33;
             case PER_MONTH -> amount;
@@ -187,7 +189,7 @@ public class MatchingService {
 
     private String buildSummary(WorkerProfile worker, JobPost job, double skillScore, double distanceKm, double salaryScore) {
         StringBuilder sb = new StringBuilder();
-        sb.append(worker.getUser().getName()).append(" matches ").append(job.getTitle());
+        sb.append(worker.getAccount().getName()).append(" matches ").append(job.getTitle());
         if (skillScore >= 80) sb.append(" with strong skill alignment");
         else if (skillScore >= 60) sb.append(" with good skill overlap");
         else sb.append(" with partial skill overlap");
@@ -203,7 +205,6 @@ public class MatchingService {
         List<WorkerProfile> workers = workerRepository.findAll();
         List<Match> created = new ArrayList<>();
         for (WorkerProfile worker : workers) {
-            if (worker.getUser().getId().equals(job.getEmployer().getId())) continue;
             Match match = evaluateAndSave(worker, job);
             if (match != null) {
                 created.add(match);
@@ -217,7 +218,6 @@ public class MatchingService {
         List<JobPost> jobs = jobRepository.findByStatusOrderByPostedAtDesc(JobStatus.OPEN);
         List<Match> created = new ArrayList<>();
         for (JobPost job : jobs) {
-            if (job.getEmployer().getId().equals(worker.getUser().getId())) continue;
             Match match = evaluateAndSave(worker, job);
             if (match != null) {
                 created.add(match);
@@ -231,8 +231,8 @@ public class MatchingService {
         if (job.getStatus() != JobStatus.OPEN) return null;
         ScoreBreakdown b = evaluate(worker, job);
         if (b.score() < MATCH_THRESHOLD) return null;
-        Match match = matchRepository.findByWorkerAndJob(worker.getUser(), job).orElseGet(() ->
-                Match.builder().worker(worker.getUser()).job(job).build());
+        Match match = matchRepository.findByWorkerAndJob(worker.getAccount(), job).orElseGet(() ->
+                Match.builder().worker(worker.getAccount()).job(job).build());
         match.setScore(b.score());
         match.setSkillScore(Math.round(b.skillScore() * 100.0) / 100.0);
         match.setDistanceKm(b.distanceKm());
@@ -245,7 +245,7 @@ public class MatchingService {
         if (!match.isNotified()) {
             match.setNotified(true);
             matchRepository.save(match);
-            notificationService.notify(worker.getUser(),
+            notificationService.notify(worker.getAccount(),
                     "New job match (" + String.format("%.0f%%", b.score()) + ")",
                     b.summary(), NotificationType.JOB_MATCH, "/jobs/" + job.getId());
         }
@@ -253,8 +253,8 @@ public class MatchingService {
     }
 
     public MatchDto getMatchFor(Long workerId, Long jobId) {
-        User worker = workerRepository.findByUserId(workerId)
-                .orElseThrow(() -> ApiException.notFound("Worker profile not found")).getUser();
+        WorkerAccount worker = workerRepository.findByAccountId(workerId)
+                .orElseThrow(() -> ApiException.notFound("Worker profile not found")).getAccount();
         JobPost job = jobRepository.findById(jobId).orElseThrow(() -> ApiException.notFound("Job not found"));
         Match match = matchRepository.findByWorkerAndJob(worker, job)
                 .orElseThrow(() -> ApiException.notFound("No match exists"));
@@ -262,10 +262,10 @@ public class MatchingService {
     }
 
     @Transactional
-    public void markViewed(Long matchId, User user) {
+    public void markViewed(Long matchId, WorkerAccount worker) {
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> ApiException.notFound("Match not found"));
-        if (!match.getWorker().getId().equals(user.getId())) {
+        if (!match.getWorker().getId().equals(worker.getId())) {
             throw ApiException.forbidden("Not your match");
         }
         match.setViewed(true);

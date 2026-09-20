@@ -1,25 +1,28 @@
 package com.skillbridge.controller;
 
 import com.skillbridge.dto.*;
-import com.skillbridge.model.JobStatus;
-import com.skillbridge.model.User;
+import com.skillbridge.model.Account;
+import com.skillbridge.model.Availability;
 import com.skillbridge.security.AuthenticationUtils;
 import com.skillbridge.service.JobService;
 import com.skillbridge.service.MatchingService;
-import org.springframework.http.HttpStatus;
+import com.skillbridge.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/** The public surface: job listings, worker listings and the public employer profile. */
 @RestController
 @RequestMapping("/api")
 public class JobController {
 
     private final JobService jobService;
+    private final UserService userService;
     private final MatchingService matchingService;
 
-    public JobController(JobService jobService, MatchingService matchingService) {
+    public JobController(JobService jobService, UserService userService, MatchingService matchingService) {
         this.jobService = jobService;
+        this.userService = userService;
         this.matchingService = matchingService;
     }
 
@@ -28,92 +31,56 @@ public class JobController {
         return jobService.listOpenJobs();
     }
 
+    @GetMapping("/jobs/{id}")
+    public JobDto getJob(@PathVariable Long id) {
+        return jobService.getJob(id, AuthenticationUtils.currentAccountOrNull());
+    }
+
     @PostMapping("/jobs/search")
     public List<JobDto> searchJobs(@RequestBody(required = false) JobSearchRequest request) {
-        User current = null;
-        try {
-            current = AuthenticationUtils.currentUser();
-        } catch (Exception ignored) {
-        }
+        Account current = AuthenticationUtils.currentAccountOrNull();
         return jobService.searchJobs(current, request != null ? request : new JobSearchRequest(
                 null, null, null, null, null, null, null, null, null, null));
     }
 
-    @GetMapping("/jobs/{id}")
-    public JobDto getJob(@PathVariable Long id) {
-        User current = null;
-        try {
-            current = AuthenticationUtils.currentUser();
-        } catch (Exception ignored) {
-        }
-        return jobService.getJob(id, current);
+    @GetMapping("/workers")
+    public List<WorkerProfileDto> searchWorkers(@RequestParam(required = false) String q,
+                                                @RequestParam(required = false) List<String> skills,
+                                                @RequestParam(required = false) String city,
+                                                @RequestParam(required = false) Double maxDistanceKm,
+                                                @RequestParam(required = false) Double lat,
+                                                @RequestParam(required = false) Double lng,
+                                                @RequestParam(required = false) Integer minRating,
+                                                @RequestParam(required = false) Availability availability,
+                                                @RequestParam(required = false) boolean verifiedOnly,
+                                                @RequestParam(required = false) Integer minExperience) {
+        return userService.searchWorkers(q, skills, city, maxDistanceKm, lat, lng, minRating,
+                availability, verifiedOnly, minExperience);
     }
 
-    @PostMapping("/employer/jobs")
-    @ResponseStatus(HttpStatus.CREATED)
-    public JobDto postJob(@RequestBody JobRequest request) {
-        return jobService.postJob(AuthenticationUtils.currentUser(), request);
+    @GetMapping("/workers/{workerAccountId}")
+    public WorkerProfileDto workerProfile(@PathVariable Long workerAccountId) {
+        return userService.getWorkerProfile(workerAccountId);
     }
 
-    @PutMapping("/employer/jobs/{jobId}")
-    public JobDto updateJob(@PathVariable Long jobId, @RequestBody JobRequest request) {
-        return jobService.updateJob(AuthenticationUtils.currentUser(), jobId, request);
+    /** Public business profile, keyed on the employer account id a JobCard carries. */
+    @GetMapping("/employers/{employerAccountId}")
+    public EmployerPublicProfileDto employerProfile(@PathVariable Long employerAccountId) {
+        return userService.getPublicEmployerProfile(employerAccountId);
     }
 
-    @PatchMapping("/employer/jobs/{jobId}/status")
-    public JobDto setStatus(@PathVariable Long jobId, @RequestBody StatusRequest request) {
-        jobService.setJobStatus(AuthenticationUtils.currentUser(), jobId, JobStatus.valueOf(request.status().toUpperCase()));
-        return jobService.getJob(jobId, null);
+    @GetMapping("/employers/{employerAccountId}/jobs")
+    public List<JobDto> employerOpenJobs(@PathVariable Long employerAccountId) {
+        return jobService.openJobsForEmployer(employerAccountId);
     }
 
-    @GetMapping("/employer/jobs")
-    public List<JobDto> myJobs() {
-        return jobService.employerJobs(AuthenticationUtils.currentUser());
+    @GetMapping("/me")
+    public AccountDto me() {
+        return AccountDto.from(AuthenticationUtils.currentAccount());
     }
 
-    @PostMapping("/jobs/{jobId}/apply")
-    @ResponseStatus(HttpStatus.CREATED)
-    public ApplicationDto apply(@PathVariable Long jobId, @RequestBody(required = false) ApplyRequest request) {
-        return jobService.apply(AuthenticationUtils.currentUser(), jobId,
-                request != null ? request.message() : null);
+    @GetMapping("/match/{workerAccountId}/{jobId}")
+    public MatchDto getMatch(@PathVariable Long workerAccountId, @PathVariable Long jobId) {
+        return matchingService.getMatchFor(workerAccountId, jobId);
     }
-
-    @PatchMapping("/employer/applications/{applicationId}")
-    public ApplicationDto updateApplication(@PathVariable Long applicationId, @RequestBody StatusRequest request) {
-        return jobService.updateApplicationStatus(AuthenticationUtils.currentUser(), applicationId,
-                com.skillbridge.model.ApplicationStatus.valueOf(request.status().toUpperCase()));
-    }
-
-    @GetMapping("/employer/applications")
-    public List<ApplicationDto> employerApplications() {
-        return jobService.applicationsForEmployer(AuthenticationUtils.currentUser());
-    }
-
-    @GetMapping("/worker/applications")
-    public List<ApplicationDto> workerApplications() {
-        return jobService.applicationsForWorker(AuthenticationUtils.currentUser());
-    }
-
-    @GetMapping("/employer/jobs/{jobId}/applications")
-    public List<ApplicationDto> jobApplicants(@PathVariable Long jobId) {
-        return jobService.applicantsForJob(AuthenticationUtils.currentUser(), jobId);
-    }
-
-    @GetMapping("/worker/matches")
-    public List<MatchDto> myMatches() {
-        return jobService.matchesForWorker(AuthenticationUtils.currentUser());
-    }
-
-    @PatchMapping("/worker/matches/{matchId}/view")
-    public void markMatchViewed(@PathVariable Long matchId) {
-        matchingService.markViewed(matchId, AuthenticationUtils.currentUser());
-    }
-
-    @GetMapping("/match/{workerId}/{jobId}")
-    public MatchDto getMatch(@PathVariable Long workerId, @PathVariable Long jobId) {
-        return matchingService.getMatchFor(workerId, jobId);
-    }
-
-    public record StatusRequest(String status) {}
-    public record ApplyRequest(String message) {}
 }

@@ -1,12 +1,11 @@
 package com.skillbridge.config;
 
 import com.skillbridge.security.JwtAuthFilter;
+import com.skillbridge.security.RestAccessDeniedHandler;
 import com.skillbridge.security.RestAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -28,10 +27,12 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final RestAuthenticationEntryPoint entryPoint;
+    private final RestAccessDeniedHandler accessDeniedHandler;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter, RestAuthenticationEntryPoint entryPoint) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter, RestAuthenticationEntryPoint entryPoint, RestAccessDeniedHandler accessDeniedHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.entryPoint = entryPoint;
+            this.accessDeniedHandler = accessDeniedHandler;
     }
 
     @Bean
@@ -40,11 +41,18 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(eh -> eh.authenticationEntryPoint(entryPoint))
+                .exceptionHandling(eh -> eh.authenticationEntryPoint(entryPoint).accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/workers").permitAll()
-                        .requestMatchers("/ws/**").permitAll()
+                        // --- open: the three auth namespaces, the socket and the dev console ---
+                        .requestMatchers("/api/worker/auth/**", "/api/employer/auth/**",
+                                "/api/admin/auth/**").permitAll()
+                        .requestMatchers("/ws/**", "/h2-console/**", "/api/health").permitAll()
+                        // --- open: the public job / worker / employer listings ---
+                        .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/jobs/*",
+                                "/api/workers", "/api/employers/*").permitAll()
+                        // --- role walls, enforced by the framework rather than by hand ---
+                        .requestMatchers("/api/worker/**").hasRole("WORKER")
+                        .requestMatchers("/api/employer/**").hasRole("EMPLOYER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .headers(h -> h.frameOptions(f -> f.disable()))
@@ -55,11 +63,6 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
     }
 
     @Bean

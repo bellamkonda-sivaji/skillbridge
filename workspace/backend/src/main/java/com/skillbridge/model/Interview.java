@@ -19,12 +19,12 @@ public class Interview {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "employer_id")
-    private User employer;
+    @JoinColumn(name = "employer_account_id")
+    private EmployerAccount employer;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "worker_id")
-    private User worker;
+    @JoinColumn(name = "worker_account_id")
+    private WorkerAccount worker;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id")
@@ -37,6 +37,11 @@ public class Interview {
     @Column(nullable = false)
     private LocalDateTime scheduledAt;
 
+    /** How long the employer has blocked out for the slot. */
+    @Builder.Default
+    @Column(nullable = false)
+    private int durationMinutes = 30;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private InterviewMode mode;
@@ -45,14 +50,26 @@ public class Interview {
 
     private String notes;
 
+    // ------------------------------------------------------------------ interview-detail fields
+
+    /** Who the worker will actually meet, shown on the interview detail screen. */
+    private String interviewerName;
+
+    private String interviewerRole;
+
+    private String interviewerPhone;
+
+    @Column(length = 500)
+    private String addressLine;
+
+    private Double latitude;
+
+    private Double longitude;
+
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private InterviewStatus status = InterviewStatus.PENDING;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by")
-    private User createdBy;
 
     @Builder.Default
     @Column(nullable = false)

@@ -1,3 +1,6 @@
 package com.skillbridge.dto;
 
-public record ReviewRequest(Long targetId, Long jobId, int rating, String comment) {}
+import com.skillbridge.model.AccountType;
+
+/** {@code targetType} says which table {@code targetId} lives in - ids are only unique per table. */
+public record ReviewRequest(AccountType targetType, Long targetId, Long jobId, int rating, String comment) {}

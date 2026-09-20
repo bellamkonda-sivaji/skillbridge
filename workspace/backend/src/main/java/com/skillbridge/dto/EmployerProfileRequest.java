@@ -1,5 +1,7 @@
 package com.skillbridge.dto;
 
+import java.util.List;
+
 public record EmployerProfileRequest(
         String businessName,
         String businessType,
@@ -9,5 +11,8 @@ public record EmployerProfileRequest(
         double latitude,
         double longitude,
         boolean locationEnabled,
-        String website
+        String website,
+        Integer founded,
+        String teamSize,
+        List<String> photos
 ) {}

@@ -6,7 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "wallets", uniqueConstraints = @UniqueConstraint(columnNames = "user_id"))
+@Table(name = "wallets", uniqueConstraints = @UniqueConstraint(columnNames = {"owner_type", "owner_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,9 +18,13 @@ public class Wallet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private User user;
+    /** Polymorphic owner - one wallet per account, whichever namespace it lives in. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "owner_type", nullable = false)
+    private AccountType ownerType;
+
+    @Column(name = "owner_id", nullable = false)
+    private Long ownerId;
 
     private double balance;
 

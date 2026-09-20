@@ -18,9 +18,13 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id")
-    private User user;
+    /** Polymorphic owner - notifications go to workers, employers and admins alike. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "owner_type", nullable = false)
+    private AccountType ownerType;
+
+    @Column(name = "owner_id", nullable = false)
+    private Long ownerId;
 
     private String title;
 

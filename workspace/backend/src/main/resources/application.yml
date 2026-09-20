@@ -26,6 +26,14 @@ skillbridge:
   jwt:
     secret: "SkillBridgeSecretKeyForJwtSigning2026!SecureEnoughForProductionUse"
     expiration-ms: 86400000
+  otp:
+    length: 6
+    ttl-seconds: 300
+    resend-after-seconds: 30
+    max-attempts: 5
+    # DEV ONLY: returns the OTP in the API response so the flow is testable
+    # without an SMS provider. MUST be false in production.
+    expose-code: true
 
 logging:
   level:

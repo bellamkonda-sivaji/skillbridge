@@ -1,12 +1,12 @@
 package com.skillbridge.service;
 
+import com.skillbridge.dto.AccountDto;
 import com.skillbridge.dto.AdminAnalyticsDto;
 import com.skillbridge.dto.EmployerProfileDto;
 import com.skillbridge.dto.InterviewDto;
 import com.skillbridge.dto.JobDto;
 import com.skillbridge.dto.MatchDto;
 import com.skillbridge.dto.ReviewDto;
-import com.skillbridge.dto.UserDto;
 import com.skillbridge.dto.WorkerProfileDto;
 import com.skillbridge.exception.ApiException;
 import com.skillbridge.model.*;
@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,9 @@ import java.util.stream.Collectors;
 @Service
 public class AdminService {
 
-    private final UserRepository userRepository;
+    private final WorkerAccountRepository workerAccountRepository;
+    private final EmployerAccountRepository employerAccountRepository;
+    private final AdminAccountRepository adminAccountRepository;
     private final WorkerProfileRepository workerProfileRepository;
     private final JobPostRepository jobRepository;
     private final JobApplicationRepository applicationRepository;
@@ -31,12 +34,19 @@ public class AdminService {
     private final InterviewRepository interviewRepository;
     private final ReviewRepository reviewRepository;
     private final EmployerProfileRepository employerProfileRepository;
+    private final ReviewService reviewService;
 
-    public AdminService(UserRepository userRepository, WorkerProfileRepository workerProfileRepository,
+    public AdminService(WorkerAccountRepository workerAccountRepository,
+                        EmployerAccountRepository employerAccountRepository,
+                        AdminAccountRepository adminAccountRepository,
+                        WorkerProfileRepository workerProfileRepository,
                         JobPostRepository jobRepository, JobApplicationRepository applicationRepository,
                         MatchRepository matchRepository, InterviewRepository interviewRepository,
-                        ReviewRepository reviewRepository, EmployerProfileRepository employerProfileRepository) {
-        this.userRepository = userRepository;
+                        ReviewRepository reviewRepository, EmployerProfileRepository employerProfileRepository,
+                        ReviewService reviewService) {
+        this.workerAccountRepository = workerAccountRepository;
+        this.employerAccountRepository = employerAccountRepository;
+        this.adminAccountRepository = adminAccountRepository;
         this.workerProfileRepository = workerProfileRepository;
         this.jobRepository = jobRepository;
         this.applicationRepository = applicationRepository;
@@ -44,6 +54,7 @@ public class AdminService {
         this.interviewRepository = interviewRepository;
         this.reviewRepository = reviewRepository;
         this.employerProfileRepository = employerProfileRepository;
+        this.reviewService = reviewService;
     }
 
     public AdminAnalyticsDto analytics() {
@@ -71,10 +82,12 @@ public class AdminService {
                 .limit(8)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
 
+        long workers = workerAccountRepository.count();
+        long employers = employerAccountRepository.count();
         return new AdminAnalyticsDto(
-                userRepository.count(),
-                userRepository.countByRole(Role.WORKER),
-                userRepository.countByRole(Role.EMPLOYER),
+                workers + employers + adminAccountRepository.count(),
+                workers,
+                employers,
                 jobRepository.count(),
                 jobRepository.countByStatus(JobStatus.OPEN),
                 applicationRepository.count(),
@@ -83,7 +96,8 @@ public class AdminService {
                 interviewRepository.countByStatus(InterviewStatus.PENDING),
                 interviewRepository.countByScheduledAtAfter(LocalDateTime.now()),
                 reviewRepository.count(),
-                userRepository.countByCreatedAtAfter(weekAgo),
+                workerAccountRepository.countByCreatedAtAfter(weekAgo)
+                        + employerAccountRepository.countByCreatedAtAfter(weekAgo),
                 jobRepository.countByStatusAndPostedAtAfter(JobStatus.OPEN, weekAgo),
                 byWorkType,
                 byCity,
@@ -91,40 +105,60 @@ public class AdminService {
                 topCategories);
     }
 
-    public List<UserDto> allUsers(String role, String q) {
-        List<User> users;
-        if (role != null && !role.isBlank()) {
+    /** Accounts across all three tables. Ids repeat between tables, so every row carries its type. */
+    public List<AccountDto> allAccounts(String type, String q) {
+        List<Account> accounts = new ArrayList<>();
+        AccountType filter = null;
+        if (type != null && !type.isBlank()) {
             try {
-                users = userRepository.findByRole(Role.valueOf(role.toUpperCase()));
-            } catch (Exception ex) {
-                throw ApiException.badRequest("Invalid role");
+                filter = AccountType.valueOf(type.toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                throw ApiException.badRequest("Invalid account type");
             }
-        } else {
-            users = userRepository.findAll();
+        }
+        if (filter == null || filter == AccountType.WORKER) {
+            accounts.addAll(workerAccountRepository.findAll());
+        }
+        if (filter == null || filter == AccountType.EMPLOYER) {
+            accounts.addAll(employerAccountRepository.findAll());
+        }
+        if (filter == null || filter == AccountType.ADMIN) {
+            accounts.addAll(adminAccountRepository.findAll());
         }
         if (q != null && !q.isBlank()) {
-            users = users.stream()
-                    .filter(u -> u.getName().toLowerCase().contains(q.toLowerCase())
-                            || u.getEmail().toLowerCase().contains(q.toLowerCase()))
+            String needle = q.toLowerCase().trim();
+            accounts = accounts.stream()
+                    .filter(a -> a.getName().toLowerCase().contains(needle)
+                            || (a.getEmail() != null && a.getEmail().toLowerCase().contains(needle))
+                            || (a.getPhone() != null && a.getPhone().contains(needle)))
                     .collect(Collectors.toList());
         }
-        return users.stream().map(UserDto::from).toList();
+        return accounts.stream().map(AccountDto::from).toList();
     }
 
     @Transactional
-    public UserDto setUserEnabled(Long userId, boolean enabled) {
-        User user = userRepository.findById(userId).orElseThrow(() -> ApiException.notFound("User not found"));
-        if (user.getRole() == Role.ADMIN) {
+    public AccountDto setAccountEnabled(AccountType type, Long accountId, boolean enabled) {
+        if (type == null) {
+            throw ApiException.badRequest("accountType is required - ids are only unique per table");
+        }
+        if (type == AccountType.ADMIN) {
             throw ApiException.badRequest("Cannot disable an admin account");
         }
-        user.setEnabled(enabled);
-        userRepository.save(user);
-        return UserDto.from(user);
+        if (type == AccountType.WORKER) {
+            WorkerAccount account = workerAccountRepository.findById(accountId)
+                    .orElseThrow(() -> ApiException.notFound("Worker account not found"));
+            account.setEnabled(enabled);
+            return AccountDto.from(workerAccountRepository.save(account));
+        }
+        EmployerAccount account = employerAccountRepository.findById(accountId)
+                .orElseThrow(() -> ApiException.notFound("Employer account not found"));
+        account.setEnabled(enabled);
+        return AccountDto.from(employerAccountRepository.save(account));
     }
 
     @Transactional
-    public WorkerProfileDto verifyWorker(Long userId, boolean approved, String note) {
-        WorkerProfile profile = workerProfileRepository.findByUserId(userId)
+    public WorkerProfileDto verifyWorker(Long workerAccountId, boolean approved, String note) {
+        WorkerProfile profile = workerProfileRepository.findByAccountId(workerAccountId)
                 .orElseThrow(() -> ApiException.notFound("Worker profile not found"));
         if (profile.getVerificationStatus() != VerificationStatus.PENDING) {
             throw ApiException.badRequest("No pending verification request for this worker");
@@ -134,6 +168,15 @@ public class AdminService {
         profile.setVerifiedAt(LocalDateTime.now());
         workerProfileRepository.save(profile);
         return WorkerProfileDto.from(profile);
+    }
+
+    @Transactional
+    public EmployerProfileDto verifyEmployer(Long employerAccountId, boolean verified) {
+        EmployerProfile profile = employerProfileRepository.findByAccountId(employerAccountId)
+                .orElseThrow(() -> ApiException.notFound("Employer profile not found"));
+        profile.setVerified(verified);
+        employerProfileRepository.save(profile);
+        return EmployerProfileDto.from(profile);
     }
 
     public List<WorkerProfileDto> pendingVerifications() {
@@ -156,8 +199,9 @@ public class AdminService {
         return interviewRepository.findAllByOrderByScheduledAtDesc().stream().map(InterviewDto::from).toList();
     }
 
-    public List<ReviewDto> reviewsForRole(Role role) {
-        return reviewRepository.findByTargetRole(role).stream().map(ReviewDto::from).toList();
+    public List<ReviewDto> reviewsForType(AccountType targetType) {
+        return reviewRepository.findByTargetTypeOrderByCreatedAtDesc(targetType).stream()
+                .map(reviewService::toDto).toList();
     }
 
     public List<EmployerProfileDto> allEmployers() {

@@ -19,12 +19,12 @@ public class Conversation {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "worker_id")
-    private User worker;
+    @JoinColumn(name = "worker_account_id")
+    private WorkerAccount worker;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "employer_id")
-    private User employer;
+    @JoinColumn(name = "employer_account_id")
+    private EmployerAccount employer;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id")

@@ -5,6 +5,7 @@ import com.skillbridge.model.Match;
 public record MatchDto(
         Long id,
         JobDto job,
+        Long workerId,
         String workerName,
         double score,
         double skillScore,
@@ -17,7 +18,7 @@ public record MatchDto(
 ) {
     public static MatchDto from(Match m) {
         return new MatchDto(m.getId(), JobDto.from(m.getJob(), m.getScore()),
-                m.getWorker().getName(),
+                m.getWorker().getId(), m.getWorker().getName(),
                 m.getScore(), m.getSkillScore(), m.getDistanceKm(), m.getExperienceScore(),
                 m.getAvailabilityScore(), m.getSalaryScore(), m.getRatingScore(), m.isViewed());
     }

@@ -1,5 +1,6 @@
 package com.skillbridge.security;
 
+import com.skillbridge.model.AccountType;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,11 +19,11 @@ import java.io.IOException;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final AppUserDetailsService userDetailsService;
+    private final AccountDetailsService accountDetailsService;
 
-    public JwtAuthFilter(JwtUtil jwtUtil, AppUserDetailsService userDetailsService) {
+    public JwtAuthFilter(JwtUtil jwtUtil, AccountDetailsService accountDetailsService) {
         this.jwtUtil = jwtUtil;
-        this.userDetailsService = userDetailsService;
+        this.accountDetailsService = accountDetailsService;
     }
 
     @Override
@@ -32,12 +33,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(header) && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             try {
-                String username = jwtUtil.extractUsername(token);
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails details = userDetailsService.loadUserByUsername(username);
-                    if (jwtUtil.isValid(token, details)) {
+                String subject = jwtUtil.extractUsername(token);
+                AccountType type = jwtUtil.extractAccountType(token);
+                Long accountId = jwtUtil.extractAccountId(token);
+                if (subject != null && type != null && accountId != null
+                        && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails details = accountDetailsService.loadUserByUsername(subject);
+                    boolean typeMatches = details.getAuthorities().stream()
+                            .anyMatch(a -> a.getAuthority().equals(type.authority()));
+                    if (typeMatches && jwtUtil.isValid(token, details)) {
+                        AccountPrincipal principal = new AccountPrincipal(type, accountId, subject);
                         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                                details, null, details.getAuthorities());
+                                principal, null, details.getAuthorities());
                         auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(auth);
                     }

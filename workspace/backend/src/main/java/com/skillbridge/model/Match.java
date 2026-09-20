@@ -19,8 +19,8 @@ public class Match {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "worker_id")
-    private User worker;
+    @JoinColumn(name = "worker_account_id")
+    private WorkerAccount worker;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "job_id")

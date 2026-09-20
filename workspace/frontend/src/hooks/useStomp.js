@@ -20,8 +20,11 @@ export function useStomp(onMessage) {
 
     client.onConnect = () => {
       const user = JSON.parse(localStorage.getItem('sb_user') || 'null')
-      if (!user) return
-      client.subscribe(`/topic/notifications/${user.id}`, (msg) => {
+      const accountType = localStorage.getItem('sb_account_type') || user?.accountType
+      if (!user || !accountType) return
+      // Topics are namespaced by account type, because ids repeat across the
+      // separate worker / employer / admin tables.
+      client.subscribe(`/topic/notifications/${accountType}/${user.id}`, (msg) => {
         try {
           handlerRef.current?.({ type: 'notification', payload: JSON.parse(msg.body) })
         } catch {}
@@ -33,7 +36,7 @@ export function useStomp(onMessage) {
           handlerRef.current?.({ type: 'chat', payload: { body, destination: match } })
         } catch {}
       })
-      client.subscribe(`/topic/conversations/${user.id}`, (msg) => {
+      client.subscribe(`/topic/conversations/${accountType}/${user.id}`, (msg) => {
         try {
           handlerRef.current?.({ type: 'conversation', payload: JSON.parse(msg.body) })
         } catch {}

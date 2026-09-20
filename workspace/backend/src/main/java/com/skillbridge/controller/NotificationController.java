@@ -20,21 +20,22 @@ public class NotificationController {
 
     @GetMapping
     public List<NotificationDto> mine() {
-        return notificationService.listForUser(AuthenticationUtils.currentUser());
+        return notificationService.listFor(AuthenticationUtils.currentType(), AuthenticationUtils.currentId());
     }
 
     @GetMapping("/unread-count")
     public Map<String, Long> unread() {
-        return Map.of("count", notificationService.unreadCount(AuthenticationUtils.currentUser()));
+        return Map.of("count", notificationService.unreadCount(
+                AuthenticationUtils.currentType(), AuthenticationUtils.currentId()));
     }
 
     @PatchMapping("/{id}/read")
     public void markRead(@PathVariable Long id) {
-        notificationService.markRead(id, AuthenticationUtils.currentUser());
+        notificationService.markRead(id, AuthenticationUtils.currentType(), AuthenticationUtils.currentId());
     }
 
     @PatchMapping("/read-all")
     public void markAllRead() {
-        notificationService.markAllRead(AuthenticationUtils.currentUser());
+        notificationService.markAllRead(AuthenticationUtils.currentType(), AuthenticationUtils.currentId());
     }
 }

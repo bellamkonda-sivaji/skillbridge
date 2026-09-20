@@ -8,7 +8,7 @@ import { useStomp, useStompChat } from '../hooks/useStomp'
 
 export default function Chat() {
   const { t } = useTranslation()
-  const { user } = useAuth()
+  const { user, accountType } = useAuth()
   const location = useLocation()
   const [conversations, setConversations] = useState([])
   const [active, setActive] = useState(null)
@@ -25,8 +25,8 @@ export default function Chat() {
       if (st && (st.workerId || st.recipientId) && !initRef.current) {
         const recipientId = st.workerId || st.recipientId
         const existing = res.data.find((c) =>
-          (user.role === 'EMPLOYER' && c.workerId === recipientId) ||
-          (user.role === 'WORKER' && c.employerId === recipientId)
+          (accountType === 'EMPLOYER' && c.workerId === recipientId) ||
+          (accountType === 'WORKER' && c.employerId === recipientId)
         )
         if (existing) {
           setActive(existing.id)
@@ -85,7 +85,7 @@ export default function Chat() {
 
   const otherName = (c) => {
     if (!user) return ''
-    return user.role === 'EMPLOYER' ? c.workerName : c.employerName
+    return accountType === 'EMPLOYER' ? c.workerName : c.employerName
   }
 
   if (loading) return <div className="page container"><Spinner /></div>

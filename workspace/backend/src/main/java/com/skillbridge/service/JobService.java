@@ -1,49 +1,50 @@
 package com.skillbridge.service;
 
-import com.skillbridge.dto.*;
+import com.skillbridge.dto.JobBenefitDto;
+import com.skillbridge.dto.JobDto;
+import com.skillbridge.dto.JobRequest;
+import com.skillbridge.dto.JobSearchRequest;
+import com.skillbridge.dto.JobShiftDto;
+import com.skillbridge.dto.ScheduleEstimateDto;
+import com.skillbridge.dto.ScheduleEstimateRequest;
+import com.skillbridge.dto.MatchDto;
 import com.skillbridge.exception.ApiException;
 import com.skillbridge.model.*;
 import com.skillbridge.repository.*;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** Job posts themselves. The application lifecycle lives in {@link ApplicationService}. */
 @Service
 public class JobService {
 
     private final JobPostRepository jobRepository;
-    private final JobApplicationRepository applicationRepository;
     private final WorkerProfileRepository workerProfileRepository;
     private final EmployerProfileRepository employerProfileRepository;
     private final MatchRepository matchRepository;
-    private final UserRepository userRepository;
-    private final NotificationService notificationService;
     private final GeoService geoService;
     private final SkillLexicon lexicon;
     private final MatchingService matchingService;
-    private final WalletService walletService;
+    private final ScheduleCalculator scheduleCalculator;
 
-    public JobService(JobPostRepository jobRepository, JobApplicationRepository applicationRepository,
-                      WorkerProfileRepository workerProfileRepository, EmployerProfileRepository employerProfileRepository,
-                      MatchRepository matchRepository, UserRepository userRepository,
-                      NotificationService notificationService, GeoService geoService,
-                      SkillLexicon lexicon, MatchingService matchingService, WalletService walletService) {
+    public JobService(JobPostRepository jobRepository, WorkerProfileRepository workerProfileRepository,
+                      EmployerProfileRepository employerProfileRepository, MatchRepository matchRepository,
+                      GeoService geoService, SkillLexicon lexicon, MatchingService matchingService,
+                      ScheduleCalculator scheduleCalculator) {
         this.jobRepository = jobRepository;
-        this.applicationRepository = applicationRepository;
         this.workerProfileRepository = workerProfileRepository;
         this.employerProfileRepository = employerProfileRepository;
         this.matchRepository = matchRepository;
-        this.userRepository = userRepository;
-        this.notificationService = notificationService;
         this.geoService = geoService;
         this.lexicon = lexicon;
         this.matchingService = matchingService;
-        this.walletService = walletService;
+        this.scheduleCalculator = scheduleCalculator;
     }
 
     public List<JobDto> listOpenJobs() {
@@ -51,88 +52,310 @@ public class JobService {
                 .map(j -> JobDto.from(j, null)).collect(Collectors.toList());
     }
 
-    public JobDto getJob(Long id, User currentUser) {
+    @Transactional
+    public JobDto getJob(Long id, Account viewer) {
         JobPost job = jobRepository.findById(id).orElseThrow(() -> ApiException.notFound("Job not found"));
         Double match = null;
-        if (currentUser != null && currentUser.getRole() == Role.WORKER) {
-            match = workerProfileRepository.findByUserId(currentUser.getId())
-                    .flatMap(w -> matchRepository.findByWorkerAndJob(currentUser, job))
-                    .map(Match::getScore)
-                    .orElse(null);
+        if (viewer instanceof WorkerAccount worker) {
+            match = matchRepository.findByWorkerAndJob(worker, job).map(Match::getScore).orElse(null);
+        }
+        // Anyone but the owning employer counts as a view - that is what jobViews measures.
+        boolean owner = viewer instanceof EmployerAccount e && job.getEmployer().getId().equals(e.getId());
+        if (!owner) {
+            job.setJobViews(job.getJobViews() + 1);
+            jobRepository.save(job);
         }
         return JobDto.from(job, match);
     }
 
     @Transactional
-    public JobDto postJob(User employer, JobRequest request) {
-        if (employer.getRole() != Role.ADMIN) {
-            employerProfileRepository.findByUserId(employer.getId())
-                    .orElseThrow(() -> ApiException.badRequest("Complete your business profile before posting jobs"));
-        } else {
-            employerProfileRepository.findByUserId(employer.getId())
-                    .orElseGet(() -> employerProfileRepository.save(
-                            EmployerProfile.builder().user(employer).businessName("SkillBridge Platform").build()));
+    public JobDto postJob(EmployerAccount employer, JobRequest request) {
+        EmployerProfile profile = employerProfileRepository.findByAccountId(employer.getId())
+                .orElseThrow(() -> ApiException.badRequest("Complete your business profile before posting jobs"));
+        boolean draft = request.isDraft();
+        if (request.title() == null || request.title().isBlank()) {
+            throw ApiException.badRequest("A job title is required");
         }
-        if (request.title() == null || request.title().isBlank() || request.requiredSkills() == null
-                || request.requiredSkills().isEmpty() || request.salary() <= 0) {
+        // A draft is a half-finished wizard, so only a published posting has to be complete.
+        if (!draft && (request.requiredSkills() == null || request.requiredSkills().isEmpty()
+                || request.salary() <= 0)) {
             throw ApiException.badRequest("Title, at least one required skill and a salary are required");
         }
+
+        String city = request.city() != null && !request.city().isBlank()
+                ? request.city().trim()
+                : (profile.getCity() != null && !profile.getCity().isBlank() ? profile.getCity() : "Tirupati");
+
         JobPost job = JobPost.builder()
                 .employer(employer)
                 .title(request.title().trim())
                 .description(request.description())
-                .requiredSkills(request.requiredSkills())
+                .requiredSkills(request.requiredSkills() != null
+                        ? new ArrayList<>(request.requiredSkills()) : new ArrayList<>())
                 .workType(request.workType() != null ? request.workType() : WorkType.DAILY)
+                .employmentType(request.employmentType() != null ? request.employmentType() : EmploymentType.FULL_TIME)
                 .salary(request.salary())
                 .salaryUnit(request.salaryUnit() != null ? request.salaryUnit() : SalaryUnit.PER_DAY)
-                .city(request.city())
+                .city(city)
                 .area(request.area())
-                .latitude(request.latitude())
-                .longitude(request.longitude())
+                .latitude(request.latitude() != 0 ? request.latitude() : profile.getLatitude())
+                .longitude(request.longitude() != 0 ? request.longitude() : profile.getLongitude())
+                .minExperienceYears(Math.max(0, request.minExperienceYears()))
+                .language(request.language())
                 .workersNeeded(Math.max(1, request.workersNeeded()))
                 .urgent(request.urgent())
-                .status(JobStatus.OPEN)
+                .status(draft ? JobStatus.DRAFT : JobStatus.OPEN)
                 .expiresAt(LocalDateTime.now().plusDays(30))
                 .build();
+        applyWizardFields(job, request);
+        if (!draft) {
+            scheduleCalculator.validate(scheduleInput(job));
+        }
         job = jobRepository.save(job);
 
-        matchingService.generateMatchesForJob(job);
+        if (job.getStatus() == JobStatus.OPEN) {
+            matchingService.generateMatchesForJob(job);
+        }
         return JobDto.from(job, null);
     }
 
     @Transactional
-    public JobDto updateJob(User employer, Long jobId, JobRequest request) {
+    public JobDto updateJob(EmployerAccount employer, Long jobId, JobRequest request) {
         JobPost job = requireEmployerJob(employer, jobId);
         if (request.title() != null && !request.title().isBlank()) job.setTitle(request.title());
         if (request.description() != null) job.setDescription(request.description());
-        if (request.requiredSkills() != null && !request.requiredSkills().isEmpty()) job.setRequiredSkills(request.requiredSkills());
+        if (request.requiredSkills() != null && !request.requiredSkills().isEmpty()) {
+            job.setRequiredSkills(new ArrayList<>(request.requiredSkills()));
+        }
         if (request.workType() != null) job.setWorkType(request.workType());
+        if (request.employmentType() != null) job.setEmploymentType(request.employmentType());
         if (request.salary() > 0) job.setSalary(request.salary());
         if (request.salaryUnit() != null) job.setSalaryUnit(request.salaryUnit());
         if (request.city() != null && !request.city().isBlank()) job.setCity(request.city());
         if (request.area() != null) job.setArea(request.area());
         if (request.latitude() != 0) job.setLatitude(request.latitude());
         if (request.longitude() != 0) job.setLongitude(request.longitude());
+        if (request.minExperienceYears() > 0) job.setMinExperienceYears(request.minExperienceYears());
+        if (request.language() != null) job.setLanguage(request.language());
         if (request.workersNeeded() > 0) job.setWorkersNeeded(request.workersNeeded());
         job.setUrgent(request.urgent());
+        applyWizardFields(job, request);
+        // Publishing a draft is done by saving it again without draft=true.
+        if (job.getStatus() == JobStatus.DRAFT && !request.isDraft()) {
+            job.setStatus(JobStatus.OPEN);
+            job.setPostedAt(LocalDateTime.now());
+        }
+        if (job.getStatus() != JobStatus.DRAFT) {
+            scheduleCalculator.validate(scheduleInput(job));
+        }
         job = jobRepository.save(job);
-        matchingService.generateMatchesForJob(job);
+        if (job.getStatus() == JobStatus.OPEN) {
+            matchingService.generateMatchesForJob(job);
+        }
         return JobDto.from(job, null);
     }
 
-    @Transactional
-    public void setJobStatus(User employer, Long jobId, JobStatus status) {
-        JobPost job = requireEmployerJob(employer, jobId);
-        job.setStatus(status);
-        jobRepository.save(job);
+    /** Applies every posting-wizard field that is actually present on the request. */
+    private void applyWizardFields(JobPost job, JobRequest request) {
+        if (request.workerCategory() != null) job.setWorkerCategory(request.workerCategory());
+        if (request.responsibilities() != null) {
+            job.getResponsibilities().clear();
+            job.getResponsibilities().addAll(request.responsibilities());
+        }
+        if (request.workingDays() != null) {
+            job.getWorkingDays().clear();
+            job.getWorkingDays().addAll(request.workingDays());
+        }
+        applyBenefits(job, request);
+        if (request.languages() != null) {
+            job.getLanguages().clear();
+            job.getLanguages().addAll(request.languages());
+        }
+        if (request.shifts() != null) {
+            List<JobShift> shifts = new ArrayList<>();
+            for (JobShiftDto dto : request.shifts()) {
+                if (dto == null) continue;
+                shifts.add(JobShift.builder()
+                        .label(dto.label()).startTime(dto.startTime()).endTime(dto.endTime())
+                        .breakStart(dto.breakStart()).breakEnd(dto.breakEnd()).build());
+            }
+            job.replaceShifts(shifts);
+        }
+        if (request.durationType() != null) job.setDurationType(request.durationType());
+        if (request.startDate() != null) job.setStartDate(request.startDate());
+        if (request.endDate() != null) job.setEndDate(request.endDate());
+        applyPaymentMode(job, request);
+        if (request.genderPreference() != null) job.setGenderPreference(request.genderPreference());
+        if (request.ageMin() != null) job.setAgeMin(request.ageMin());
+        if (request.ageMax() != null) job.setAgeMax(request.ageMax());
+        if (request.interviewType() != null) job.setInterviewType(request.interviewType());
+        if (request.applicationDeadline() != null) job.setApplicationDeadline(request.applicationDeadline());
+        if (request.autoCloseWhenFilled() != null) job.setAutoCloseWhenFilled(request.autoCloseWhenFilled());
+        applyEngagementRules(job, request);
     }
 
-    public List<JobDto> employerJobs(User employer) {
+    /** Jobs are funded through SkillBridge - CASH survives only for rows written before this rule. */
+    private void applyPaymentMode(JobPost job, JobRequest request) {
+        if (request.paymentMode() == PaymentMode.CASH) {
+            throw ApiException.badRequest("Jobs are funded through SkillBridge");
+        }
+        job.setPaymentMode(PaymentMode.SKILLBRIDGE);
+    }
+
+    /** Structured benefits win; a plain benefits list is still accepted and mapped onto them. */
+    private void applyBenefits(JobPost job, JobRequest request) {
+        List<JobBenefit> rows = null;
+        if (request.jobBenefits() != null) {
+            rows = new ArrayList<>();
+            for (JobBenefitDto dto : request.jobBenefits()) {
+                if (dto == null || dto.benefitType() == null) continue;
+                rows.add(JobBenefit.builder().benefitType(dto.benefitType())
+                        .amount(dto.amount()).unit(dto.unit()).note(dto.note()).build());
+            }
+        } else if (request.benefits() != null) {
+            rows = new ArrayList<>();
+            for (String raw : request.benefits()) {
+                if (raw == null || raw.isBlank()) continue;
+                rows.add(JobBenefit.builder().benefitType(BenefitType.parse(raw)).build());
+            }
+        }
+        if (rows != null) {
+            job.replaceBenefits(rows);
+        }
+    }
+
+    /**
+     * The engagement model is the top of the rules engine: it back-fills the legacy
+     * employmentType column, normalises the duration and picks the payroll cycle.
+     */
+    private void applyEngagementRules(JobPost job, JobRequest request) {
+        if (request.engagementModel() != null) {
+            job.setEngagementModel(request.engagementModel());
+            job.setEmploymentType(request.engagementModel().legacyEmploymentType());
+        } else if (job.getEngagementModel() == null) {
+            job.setEngagementModel(EngagementModel.FULL_TIME);
+        }
+        EngagementModel model = job.getEngagementModel();
+
+        if (request.shiftArrangement() != null) job.setShiftArrangement(request.shiftArrangement());
+        if (request.breakPaid() != null) job.setBreakPaid(request.breakPaid());
+        if (request.overtimeExpected() != null) job.setOvertimeExpected(request.overtimeExpected());
+        if (request.overtimePayBasis() != null) job.setOvertimePayBasis(request.overtimePayBasis());
+        if (request.overtimeRate() != null) job.setOvertimeRate(request.overtimeRate());
+        if (request.salaryDueDayOfMonth() != null) job.setSalaryDueDayOfMonth(request.salaryDueDayOfMonth());
+        if (request.workDate() != null) job.setWorkDate(request.workDate());
+
+        if (model == EngagementModel.ONE_TIME && job.getWorkDate() != null) {
+            job.setDurationType(JobDuration.SPECIFIC);
+            job.setStartDate(job.getWorkDate());
+            job.setEndDate(job.getWorkDate());
+        }
+        if (model == EngagementModel.PERMANENT && request.endDate() == null
+                && request.durationType() == null) {
+            job.setDurationType(JobDuration.ONGOING);
+        }
+        if ((model == EngagementModel.DAILY || model == EngagementModel.TEMPORARY)
+                && job.getStartDate() != null && job.getEndDate() != null
+                && request.durationType() == null) {
+            job.setDurationType(JobDuration.SPECIFIC);
+        }
+        job.setPayrollCycle(request.payrollCycle() != null
+                ? request.payrollCycle()
+                : (job.getPayrollCycle() != null && request.engagementModel() == null
+                        ? job.getPayrollCycle() : model.defaultPayrollCycle()));
+    }
+
+    // ---------------------------------------------------------------- schedule estimates
+
+    /** Pure calculation over a request body - nothing is persisted. */
+    public ScheduleEstimateDto estimate(ScheduleEstimateRequest request) {
+        EngagementModel model = request.engagementModel() != null
+                ? request.engagementModel() : EngagementModel.FULL_TIME;
+        List<ScheduleCalculator.ShiftWindow> windows = new ArrayList<>();
+        if (request.shifts() != null) {
+            for (JobShiftDto dto : request.shifts()) {
+                if (dto == null) continue;
+                windows.add(new ScheduleCalculator.ShiftWindow(
+                        dto.startTime(), dto.endTime(), dto.breakStart(), dto.breakEnd()));
+            }
+        }
+        LocalDate start = request.startDate();
+        LocalDate end = request.endDate();
+        if (model == EngagementModel.ONE_TIME && request.workDate() != null) {
+            start = request.workDate();
+            end = request.workDate();
+        }
+        return scheduleCalculator.estimate(new ScheduleCalculator.ScheduleInput(
+                model, request.workDate(), start, end, request.durationType(),
+                request.workingDays(), windows,
+                request.shiftArrangement(), Boolean.TRUE.equals(request.breakPaid()),
+                request.salary() != null ? request.salary() : 0d, request.salaryUnit(),
+                model.defaultPayrollCycle()));
+    }
+
+    /** The same estimate for a job that is already saved. */
+    @Transactional(readOnly = true)
+    public ScheduleEstimateDto estimateForJob(EmployerAccount employer, Long jobId) {
+        return scheduleCalculator.estimate(scheduleInput(requireEmployerJob(employer, jobId)));
+    }
+
+    /** Turns a saved (or about-to-be-saved) job into the engine's input. */
+    private ScheduleCalculator.ScheduleInput scheduleInput(JobPost job) {
+        List<ScheduleCalculator.ShiftWindow> windows = new ArrayList<>();
+        for (JobShift s : job.getShifts()) {
+            windows.add(new ScheduleCalculator.ShiftWindow(
+                    s.getStartTime(), s.getEndTime(), s.getBreakStart(), s.getBreakEnd()));
+        }
+        return new ScheduleCalculator.ScheduleInput(
+                job.getEngagementModel(), job.getWorkDate(), job.getStartDate(), job.getEndDate(),
+                job.getDurationType(), new ArrayList<>(job.getWorkingDays()), windows,
+                job.getShiftArrangement(), job.isBreakPaid(), job.getSalary(), job.getSalaryUnit(),
+                job.getPayrollCycle());
+    }
+
+    /** Drafts only - a published posting is paused or closed, never deleted. */
+    @Transactional
+    public void deleteJob(EmployerAccount employer, Long jobId) {
+        JobPost job = requireEmployerJob(employer, jobId);
+        if (job.getStatus() != JobStatus.DRAFT) {
+            throw ApiException.badRequest("Only a draft can be deleted. Pause or close this job instead.");
+        }
+        jobRepository.delete(job);
+    }
+
+    @Transactional
+    public JobDto setJobStatus(EmployerAccount employer, Long jobId, JobStatus status) {
+        JobPost job = requireEmployerJob(employer, jobId);
+        JobStatus previous = job.getStatus();
+        job.setStatus(status);
+        if (previous == JobStatus.DRAFT && status == JobStatus.OPEN) {
+            job.setPostedAt(LocalDateTime.now());
+        }
+        job = jobRepository.save(job);
+        if (status == JobStatus.OPEN) {
+            matchingService.generateMatchesForJob(job);
+        }
+        return JobDto.from(job, null);
+    }
+
+    public List<JobDto> employerJobs(EmployerAccount employer) {
         return jobRepository.findByEmployerOrderByPostedAtDesc(employer).stream()
                 .map(j -> JobDto.from(j, null)).collect(Collectors.toList());
     }
 
-    public List<JobDto> searchJobs(User currentUser, JobSearchRequest req) {
+    /** The general-purpose search behind POST /api/jobs/search - open to anyone. */
+    /** Open jobs for one business, for the public employer profile. */
+    public List<JobDto> openJobsForEmployer(Long employerAccountId) {
+        return jobRepository.findAll().stream()
+                .filter(j -> j.getStatus() == JobStatus.OPEN)
+                .filter(j -> j.getEmployer() != null
+                        && j.getEmployer().getId().equals(employerAccountId))
+                .sorted((a, b) -> b.getPostedAt().compareTo(a.getPostedAt()))
+                .map(j -> JobDto.from(j, null))
+                .toList();
+    }
+
+    public List<JobDto> searchJobs(Account viewer, JobSearchRequest req) {
         List<JobPost> candidates;
         if (req.q() != null && !req.q().isBlank()) {
             candidates = new ArrayList<>(jobRepository.search(JobStatus.OPEN, req.q()));
@@ -147,12 +370,8 @@ public class JobService {
             candidates = jobRepository.findByStatusOrderByPostedAtDesc(JobStatus.OPEN);
         }
 
+        WorkerAccount worker = viewer instanceof WorkerAccount w ? w : null;
         List<JobDto> result = new ArrayList<>();
-        WorkerProfile workerProfile = null;
-        if (currentUser != null && currentUser.getRole() == Role.WORKER) {
-            workerProfile = workerProfileRepository.findByUserId(currentUser.getId()).orElse(null);
-        }
-
         for (JobPost j : candidates) {
             boolean ok = j.getStatus() == JobStatus.OPEN;
             if (ok && req.city() != null && !req.city().isBlank() && !j.getCity().equalsIgnoreCase(req.city())) ok = false;
@@ -172,21 +391,22 @@ public class JobService {
             }
             if (ok && (req.minSalary() != null || req.maxSalary() != null)) {
                 double monthly = j.getSalary() * switch (j.getSalaryUnit() == null ? SalaryUnit.PER_DAY : j.getSalaryUnit()) {
+                    case PER_HOUR -> 176.0;
                     case PER_DAY -> 22.0;
                     case PER_WEEK -> 4.33;
+                    case PER_SHIFT -> 22.0;
                     case PER_MONTH -> 1.0;
                 };
                 if (req.minSalary() != null && monthly < req.minSalary()) ok = false;
                 if (ok && req.maxSalary() != null && monthly > req.maxSalary()) ok = false;
             }
             if (ok && req.maxDistanceKm() != null && req.lat() != null && req.lng() != null) {
-                double dist = geoService.distanceKm(req.lat(), req.lng(), j.getLatitude(), j.getLongitude());
-                if (dist > req.maxDistanceKm()) ok = false;
+                Double dist = geoService.distanceKmOrNull(req.lat(), req.lng(), j.getLatitude(), j.getLongitude());
+                if (dist == null || dist > req.maxDistanceKm()) ok = false;
             }
             Double match = null;
-            if (ok && workerProfile != null) {
-                User wpUser = workerProfile.getUser();
-                match = matchRepository.findByWorkerAndJob(wpUser, j).map(Match::getScore).orElse(null);
+            if (ok && worker != null) {
+                match = matchRepository.findByWorkerAndJob(worker, j).map(Match::getScore).orElse(null);
             }
             if (ok) result.add(JobDto.from(j, match));
         }
@@ -199,97 +419,18 @@ public class JobService {
         return result;
     }
 
-    @Transactional
-    public ApplicationDto apply(User worker, Long jobId, String coverMessage) {
-        WorkerProfile profile = workerProfileRepository.findByUserId(worker.getId())
-                .orElseThrow(() -> ApiException.badRequest("Complete your worker profile before applying"));
-        if (!profile.isProfileCompleted()) {
-            throw ApiException.badRequest("Complete your worker profile (skills, job title, location) before applying");
-        }
-        JobPost job = jobRepository.findById(jobId).orElseThrow(() -> ApiException.notFound("Job not found"));
-        if (job.getStatus() != JobStatus.OPEN) {
-            throw ApiException.badRequest("This job is no longer open");
-        }
-        if (applicationRepository.findByWorkerIdAndJobId(worker.getId(), jobId).isPresent()) {
-            throw ApiException.conflict("You have already applied to this job");
-        }
-        JobApplication application = JobApplication.builder()
-                .worker(worker)
-                .job(job)
-                .coverMessage(coverMessage)
-                .status(ApplicationStatus.PENDING)
-                .build();
-        application = applicationRepository.save(application);
-        job.setApplicantsCount(job.getApplicantsCount() + 1);
-        jobRepository.save(job);
-
-        matchingService.evaluateAndSave(profile, job);
-
-        Double match = matchRepository.findByWorkerAndJob(worker, job).map(m -> m.getScore()).orElse(null);
-        notificationService.notify(job.getEmployer(), "New application for " + job.getTitle(),
-                worker.getName() + " applied for \"" + job.getTitle() + "\"",
-                NotificationType.APPLICATION, "/employer/applications");
-        return ApplicationDto.from(application, match);
-    }
-
-    @Transactional
-    public ApplicationDto updateApplicationStatus(User employer, Long applicationId, ApplicationStatus status) {
-        JobApplication application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> ApiException.notFound("Application not found"));
-        if (!application.getJob().getEmployer().getId().equals(employer.getId())) {
-            throw ApiException.forbidden("This is not your job");
-        }
-        application.setStatus(status);
-        applicationRepository.save(application);
-        notificationService.notify(application.getWorker(),
-                "Application " + status.name().toLowerCase(),
-                "Your application for \"" + application.getJob().getTitle() + "\" is now " + status.name().toLowerCase(),
-                NotificationType.APPLICATION, "/worker/applications");
-        if (status == ApplicationStatus.ACCEPTED) {
-            JobPost job = application.getJob();
-            walletService.payForJob(employer, application.getWorker(), job);
-            job.setWorkersNeeded(Math.max(0, job.getWorkersNeeded() - 1));
-            if (job.getWorkersNeeded() == 0) {
-                job.setStatus(JobStatus.FILLED);
-            }
-            jobRepository.save(job);
-        }
-        return ApplicationDto.from(application, null);
-    }
-
-    public List<ApplicationDto> applicationsForEmployer(User employer) {
-        return applicationRepository.findByJobEmployerOrderByAppliedAtDesc(employer).stream()
-                .map(a -> {
-                    Double match = matchRepository.findByWorkerAndJob(a.getWorker(), a.getJob())
-                            .map(m -> m.getScore()).orElse(null);
-                    return ApplicationDto.from(a, match);
-                }).collect(Collectors.toList());
-    }
-
-    public List<ApplicationDto> applicationsForWorker(User worker) {
-        return applicationRepository.findByWorkerOrderByAppliedAtDesc(worker).stream()
-                .map(a -> {
-                    Double match = matchRepository.findByWorkerAndJob(worker, a.getJob())
-                            .map(m -> m.getScore()).orElse(null);
-                    return ApplicationDto.from(a, match);
-                }).collect(Collectors.toList());
-    }
-
-    public List<MatchDto> matchesForWorker(User worker) {
+    public List<MatchDto> matchesForWorker(WorkerAccount worker) {
         return matchRepository.findByWorkerOrderByScoreDesc(worker).stream().map(MatchDto::from).toList();
     }
 
-    public List<ApplicationDto> applicantsForJob(User employer, Long jobId) {
-        JobPost job = requireEmployerJob(employer, jobId);
-        return applicationRepository.findByJobOrderByAppliedAtDesc(job).stream()
-                .map(a -> {
-                    Double match = matchRepository.findByWorkerAndJob(a.getWorker(), a.getJob())
-                            .map(m -> m.getScore()).orElse(null);
-                    return ApplicationDto.from(a, match);
-                }).collect(Collectors.toList());
+    /** Regenerates matches for a worker whose profile just changed. */
+    @Transactional
+    public void refreshMatches(WorkerAccount worker) {
+        workerProfileRepository.findByAccountId(worker.getId())
+                .ifPresent(matchingService::generateMatchesForWorker);
     }
 
-    private JobPost requireEmployerJob(User employer, Long jobId) {
+    private JobPost requireEmployerJob(EmployerAccount employer, Long jobId) {
         JobPost job = jobRepository.findById(jobId).orElseThrow(() -> ApiException.notFound("Job not found"));
         if (!job.getEmployer().getId().equals(employer.getId())) {
             throw ApiException.forbidden("This is not your job");

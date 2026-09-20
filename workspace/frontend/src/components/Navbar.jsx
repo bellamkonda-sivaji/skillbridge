@@ -6,7 +6,7 @@ import api from '../api'
 import { useStomp } from '../hooks/useStomp'
 
 export default function Navbar() {
-  const { user, logout } = useAuth()
+  const { user, accountType, logout } = useAuth()
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const [unread, setUnread] = useState(0)
@@ -81,19 +81,19 @@ export default function Navbar() {
               <Link to="/workers" onClick={(e) => e.preventDefault()}>{t('nav.workers')}</Link>
             </>
           )}
-          {user && user.role === 'WORKER' && (
+          {user && accountType === 'WORKER' && (
             <>
               <NavLink to="/dashboard" end>{t('nav.dashboard')}</NavLink>
               <NavLink to="/chat">{t('nav.chat')}</NavLink>
             </>
           )}
-          {user && user.role === 'EMPLOYER' && (
+          {user && accountType === 'EMPLOYER' && (
             <>
               <NavLink to="/dashboard" end>{t('nav.dashboard')}</NavLink>
               <NavLink to="/chat">{t('nav.chat')}</NavLink>
             </>
           )}
-          {user && user.role === 'ADMIN' && (
+          {user && accountType === 'ADMIN' && (
             <NavLink to="/admin">{t('nav.admin')}</NavLink>
           )}
         </div>

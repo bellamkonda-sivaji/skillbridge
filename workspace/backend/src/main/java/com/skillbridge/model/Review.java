@@ -6,7 +6,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reviews", uniqueConstraints = @UniqueConstraint(columnNames = {"author_id", "target_id", "job_id"}))
+@Table(name = "reviews", uniqueConstraints = @UniqueConstraint(
+        columnNames = {"author_type", "author_id", "target_type", "target_id", "job_id"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,13 +19,20 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "author_id")
-    private User author;
+    /** Both ends are polymorphic: workers review employers and employers review workers. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "author_type", nullable = false)
+    private AccountType authorType;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "target_id")
-    private User target;
+    @Column(name = "author_id", nullable = false)
+    private Long authorId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "target_type", nullable = false)
+    private AccountType targetType;
+
+    @Column(name = "target_id", nullable = false)
+    private Long targetId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id")

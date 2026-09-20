@@ -6,6 +6,7 @@ import com.skillbridge.dto.SendMessageRequest;
 import com.skillbridge.exception.ApiException;
 import com.skillbridge.model.*;
 import com.skillbridge.repository.*;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,46 +19,38 @@ public class ChatService {
 
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
-    private final UserRepository userRepository;
+    private final WorkerAccountRepository workerRepository;
+    private final EmployerAccountRepository employerRepository;
     private final JobPostRepository jobRepository;
+    private final AccountDirectory accountDirectory;
     private final SimpMessagingTemplate messagingTemplate;
 
     public ChatService(ConversationRepository conversationRepository, MessageRepository messageRepository,
-                       UserRepository userRepository, JobPostRepository jobRepository,
+                       WorkerAccountRepository workerRepository, EmployerAccountRepository employerRepository,
+                       JobPostRepository jobRepository, AccountDirectory accountDirectory,
                        SimpMessagingTemplate messagingTemplate) {
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
-        this.userRepository = userRepository;
+        this.workerRepository = workerRepository;
+        this.employerRepository = employerRepository;
         this.jobRepository = jobRepository;
+        this.accountDirectory = accountDirectory;
         this.messagingTemplate = messagingTemplate;
     }
 
-    public List<ConversationDto> listConversations(User user) {
-        return conversationRepository.findByWorkerOrEmployerOrderByLastMessageAtDesc(user, user).stream()
-                .map(c -> {
-                    Message last = messageRepository.findByConversationOrderByCreatedAtDesc(c, org.springframework.data.domain.PageRequest.of(0, 1))
-                            .stream().findFirst().orElse(null);
-                    long unread = messageRepository.countByConversationIdAndReadFalseAndSenderIdNot(c.getId(), user.getId());
-                    return ConversationDto.from(c,
-                            last != null ? last.getContent() : "",
-                            last != null ? last.getSender().getId() : null, unread);
-                }).toList();
+    public List<ConversationDto> listConversations(Account account) {
+        List<Conversation> conversations = switch (account.accountType()) {
+            case WORKER -> conversationRepository
+                    .findByWorkerOrderByLastMessageAtDesc((WorkerAccount) account);
+            case EMPLOYER -> conversationRepository
+                    .findByEmployerOrderByLastMessageAtDesc((EmployerAccount) account);
+            case ADMIN -> conversationRepository.findAll();
+        };
+        return conversations.stream().map(c -> conversationDto(c, account)).toList();
     }
 
     @Transactional
-    public Conversation getOrCreateConversation(User initiator, User other, JobPost job) {
-        if (initiator.getRole() == other.getRole()) {
-            throw ApiException.badRequest("Conversations are only allowed between workers and employers");
-        }
-        User worker;
-        User employer;
-        if (initiator.getRole() == Role.WORKER) {
-            worker = initiator;
-            employer = other;
-        } else {
-            employer = initiator;
-            worker = other;
-        }
+    public Conversation getOrCreateConversation(WorkerAccount worker, EmployerAccount employer, JobPost job) {
         if (job != null && job.getEmployer().getId().equals(employer.getId())) {
             return conversationRepository.findByWorkerAndEmployerAndJobId(worker, employer, job.getId())
                     .orElseGet(() -> conversationRepository.save(
@@ -69,76 +62,101 @@ public class ChatService {
     }
 
     @Transactional
-    public MessageDto sendMessage(User sender, SendMessageRequest request) {
+    public MessageDto sendMessage(Account sender, SendMessageRequest request) {
         Conversation conversation;
         if (request.conversationId() != null) {
             conversation = conversationRepository.findById(request.conversationId())
                     .orElseThrow(() -> ApiException.notFound("Conversation not found"));
         } else {
-            User recipient = userRepository.findById(request.recipientId())
-                    .orElseThrow(() -> ApiException.notFound("Recipient not found"));
             JobPost job = request.jobId() != null
                     ? jobRepository.findById(request.jobId()).orElse(null) : null;
-            conversation = getOrCreateConversation(sender, recipient, job);
+            conversation = openWith(sender, request.recipientId(), job);
         }
         if (!isParticipant(conversation, sender)) {
             throw ApiException.forbidden("You are not part of this conversation");
         }
 
-        Message message = Message.builder()
+        Message message = messageRepository.save(Message.builder()
                 .conversation(conversation)
-                .sender(sender)
+                .senderType(sender.accountType())
+                .senderId(sender.getId())
                 .content(request.content())
                 .type(MessageType.TEXT)
                 .read(false)
-                .build();
-        message = messageRepository.save(message);
+                .build());
         conversation.setLastMessageAt(LocalDateTime.now());
         conversation.setLastMessageId(message.getId());
         conversationRepository.save(conversation);
 
-        User other = conversation.getWorker().getId().equals(sender.getId())
-                ? conversation.getEmployer() : conversation.getWorker();
-        MessageDto dto = MessageDto.from(message);
+        MessageDto dto = MessageDto.from(message, sender.getName());
         messagingTemplate.convertAndSend("/topic/chat/" + conversation.getId(), dto);
-        messagingTemplate.convertAndSend("/topic/conversations/" + other.getId(), dto);
+        AccountType otherType = sender.accountType() == AccountType.WORKER
+                ? AccountType.EMPLOYER : AccountType.WORKER;
+        Long otherId = otherType == AccountType.WORKER
+                ? conversation.getWorker().getId() : conversation.getEmployer().getId();
+        messagingTemplate.convertAndSend("/topic/conversations/" + otherType.name() + "/" + otherId, dto);
         return dto;
     }
 
-    public List<MessageDto> getMessages(User user, Long conversationId) {
+    /** The counterparty always lives in the opposite namespace, so the id is unambiguous. */
+    private Conversation openWith(Account sender, Long recipientId, JobPost job) {
+        if (recipientId == null) {
+            throw ApiException.badRequest("A conversation id or a recipient id is required");
+        }
+        if (sender instanceof WorkerAccount worker) {
+            EmployerAccount employer = employerRepository.findById(recipientId)
+                    .orElseThrow(() -> ApiException.notFound("Employer not found"));
+            return getOrCreateConversation(worker, employer, job);
+        }
+        if (sender instanceof EmployerAccount employer) {
+            WorkerAccount worker = workerRepository.findById(recipientId)
+                    .orElseThrow(() -> ApiException.notFound("Worker not found"));
+            return getOrCreateConversation(worker, employer, job);
+        }
+        throw ApiException.forbidden("Conversations are only between workers and employers");
+    }
+
+    public List<MessageDto> getMessages(Account account, Long conversationId) {
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> ApiException.notFound("Conversation not found"));
-        if (!isParticipant(conversation, user)) {
+        if (!isParticipant(conversation, account)) {
             throw ApiException.forbidden("You are not part of this conversation");
         }
         return messageRepository.findByConversationOrderByCreatedAtAsc(conversation).stream()
-                .map(MessageDto::from).toList();
+                .map(m -> MessageDto.from(m, accountDirectory.nameOf(m.getSenderType(), m.getSenderId())))
+                .toList();
     }
 
     @Transactional
-    public void markRead(User user, Long conversationId) {
+    public void markRead(Account account, Long conversationId) {
         Conversation conversation = conversationRepository.findById(conversationId)
                 .orElseThrow(() -> ApiException.notFound("Conversation not found"));
-        if (!isParticipant(conversation, user)) {
+        if (!isParticipant(conversation, account)) {
             throw ApiException.forbidden("You are not part of this conversation");
         }
-        messageRepository.findByConversationIdAndReadFalseAndSenderIdNot(conversationId, user.getId())
+        messageRepository.findUnreadNotSentBy(conversationId, account.accountType(), account.getId())
                 .forEach(m -> {
                     m.setRead(true);
                     messageRepository.save(m);
                 });
     }
 
-    public ConversationDto conversationDto(Conversation c, User viewer) {
-        Message last = messageRepository.findByConversationOrderByCreatedAtDesc(c, org.springframework.data.domain.PageRequest.of(0, 1))
+    public ConversationDto conversationDto(Conversation c, Account viewer) {
+        Message last = messageRepository
+                .findByConversationOrderByCreatedAtDesc(c, PageRequest.of(0, 1))
                 .stream().findFirst().orElse(null);
-        long unread = messageRepository.countByConversationIdAndReadFalseAndSenderIdNot(c.getId(), viewer.getId());
+        long unread = messageRepository.countUnreadNotSentBy(c.getId(), viewer.accountType(), viewer.getId());
         return ConversationDto.from(c,
                 last != null ? last.getContent() : "",
-                last != null ? last.getSender().getId() : null, unread);
+                last != null ? last.getSenderType() : null,
+                last != null ? last.getSenderId() : null, unread);
     }
 
-    private boolean isParticipant(Conversation c, User u) {
-        return c.getWorker().getId().equals(u.getId()) || c.getEmployer().getId().equals(u.getId());
+    private boolean isParticipant(Conversation c, Account account) {
+        return switch (account.accountType()) {
+            case WORKER -> c.getWorker().getId().equals(account.getId());
+            case EMPLOYER -> c.getEmployer().getId().equals(account.getId());
+            case ADMIN -> true;
+        };
     }
 }
