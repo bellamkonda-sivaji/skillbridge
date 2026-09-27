@@ -45,9 +45,35 @@ export const completeInterview = (id) =>
 export const cancelInterview = (id) =>
   api.patch(`/employer/interviews/${id}/cancel`).then((r) => r.data)
 
+/* ---------- interview results (screen 21) ---------- */
+export const getInterviewResults = (jobId) =>
+  api.get(`/employer/jobs/${jobId}/interview-results`).then((r) => r.data)
+export const setInterviewResult = (applicationId, result, feedback) =>
+  api.patch(`/employer/applications/${applicationId}/interview-result`, { result, feedback }).then((r) => r.data)
+
+/* ---------- offers (screens 22-24) ---------- */
+export const getOfferDraft = (applicationId) =>
+  api.get(`/employer/applications/${applicationId}/offer-draft`).then((r) => r.data)
+export const sendOffer = (applicationId, body) =>
+  api.post(`/employer/applications/${applicationId}/offer`, body).then((r) => r.data)
+export const listOffers = (status = 'ALL') =>
+  api.get('/employer/offers', { params: { status } }).then((r) => r.data)
+export const getOffer = (id) => api.get(`/employer/offers/${id}`).then((r) => r.data)
+export const cancelOffer = (id) => api.post(`/employer/offers/${id}/cancel`).then((r) => r.data)
+
+/* ---------- joining confirmation (screen 25) ---------- */
+export const getJoining = (offerId) =>
+  api.get(`/employer/offers/${offerId}/joining`).then((r) => r.data)
+export const saveJoining = (offerId, body) =>
+  api.post(`/employer/offers/${offerId}/joining`, body).then((r) => r.data)
+
+/* ---------- worker work history ---------- */
+export const getWorkHistory = (workerId) =>
+  api.get(`/employer/workers/${workerId}/work-history`).then((r) => r.data)
+
 /* ---------- display helpers ---------- */
 
-const UNIT = { PER_HOUR: '/hr', PER_DAY: '/day', PER_WEEK: '/week', PER_MONTH: '/month' }
+const UNIT = { HOURLY: '/hr', PER_SHIFT: '/shift', DAILY: '/day', PER_WEEK: '/week', MONTHLY: '/month' }
 
 export const money = (n) => '₹' + Number(n || 0).toLocaleString('en-IN')
 export const pay = (salary, unit) => money(salary) + (UNIT[unit] || '')
@@ -106,3 +132,40 @@ export const timeLabel = (t) => {
   const h12 = hour % 12 === 0 ? 12 : hour % 12
   return `${String(h12).padStart(2, '0')}:${m || '00'} ${suffix}`
 }
+
+/* Offer + interview-result vocabulary, shared by the hiring screens. */
+
+export const OFFER_STATUS_LABEL = {
+  PENDING: 'Pending', VIEWED: 'Viewed', ACCEPTED: 'Accepted',
+  DECLINED: 'Declined', EXPIRED: 'Expired', CANCELLED: 'Cancelled',
+}
+export const OFFER_STATUS_TONE = {
+  PENDING: 'pending', VIEWED: 'viewed', ACCEPTED: 'accepted',
+  DECLINED: 'rejected', EXPIRED: 'withdrawn', CANCELLED: 'withdrawn',
+}
+
+export const RESULT_LABEL = {
+  INTERVIEWED: 'Interviewed', SHORTLISTED: 'Shortlisted', SELECTED: 'Selected',
+  ON_HOLD: 'On Hold', REJECTED: 'Rejected',
+}
+export const RESULT_TONE = {
+  INTERVIEWED: 'interview', SHORTLISTED: 'shortlisted', SELECTED: 'accepted',
+  ON_HOLD: 'pending', REJECTED: 'rejected',
+}
+
+/** Turns the number of days into the short label used across the hiring tables. */
+export function durationLabel(days) {
+  const n = Number(days)
+  if (!n || n < 1) return '—'
+  if (n === 1) return '1 day'
+  if (n < 7) return `${n} days`
+  if (n < 30) {
+    const w = Math.round(n / 7)
+    return `${w} week${w === 1 ? '' : 's'}`
+  }
+  const m = Math.round(n / 30)
+  return `${m} month${m === 1 ? '' : 's'}`
+}
+
+export const timeRange = (from, to) =>
+  [timeLabel(from), timeLabel(to)].filter(Boolean).join(' – ')

@@ -2,6 +2,7 @@ package com.skillbridge.dto;
 
 import com.skillbridge.model.EmploymentType;
 import com.skillbridge.model.EngagementModel;
+import com.skillbridge.model.HiringMethod;
 import com.skillbridge.model.OvertimePayBasis;
 import com.skillbridge.model.PayrollCycle;
 import com.skillbridge.model.ShiftArrangement;
@@ -13,6 +14,7 @@ import com.skillbridge.model.PaymentMode;
 import com.skillbridge.model.SalaryUnit;
 import com.skillbridge.model.WorkType;
 import com.skillbridge.model.WorkerCategory;
+import com.skillbridge.model.WorkPattern;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -74,5 +76,9 @@ public record JobDetailDto(
         Double overtimeRate,
         PayrollCycle payrollCycle,
         Integer salaryDueDayOfMonth,
-        List<JobBenefitDto> jobBenefits
+        List<JobBenefitDto> jobBenefits,
+        WorkPattern workPattern,
+        HiringMethod hiringMethod,
+        Integer durationMonths,
+        List<DayTimeDto> dayTimes
 ) {}

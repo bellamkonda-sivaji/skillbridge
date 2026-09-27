@@ -337,12 +337,12 @@ public class EmploymentService {
                 : 0;
 
         SalaryUnit basis = employment.getSalaryUnit() != null
-                ? employment.getSalaryUnit() : SalaryUnit.PER_DAY;
+                ? employment.getSalaryUnit() : SalaryUnit.DAILY;
         double rate = employment.getSalary();
         double gross;
         String label;
         switch (basis) {
-            case PER_HOUR -> {
+            case HOURLY -> {
                 gross = rate * payableHours;
                 label = money(rate) + "/hour x " + payableHours + " hours worked";
             }
@@ -355,7 +355,7 @@ public class EmploymentService {
                 gross = rate * (payableDays / (double) perWeek);
                 label = money(rate) + "/week x " + payableDays + " of " + perWeek + " days a week";
             }
-            case PER_MONTH -> {
+            case MONTHLY -> {
                 if (scheduledDays > 0) {
                     gross = rate * (payableDays / (double) scheduledDays);
                     label = money(rate) + "/month pro-rated over " + payableDays + " of "
@@ -382,7 +382,8 @@ public class EmploymentService {
         List<ScheduleCalculator.ShiftWindow> windows = new ArrayList<>();
         for (JobShift s : job.getShifts()) {
             windows.add(new ScheduleCalculator.ShiftWindow(
-                    s.getStartTime(), s.getEndTime(), s.getBreakStart(), s.getBreakEnd()));
+                    s.getStartTime(), s.getEndTime(), s.getBreakStart(), s.getBreakEnd(),
+                    s.getBreakMinutes()));
         }
         LocalDate start = job.getStartDate() != null && job.getStartDate().isAfter(from)
                 ? job.getStartDate() : from;
@@ -394,7 +395,9 @@ public class EmploymentService {
         return new ScheduleCalculator.ScheduleInput(
                 job.getEngagementModel(), job.getWorkDate(), start, end, JobDuration.SPECIFIC,
                 new ArrayList<>(job.getWorkingDays()), windows, job.getShiftArrangement(),
-                job.isBreakPaid(), job.getSalary(), job.getSalaryUnit(), job.getPayrollCycle());
+                job.isBreakPaid(), job.getSalary(), job.getSalaryUnit(), job.getPayrollCycle(),
+                job.getWorkPattern(), job.getDurationMonths(),
+                job.getDayTimes() == null ? List.of() : new ArrayList<>(job.getDayTimes()));
     }
 
     private static String money(double amount) {

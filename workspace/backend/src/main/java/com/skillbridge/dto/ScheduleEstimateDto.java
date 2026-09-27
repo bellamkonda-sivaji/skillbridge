@@ -18,7 +18,7 @@ public record ScheduleEstimateDto(
         SalaryUnit recommendedSalaryUnit,
         Double estimatedWorkerEarnings,
         String earningsBasisLabel,
-        /** null unless a real platform fee is configured - never an invented number. */
+        /** null when no platform fee percentage is configured - never an invented number. */
         Double platformFee,
         Double estimatedEmployerTotal,
         PayrollCycle payrollCycle,

@@ -10,6 +10,7 @@ import com.skillbridge.service.EmployerService;
 import com.skillbridge.service.EmploymentService;
 import com.skillbridge.service.InterviewService;
 import com.skillbridge.service.JobService;
+import com.skillbridge.service.OfferService;
 import com.skillbridge.service.UserService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -31,10 +32,13 @@ public class EmployerController {
     private final InterviewService interviewService;
     private final EmployerService employerService;
     private final EmploymentService employmentService;
+    private final OfferService offerService;
 
     public EmployerController(JobService jobService, ApplicationService applicationService,
                               UserService userService, InterviewService interviewService,
-                              EmployerService employerService, EmploymentService employmentService) {
+                              EmployerService employerService, EmploymentService employmentService,
+                              OfferService offerService) {
+        this.offerService = offerService;
         this.jobService = jobService;
         this.applicationService = applicationService;
         this.userService = userService;
@@ -162,11 +166,56 @@ public class EmployerController {
         return Map.of("updated", updated);
     }
 
+    // ---------------------------------------------------------------- offer lifecycle
+
+    @GetMapping("/jobs/{jobId}/interview-results")
+    public List<InterviewResultDto> interviewResults(@PathVariable Long jobId) {
+        return offerService.interviewResults(AuthenticationUtils.currentEmployer(), jobId);
+    }
+
+    @PatchMapping("/applications/{applicationId}/interview-result")
+    public ApplicationDto interviewResult(@PathVariable Long applicationId,
+                                          @RequestBody InterviewResultRequest request) {
+        return offerService.setInterviewResult(AuthenticationUtils.currentEmployer(), applicationId,
+                request.result(), request.feedback());
+    }
+
+    @GetMapping("/applications/{applicationId}/offer-draft")
+    public OfferDraftDto offerDraft(@PathVariable Long applicationId) {
+        return offerService.offerDraft(AuthenticationUtils.currentEmployer(), applicationId);
+    }
+
     @PostMapping("/applications/{applicationId}/offer")
     @ResponseStatus(HttpStatus.CREATED)
     public OfferDto createOffer(@PathVariable Long applicationId,
                                 @RequestBody(required = false) OfferRequest request) {
-        return applicationService.createOffer(AuthenticationUtils.currentEmployer(), applicationId, request);
+        return offerService.createOffer(AuthenticationUtils.currentEmployer(), applicationId, request);
+    }
+
+    @GetMapping("/offers")
+    public List<OfferDto> offers(@RequestParam(required = false, defaultValue = "ALL") String status) {
+        return offerService.offers(AuthenticationUtils.currentEmployer(), status);
+    }
+
+    @GetMapping("/offers/{offerId}")
+    public OfferDto offer(@PathVariable Long offerId) {
+        return offerService.offer(AuthenticationUtils.currentEmployer(), offerId);
+    }
+
+    @PostMapping("/offers/{offerId}/cancel")
+    public OfferDto cancelOffer(@PathVariable Long offerId) {
+        return offerService.cancelOffer(AuthenticationUtils.currentEmployer(), offerId);
+    }
+
+    @GetMapping("/offers/{offerId}/joining")
+    public JoiningDto joining(@PathVariable Long offerId) {
+        return offerService.joining(AuthenticationUtils.currentEmployer(), offerId);
+    }
+
+    @PostMapping("/offers/{offerId}/joining")
+    public JoiningDto updateJoining(@PathVariable Long offerId,
+                                    @RequestBody(required = false) JoiningRequest request) {
+        return offerService.updateJoining(AuthenticationUtils.currentEmployer(), offerId, request);
     }
 
     // ---------------------------------------------------------------- worker discovery
@@ -181,6 +230,11 @@ public class EmployerController {
     public WorkerDetailDto worker(@PathVariable Long workerId,
                                   @RequestParam(required = false) Long jobId) {
         return employerService.workerDetail(AuthenticationUtils.currentEmployer(), workerId, jobId);
+    }
+
+    @GetMapping("/workers/{workerId}/work-history")
+    public List<WorkHistoryEntryDto> workHistory(@PathVariable Long workerId) {
+        return employerService.workHistory(AuthenticationUtils.currentEmployer(), workerId);
     }
 
     @PostMapping("/compare")

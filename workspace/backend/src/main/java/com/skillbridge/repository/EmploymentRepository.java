@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface EmploymentRepository extends JpaRepository<Employment, Long> {
     List<Employment> findByWorkerOrderByJoiningDateDesc(WorkerAccount worker);
     List<Employment> findByEmployerOrderByJoiningDateDesc(EmployerAccount employer);
+    List<Employment> findByWorkerIdOrderByJoiningDateDesc(Long workerId);
     Optional<Employment> findByOfferId(Long offerId);
     Optional<Employment> findByApplicationId(Long applicationId);
 }

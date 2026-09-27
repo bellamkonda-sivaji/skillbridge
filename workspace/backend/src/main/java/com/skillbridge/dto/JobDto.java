@@ -2,6 +2,7 @@ package com.skillbridge.dto;
 
 import com.skillbridge.model.EmploymentType;
 import com.skillbridge.model.EngagementModel;
+import com.skillbridge.model.HiringMethod;
 import com.skillbridge.model.OvertimePayBasis;
 import com.skillbridge.model.PayrollCycle;
 import com.skillbridge.model.ShiftArrangement;
@@ -14,6 +15,7 @@ import com.skillbridge.model.PaymentMode;
 import com.skillbridge.model.SalaryUnit;
 import com.skillbridge.model.WorkType;
 import com.skillbridge.model.WorkerCategory;
+import com.skillbridge.model.WorkPattern;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -73,7 +75,11 @@ public record JobDto(
         InterviewType interviewType,
         LocalDate applicationDeadline,
         boolean autoCloseWhenFilled,
-        int jobViews
+        int jobViews,
+        WorkPattern workPattern,
+        HiringMethod hiringMethod,
+        Integer durationMonths,
+        List<DayTimeDto> dayTimes
 ) {
     public static JobDto from(JobPost j, Double matchScore) {
         return new JobDto(
@@ -96,6 +102,10 @@ public record JobDto(
                 j.getOvertimeRate(), j.getPayrollCycle(), j.getSalaryDueDayOfMonth(),
                 List.copyOf(j.getLanguages()),
                 j.getGenderPreference(), j.getAgeMin(), j.getAgeMax(), j.getInterviewType(),
-                j.getApplicationDeadline(), j.isAutoCloseWhenFilled(), j.getJobViews());
+                j.getApplicationDeadline(), j.isAutoCloseWhenFilled(), j.getJobViews(),
+                j.getWorkPattern(), j.getHiringMethod(), j.getDurationMonths(),
+                j.getDayTimes() == null ? List.of()
+                        : j.getDayTimes().stream().map(d -> new DayTimeDto(
+                                d.getDayCode(), d.getStartTime(), d.getEndTime())).toList());
     }
 }

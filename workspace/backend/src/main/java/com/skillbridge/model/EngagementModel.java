@@ -1,48 +1,98 @@
 package com.skillbridge.model;
 
-import com.skillbridge.model.SalaryUnit;
-
 import java.util.List;
+import java.util.Locale;
 
 /**
- * The top of the employment rules engine: the model the employer picks first, which then
- * constrains the schedule, the duration, the allowed pay bases and the payroll cycle.
+ * The top of the employment rules engine: the duration the employer picks first ("How long do
+ * you need this worker?"), which then constrains the schedule, the allowed pay bases, the
+ * payroll cycle and the hiring method.
  */
 public enum EngagementModel {
-    ONE_TIME, DAILY, TEMPORARY, PART_TIME, FULL_TIME, PERMANENT;
+    ONE_DAY, FEW_DAYS, FEW_WEEKS, MONTHS, PERMANENT;
 
-    /** The pay bases this model allows, most recommended first. */
-    public List<SalaryUnit> allowedSalaryUnits() {
+    /** The pay bases this duration allows, most recommended first. */
+    public List<SalaryUnit> allowedSalaryUnits(WorkPattern pattern) {
         return switch (this) {
-            case ONE_TIME -> List.of(SalaryUnit.PER_HOUR, SalaryUnit.PER_SHIFT, SalaryUnit.PER_DAY);
-            case DAILY -> List.of(SalaryUnit.PER_DAY, SalaryUnit.PER_HOUR, SalaryUnit.PER_SHIFT);
-            case TEMPORARY -> List.of(SalaryUnit.PER_HOUR, SalaryUnit.PER_DAY, SalaryUnit.PER_MONTH);
-            case PART_TIME -> List.of(SalaryUnit.PER_HOUR, SalaryUnit.PER_DAY, SalaryUnit.PER_MONTH);
-            case FULL_TIME -> List.of(SalaryUnit.PER_MONTH, SalaryUnit.PER_DAY, SalaryUnit.PER_HOUR);
-            case PERMANENT -> List.of(SalaryUnit.PER_MONTH);
+            case ONE_DAY, FEW_DAYS, FEW_WEEKS -> List.of(
+                    SalaryUnit.DAILY, SalaryUnit.HOURLY, SalaryUnit.PER_SHIFT);
+            case MONTHS -> List.of(SalaryUnit.MONTHLY, SalaryUnit.DAILY, SalaryUnit.HOURLY);
+            case PERMANENT -> List.of(SalaryUnit.MONTHLY);
         };
     }
 
-    /** The first allowed unit doubles as the recommendation. */
-    public SalaryUnit recommendedSalaryUnit() {
-        return allowedSalaryUnits().get(0);
+    /** The pay basis a new posting should default to for this duration and work pattern. */
+    public SalaryUnit recommendedSalaryUnit(WorkPattern pattern) {
+        if (pattern == WorkPattern.PART_TIME) {
+            return SalaryUnit.HOURLY;
+        }
+        return switch (this) {
+            case ONE_DAY, FEW_DAYS, FEW_WEEKS -> SalaryUnit.DAILY;
+            case MONTHS, PERMANENT -> SalaryUnit.MONTHLY;
+        };
     }
 
     public PayrollCycle defaultPayrollCycle() {
         return switch (this) {
-            case ONE_TIME, DAILY, TEMPORARY -> PayrollCycle.ON_COMPLETION;
-            case PART_TIME, FULL_TIME, PERMANENT -> PayrollCycle.MONTHLY;
+            case ONE_DAY, FEW_DAYS, FEW_WEEKS -> PayrollCycle.ON_COMPLETION;
+            case MONTHS, PERMANENT -> PayrollCycle.MONTHLY;
+        };
+    }
+
+    /** The paperwork the offer carries, from a one-day confirmation to full employment terms. */
+    public OfferType offerType() {
+        return switch (this) {
+            case ONE_DAY -> OfferType.NONE;
+            case FEW_DAYS -> OfferType.WORK_CONFIRMATION;
+            case FEW_WEEKS -> OfferType.SIMPLE_JOB_OFFER;
+            case MONTHS -> OfferType.EMPLOYMENT_OFFER;
+            case PERMANENT -> OfferType.FULL_EMPLOYMENT_OFFER;
+        };
+    }
+
+    /** How the employer meets the worker before hiring, unless they pick differently. */
+    public HiringMethod defaultHiringMethod() {
+        return switch (this) {
+            case ONE_DAY, FEW_DAYS -> HiringMethod.DIRECT;
+            case FEW_WEEKS -> HiringMethod.TALK_FIRST;
+            case MONTHS, PERMANENT -> HiringMethod.INTERVIEW;
         };
     }
 
     /** Keeps the legacy employmentType column meaningful for everything already built. */
-    public EmploymentType legacyEmploymentType() {
+    public EmploymentType legacyEmploymentType(WorkPattern pattern) {
         return switch (this) {
-            case ONE_TIME, DAILY -> EmploymentType.DAILY;
-            case TEMPORARY -> EmploymentType.TEMPORARY;
-            case PART_TIME -> EmploymentType.PART_TIME;
-            case FULL_TIME -> EmploymentType.FULL_TIME;
+            case ONE_DAY, FEW_DAYS -> EmploymentType.DAILY;
+            case FEW_WEEKS -> EmploymentType.TEMPORARY;
+            case MONTHS -> {
+                if (pattern == WorkPattern.FULL_DAY) {
+                    yield EmploymentType.FULL_TIME;
+                }
+                if (pattern == WorkPattern.PART_TIME) {
+                    yield EmploymentType.PART_TIME;
+                }
+                yield EmploymentType.MONTHLY;
+            }
             case PERMANENT -> EmploymentType.PERMANENT;
+        };
+    }
+
+    /**
+     * Maps values from the old model (and any custom-date hints) onto the duration enum, so old
+     * JSON keeps working. Returns null for anything unknown.
+     */
+    public static EngagementModel normalize(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        String key = raw.trim().toUpperCase(Locale.ENGLISH);
+        return switch (key) {
+            case "ONE_DAY", "ONE_TIME" -> ONE_DAY;
+            case "FEW_DAYS", "DAILY", "SHORT_TERM" -> FEW_DAYS;
+            case "FEW_WEEKS", "TEMPORARY" -> FEW_WEEKS;
+            case "MONTHS", "PART_TIME", "FULL_TIME", "MONTHLY" -> MONTHS;
+            case "PERMANENT" -> PERMANENT;
+            default -> null;
         };
     }
 }

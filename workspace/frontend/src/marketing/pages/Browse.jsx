@@ -6,7 +6,7 @@ import {
   Section, Card, IconBox, Btn, Avatar, Stars, PageHead, useDocumentTitle,
 } from '../components'
 
-const UNIT_LABEL = { PER_DAY: '/day', PER_WEEK: '/week', PER_MONTH: '/month' }
+const UNIT_LABEL = { DAILY: '/day', PER_WEEK: '/week', MONTHLY: '/month' }
 const WORK_TYPES = ['All', 'DAILY', 'WEEKLY', 'MONTHLY', 'PERMANENT']
 const TYPE_LABEL = { DAILY: 'Daily', WEEKLY: 'Weekly', MONTHLY: 'Monthly', PERMANENT: 'Permanent' }
 

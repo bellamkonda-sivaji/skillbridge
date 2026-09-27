@@ -179,11 +179,11 @@ public class MatchingService {
     private double toMonthly(double amount, SalaryUnit unit) {
         if (unit == null) return amount;
         return switch (unit) {
-            case PER_HOUR -> amount * 8 * 22;
+            case HOURLY -> amount * 8 * 22;
             case PER_SHIFT -> amount * 22;
-            case PER_DAY -> amount * 22;
+            case DAILY -> amount * 22;
             case PER_WEEK -> amount * 4.33;
-            case PER_MONTH -> amount;
+            case MONTHLY -> amount;
         };
     }
 

@@ -7,6 +7,7 @@ import com.skillbridge.dto.JobSearchRequest;
 import com.skillbridge.dto.JobShiftDto;
 import com.skillbridge.dto.ScheduleEstimateDto;
 import com.skillbridge.dto.ScheduleEstimateRequest;
+import com.skillbridge.dto.DayTimeDto;
 import com.skillbridge.dto.MatchDto;
 import com.skillbridge.exception.ApiException;
 import com.skillbridge.model.*;
@@ -95,7 +96,7 @@ public class JobService {
                 .workType(request.workType() != null ? request.workType() : WorkType.DAILY)
                 .employmentType(request.employmentType() != null ? request.employmentType() : EmploymentType.FULL_TIME)
                 .salary(request.salary())
-                .salaryUnit(request.salaryUnit() != null ? request.salaryUnit() : SalaryUnit.PER_DAY)
+                .salaryUnit(request.salaryUnit())
                 .city(city)
                 .area(request.area())
                 .latitude(request.latitude() != 0 ? request.latitude() : profile.getLatitude())
@@ -108,6 +109,9 @@ public class JobService {
                 .expiresAt(LocalDateTime.now().plusDays(30))
                 .build();
         applyWizardFields(job, request);
+        if (job.getSalaryUnit() == null) {
+            job.setSalaryUnit(job.getEngagementModel().recommendedSalaryUnit(job.getWorkPattern()));
+        }
         if (!draft) {
             scheduleCalculator.validate(scheduleInput(job));
         }
@@ -177,6 +181,7 @@ public class JobService {
                 if (dto == null) continue;
                 shifts.add(JobShift.builder()
                         .label(dto.label()).startTime(dto.startTime()).endTime(dto.endTime())
+                        .breakMinutes(dto.breakMinutes())
                         .breakStart(dto.breakStart()).breakEnd(dto.breakEnd()).build());
             }
             job.replaceShifts(shifts);
@@ -225,17 +230,51 @@ public class JobService {
     }
 
     /**
-     * The engagement model is the top of the rules engine: it back-fills the legacy
-     * employmentType column, normalises the duration and picks the payroll cycle.
+     * The engagement model is the top of the rules engine: the duration the employer picks
+     * first. It normalises legacy values, back-fills the legacy employmentType column, infers
+     * the work pattern, defaults the hiring method and picks the payroll cycle.
      */
     private void applyEngagementRules(JobPost job, JobRequest request) {
         if (request.engagementModel() != null) {
-            job.setEngagementModel(request.engagementModel());
-            job.setEmploymentType(request.engagementModel().legacyEmploymentType());
+            EngagementModel normalized = EngagementModel.normalize(request.engagementModel());
+            if (normalized == null && !request.isDraft()) {
+                throw ApiException.badRequest("Choose how long you need the worker.");
+            }
+            job.setEngagementModel(normalized != null ? normalized : EngagementModel.ONE_DAY);
         } else if (job.getEngagementModel() == null) {
-            job.setEngagementModel(EngagementModel.FULL_TIME);
+            job.setEngagementModel(EngagementModel.ONE_DAY);
         }
         EngagementModel model = job.getEngagementModel();
+
+        if (request.workPattern() != null) {
+            job.setWorkPattern(request.workPattern());
+        } else if (job.getShifts() != null && !job.getShifts().isEmpty()) {
+            double paidHoursPerDay = scheduleCalculator.paidMinutesPerDay(scheduleInput(job)) / 60.0;
+            job.setWorkPattern(WorkPattern.infer(paidHoursPerDay, job.getShifts().size()));
+        } else {
+            job.setWorkPattern(WorkPattern.FULL_DAY);
+        }
+        if (request.employmentType() == null) {
+            job.setEmploymentType(model.legacyEmploymentType(job.getWorkPattern()));
+        }
+
+        HiringMethod hiringMethod = request.hiringMethod() != null
+                ? request.hiringMethod() : model.defaultHiringMethod();
+        if ((model == EngagementModel.ONE_DAY || model == EngagementModel.FEW_DAYS)
+                && hiringMethod == HiringMethod.INTERVIEW) {
+            throw ApiException.badRequest("Interviews aren't needed for short jobs");
+        }
+        job.setHiringMethod(hiringMethod);
+
+        if (request.durationMonths() != null) job.setDurationMonths(request.durationMonths());
+        if (request.dayTimes() != null) {
+            job.getDayTimes().clear();
+            for (DayTimeDto dto : request.dayTimes()) {
+                if (dto == null) continue;
+                job.getDayTimes().add(DayTime.builder()
+                        .dayCode(dto.dayCode()).startTime(dto.startTime()).endTime(dto.endTime()).build());
+            }
+        }
 
         if (request.shiftArrangement() != null) job.setShiftArrangement(request.shiftArrangement());
         if (request.breakPaid() != null) job.setBreakPaid(request.breakPaid());
@@ -245,7 +284,7 @@ public class JobService {
         if (request.salaryDueDayOfMonth() != null) job.setSalaryDueDayOfMonth(request.salaryDueDayOfMonth());
         if (request.workDate() != null) job.setWorkDate(request.workDate());
 
-        if (model == EngagementModel.ONE_TIME && job.getWorkDate() != null) {
+        if (model == EngagementModel.ONE_DAY && job.getWorkDate() != null) {
             job.setDurationType(JobDuration.SPECIFIC);
             job.setStartDate(job.getWorkDate());
             job.setEndDate(job.getWorkDate());
@@ -254,10 +293,16 @@ public class JobService {
                 && request.durationType() == null) {
             job.setDurationType(JobDuration.ONGOING);
         }
-        if ((model == EngagementModel.DAILY || model == EngagementModel.TEMPORARY)
+        if ((model == EngagementModel.FEW_DAYS || model == EngagementModel.FEW_WEEKS)
                 && job.getStartDate() != null && job.getEndDate() != null
                 && request.durationType() == null) {
             job.setDurationType(JobDuration.SPECIFIC);
+        }
+        if (model == EngagementModel.MONTHS && request.durationMonths() != null
+                && request.endDate() == null && request.durationType() == null) {
+            // Fixed months with no end date stay ongoing; the months are stored on the job.
+            job.setDurationType(JobDuration.ONGOING);
+            job.setEndDate(null);
         }
         job.setPayrollCycle(request.payrollCycle() != null
                 ? request.payrollCycle()
@@ -269,19 +314,30 @@ public class JobService {
 
     /** Pure calculation over a request body - nothing is persisted. */
     public ScheduleEstimateDto estimate(ScheduleEstimateRequest request) {
-        EngagementModel model = request.engagementModel() != null
-                ? request.engagementModel() : EngagementModel.FULL_TIME;
+        EngagementModel model = EngagementModel.normalize(request.engagementModel());
+        if (model == null) {
+            model = EngagementModel.FEW_WEEKS;
+        }
         List<ScheduleCalculator.ShiftWindow> windows = new ArrayList<>();
         if (request.shifts() != null) {
             for (JobShiftDto dto : request.shifts()) {
                 if (dto == null) continue;
                 windows.add(new ScheduleCalculator.ShiftWindow(
-                        dto.startTime(), dto.endTime(), dto.breakStart(), dto.breakEnd()));
+                        dto.startTime(), dto.endTime(), dto.breakStart(), dto.breakEnd(),
+                        dto.breakMinutes()));
+            }
+        }
+        List<DayTime> dayTimes = new ArrayList<>();
+        if (request.dayTimes() != null) {
+            for (DayTimeDto dto : request.dayTimes()) {
+                if (dto == null) continue;
+                dayTimes.add(DayTime.builder()
+                        .dayCode(dto.dayCode()).startTime(dto.startTime()).endTime(dto.endTime()).build());
             }
         }
         LocalDate start = request.startDate();
         LocalDate end = request.endDate();
-        if (model == EngagementModel.ONE_TIME && request.workDate() != null) {
+        if (model == EngagementModel.ONE_DAY && request.workDate() != null) {
             start = request.workDate();
             end = request.workDate();
         }
@@ -290,7 +346,7 @@ public class JobService {
                 request.workingDays(), windows,
                 request.shiftArrangement(), Boolean.TRUE.equals(request.breakPaid()),
                 request.salary() != null ? request.salary() : 0d, request.salaryUnit(),
-                model.defaultPayrollCycle()));
+                model.defaultPayrollCycle(), request.workPattern(), null, dayTimes));
     }
 
     /** The same estimate for a job that is already saved. */
@@ -300,17 +356,19 @@ public class JobService {
     }
 
     /** Turns a saved (or about-to-be-saved) job into the engine's input. */
-    private ScheduleCalculator.ScheduleInput scheduleInput(JobPost job) {
+    public ScheduleCalculator.ScheduleInput scheduleInput(JobPost job) {
         List<ScheduleCalculator.ShiftWindow> windows = new ArrayList<>();
         for (JobShift s : job.getShifts()) {
             windows.add(new ScheduleCalculator.ShiftWindow(
-                    s.getStartTime(), s.getEndTime(), s.getBreakStart(), s.getBreakEnd()));
+                    s.getStartTime(), s.getEndTime(), s.getBreakStart(), s.getBreakEnd(),
+                    s.getBreakMinutes()));
         }
         return new ScheduleCalculator.ScheduleInput(
                 job.getEngagementModel(), job.getWorkDate(), job.getStartDate(), job.getEndDate(),
                 job.getDurationType(), new ArrayList<>(job.getWorkingDays()), windows,
                 job.getShiftArrangement(), job.isBreakPaid(), job.getSalary(), job.getSalaryUnit(),
-                job.getPayrollCycle());
+                job.getPayrollCycle(), job.getWorkPattern(), job.getDurationMonths(),
+                job.getDayTimes() == null ? List.of() : new ArrayList<>(job.getDayTimes()));
     }
 
     /** Drafts only - a published posting is paused or closed, never deleted. */
@@ -390,12 +448,12 @@ public class JobService {
                 });
             }
             if (ok && (req.minSalary() != null || req.maxSalary() != null)) {
-                double monthly = j.getSalary() * switch (j.getSalaryUnit() == null ? SalaryUnit.PER_DAY : j.getSalaryUnit()) {
-                    case PER_HOUR -> 176.0;
-                    case PER_DAY -> 22.0;
+                double monthly = j.getSalary() * switch (j.getSalaryUnit() == null ? SalaryUnit.DAILY : j.getSalaryUnit()) {
+                    case HOURLY -> 176.0;
+                    case DAILY -> 22.0;
                     case PER_WEEK -> 4.33;
                     case PER_SHIFT -> 22.0;
-                    case PER_MONTH -> 1.0;
+                    case MONTHLY -> 1.0;
                 };
                 if (req.minSalary() != null && monthly < req.minSalary()) ok = false;
                 if (ok && req.maxSalary() != null && monthly > req.maxSalary()) ok = false;

@@ -78,7 +78,7 @@ public class WorkerProfile {
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    private SalaryUnit salaryUnit = SalaryUnit.PER_MONTH;
+    private SalaryUnit salaryUnit = SalaryUnit.MONTHLY;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
@@ -106,4 +106,85 @@ public class WorkerProfile {
     @CollectionTable(name = "worker_work_experience", joinColumns = @JoinColumn(name = "profile_id"))
     @OrderColumn(name = "position")
     private java.util.List<WorkExperience> workExperience = new java.util.ArrayList<>();
+
+    // ------------------------------------------------------------------ employer-facing profile
+
+    /** How far the worker will travel for work, in km. null means "not stated". */
+    @Column(name = "can_travel_km")
+    private Integer canTravelKm;
+
+    /** The date the worker can start. null means "not stated". */
+    @Column(name = "available_from")
+    private LocalDate availableFrom;
+
+    /** Roles the worker wants, e.g. ["Store Helper","Cashier"]. */
+    @Builder.Default
+    @ElementCollection
+    @CollectionTable(name = "worker_preferred_roles", joinColumns = @JoinColumn(name = "profile_id"))
+    @Column(name = "preferred_role")
+    @OrderColumn(name = "position")
+    private java.util.List<String> preferredRoles = new java.util.ArrayList<>();
+
+    /** Time-of-day preferences, e.g. ["Morning","Evening"]. */
+    @Builder.Default
+    @ElementCollection
+    @CollectionTable(name = "worker_preferred_hours", joinColumns = @JoinColumn(name = "profile_id"))
+    @Column(name = "preferred_hour")
+    @OrderColumn(name = "position")
+    private java.util.List<String> preferredHours = new java.util.ArrayList<>();
+
+    /** Base64 data URLs of work photos, so each one needs a CLOB rather than a capped varchar. */
+    @Builder.Default
+    @ElementCollection
+    @CollectionTable(name = "worker_photos", joinColumns = @JoinColumn(name = "profile_id"))
+    @Lob
+    @Column(name = "photo_url", columnDefinition = "CLOB")
+    @OrderColumn(name = "position")
+    private java.util.List<String> photos = new java.util.ArrayList<>();
+
+    // Document states. null means the profile has nothing recorded, which reads as NOT_UPLOADED.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "aadhaar_doc_status")
+    private DocumentStatus aadhaarStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "bank_doc_status")
+    private DocumentStatus bankStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "pan_doc_status")
+    private DocumentStatus panStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "address_doc_status")
+    private DocumentStatus addressStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "passport_doc_status")
+    private DocumentStatus passportStatus;
+
+    /** The recorded state of one document, defaulting to NOT_UPLOADED when nothing is held. */
+    public DocumentStatus documentStatus(DocumentType type) {
+        DocumentStatus stored = switch (type) {
+            case AADHAAR -> aadhaarStatus;
+            case BANK -> bankStatus;
+            case PAN -> panStatus;
+            case ADDRESS -> addressStatus;
+            case PASSPORT -> passportStatus;
+        };
+        if (stored != null) {
+            return stored;
+        }
+        // Aadhaar falls back to the identity verification the profile already carries.
+        if (type == DocumentType.AADHAAR) {
+            if (verificationStatus == VerificationStatus.VERIFIED) {
+                return DocumentStatus.VERIFIED;
+            }
+            if (verificationStatus == VerificationStatus.PENDING
+                    || (verificationDoc != null && !verificationDoc.isBlank())) {
+                return DocumentStatus.PENDING;
+            }
+        }
+        return DocumentStatus.NOT_UPLOADED;
+    }
 }

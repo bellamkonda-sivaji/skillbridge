@@ -29,7 +29,10 @@ public class JobShift {
 
     private LocalTime endTime;
 
-    /** Optional unpaid break inside the window, e.g. 13:00 - 13:30. */
+    /** Unpaid break in minutes, e.g. 60 for a one-hour lunch. Preferred over the legacy pair. */
+    private Integer breakMinutes;
+
+    /** Legacy break window, kept so rows written before breakMinutes still compute. */
     private LocalTime breakStart;
 
     private LocalTime breakEnd;

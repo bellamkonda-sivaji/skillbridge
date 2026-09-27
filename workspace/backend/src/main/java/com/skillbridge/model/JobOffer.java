@@ -31,7 +31,7 @@ public class JobOffer {
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    private SalaryUnit salaryUnit = SalaryUnit.PER_DAY;
+    private SalaryUnit salaryUnit = SalaryUnit.DAILY;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
@@ -51,4 +51,35 @@ public class JobOffer {
     private LocalDateTime sentAt = LocalDateTime.now();
 
     private LocalDateTime respondedAt;
+
+    // ------------------------------------------------------------------ offer lifecycle
+
+    /** The paperwork this offer carries, derived from the job's duration when it is created. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "offer_type")
+    private OfferType offerType;
+
+    /** ONE_DAY offers are for exactly this date instead of a joining date. */
+    @Column(name = "work_date")
+    private LocalDate workDate;
+
+    /** Only meaningful on MONTHS / PERMANENT offers; null on short engagements. */
+    @Column(name = "probation_months")
+    private Integer probationMonths;
+
+    @Builder.Default
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "job_offer_benefits", joinColumns = @JoinColumn(name = "offer_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "benefit_type")
+    private java.util.List<BenefitType> benefits = new java.util.ArrayList<>();
+
+    /** The covering note the employer attaches to the offer. */
+    @Column(name = "offer_message", length = 2000)
+    private String message;
+
+    /** After this the offer lapses; a PENDING offer past it reads as EXPIRED. */
+    @Column(name = "expires_at")
+    private LocalDateTime expiresAt;
+
 }

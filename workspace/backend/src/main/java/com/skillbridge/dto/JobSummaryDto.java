@@ -1,8 +1,10 @@
 package com.skillbridge.dto;
 
 import com.skillbridge.model.EmploymentType;
+import com.skillbridge.model.EngagementModel;
 import com.skillbridge.model.JobStatus;
 import com.skillbridge.model.SalaryUnit;
+import com.skillbridge.model.WorkPattern;
 import com.skillbridge.model.WorkerCategory;
 
 import java.time.LocalDateTime;
@@ -21,5 +23,7 @@ public record JobSummaryDto(
         SalaryUnit salaryUnit,
         EmploymentType employmentType,
         int workersNeeded,
-        long filledCount
+        long filledCount,
+        EngagementModel engagementModel,
+        WorkPattern workPattern
 ) {}

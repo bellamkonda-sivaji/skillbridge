@@ -15,6 +15,7 @@ const NAV = [
   { to: '/employer/applications', icon: 'doc', label: 'Applications' },
   { to: '/employer/find-workers', icon: 'search', label: 'Find Workers' },
   { to: '/employer/interviews', icon: 'calendar', label: 'Interviews' },
+  { to: '/employer/offers', icon: 'doc', label: 'Offers' },
   { to: '/employer/attendance', icon: 'checkCircle', label: 'Attendance' },
   { to: '/employer/payments', icon: 'wallet', label: 'Payments' },
   { to: '/employer/reviews', icon: 'star', label: 'Reviews' },

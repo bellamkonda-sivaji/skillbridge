@@ -2,30 +2,37 @@ package com.skillbridge.service;
 
 import com.skillbridge.dto.ScheduleEstimateDto;
 import com.skillbridge.exception.ApiException;
+import com.skillbridge.model.DayTime;
 import com.skillbridge.model.EngagementModel;
 import com.skillbridge.model.JobDuration;
 import com.skillbridge.model.PayrollCycle;
 import com.skillbridge.model.SalaryUnit;
 import com.skillbridge.model.ShiftArrangement;
+import com.skillbridge.model.WorkPattern;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 /**
- * The employment rules engine: engagement model -> schedule -> salary. Pure arithmetic and pure
- * rule checks, shared by the estimate endpoint and by job creation so the two can never drift.
+ * The employment rules engine: duration -> schedule -> salary. Pure arithmetic and pure rule
+ * checks, shared by the estimate endpoint and by job creation so the two can never drift.
  */
 @Service
 public class ScheduleCalculator {
 
     /** An ongoing month is this many weeks - the figure the whole engine rounds on. */
     public static final double WEEKS_PER_MONTH = 4.345;
+
+    /** Weekday the synthetic ongoing calendar starts on when a job has no start date. */
+    private static final LocalDate SYNTHETIC_ANCHOR = LocalDate.of(2024, 1, 1);   // a Monday
 
     private static final List<String> DAY_KEYS =
             List.of("MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN");
@@ -35,9 +42,18 @@ public class ScheduleCalculator {
     private static final DateTimeFormatter DAY_MONTH_YEAR =
             DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
 
+    /** Platform fee on worker earnings, configured in application.yml; 0 disables the fee. */
+    @Value("${skillbridge.pricing.platform-fee-percent:0}")
+    private double platformFeePercent;
+
+    /** Tests construct the calculator with new and set the fee directly. */
+    public void setPlatformFeePercent(double platformFeePercent) {
+        this.platformFeePercent = platformFeePercent;
+    }
+
     /** One working window. Times only - the date comes from the schedule. */
     public record ShiftWindow(LocalTime startTime, LocalTime endTime,
-                              LocalTime breakStart, LocalTime breakEnd) {}
+                              LocalTime breakStart, LocalTime breakEnd, Integer breakMinutes) {}
 
     /** Everything the engine needs, whether it came from a request body or a saved job. */
     public record ScheduleInput(
@@ -52,10 +68,17 @@ public class ScheduleCalculator {
             boolean breakPaid,
             double salary,
             SalaryUnit salaryUnit,
-            PayrollCycle payrollCycle) {
+            PayrollCycle payrollCycle,
+            WorkPattern workPattern,
+            Integer durationMonths,
+            List<DayTime> dayTimes) {
 
         public EngagementModel modelOrDefault() {
-            return engagementModel != null ? engagementModel : EngagementModel.FULL_TIME;
+            return engagementModel != null ? engagementModel : EngagementModel.FEW_WEEKS;
+        }
+
+        public WorkPattern patternOrDefault() {
+            return workPattern != null ? workPattern : WorkPattern.FULL_DAY;
         }
 
         public ShiftArrangement arrangementOrDefault() {
@@ -68,6 +91,10 @@ public class ScheduleCalculator {
 
         public List<ShiftWindow> shiftsOrEmpty() {
             return shifts == null ? List.of() : shifts;
+        }
+
+        public List<DayTime> dayTimesOrEmpty() {
+            return dayTimes == null ? List.of() : dayTimes;
         }
     }
 
@@ -85,14 +112,24 @@ public class ScheduleCalculator {
         return (int) minutes;
     }
 
+    /** Break minutes of one shift: breakMinutes wins, the legacy window is the fallback. */
+    public static int breakMinutesOf(ShiftWindow shift) {
+        if (shift.breakMinutes() != null) {
+            return shift.breakMinutes();
+        }
+        if (shift.breakStart() == null || shift.breakEnd() == null) {
+            return 0;
+        }
+        return minutesBetween(shift.breakStart(), shift.breakEnd());
+    }
+
     /** Paid minutes of one shift: its span, less the break when the break is unpaid. */
     public static int paidMinutes(ShiftWindow shift, boolean breakPaid) {
         int span = minutesBetween(shift.startTime(), shift.endTime());
-        if (breakPaid || shift.breakStart() == null || shift.breakEnd() == null) {
+        if (breakPaid) {
             return span;
         }
-        int breakMinutes = minutesBetween(shift.breakStart(), shift.breakEnd());
-        return Math.max(0, span - breakMinutes);
+        return Math.max(0, span - breakMinutesOf(shift));
     }
 
     /**
@@ -118,13 +155,37 @@ public class ScheduleCalculator {
         return total;
     }
 
+    /** The day-specific entry covering one date, or null when there is none. */
+    public DayTime dayTimeFor(ScheduleInput in, LocalDate date) {
+        List<DayTime> dayTimes = in.dayTimesOrEmpty();
+        if (dayTimes.isEmpty()) {
+            return null;
+        }
+        String key = DAY_KEYS.get(date.getDayOfWeek().getValue() - 1);
+        for (DayTime d : dayTimes) {
+            if (d != null && key.equals(d.getDayCode())) {
+                return d;
+            }
+        }
+        return null;
+    }
+
+    /** Paid minutes on one scheduled date: its dayTimes entry, else the plain shifts. */
+    public int paidMinutesOn(ScheduleInput in, LocalDate date) {
+        DayTime day = dayTimeFor(in, date);
+        if (day != null) {
+            return minutesBetween(day.getStartTime(), day.getEndTime());
+        }
+        return (int) paidMinutesPerDay(in);
+    }
+
     /** true when the posting runs indefinitely rather than between two fixed dates. */
     public boolean isOngoing(ScheduleInput in) {
         EngagementModel model = in.modelOrDefault();
-        if (model == EngagementModel.ONE_TIME) {
+        if (model == EngagementModel.ONE_DAY) {
             return false;
         }
-        if (model == EngagementModel.DAILY || model == EngagementModel.TEMPORARY) {
+        if (model == EngagementModel.FEW_DAYS || model == EngagementModel.FEW_WEEKS) {
             return false;
         }
         if (model == EngagementModel.PERMANENT) {
@@ -145,97 +206,166 @@ public class ScheduleCalculator {
         return size > 0 ? size : 6;
     }
 
-    public int scheduledDays(ScheduleInput in) {
+    /**
+     * The dates the schedule actually runs on. Fixed ranges enumerate their days; ongoing jobs
+     * synthesise a representative month so per-day math still has dates to hang on.
+     */
+    public List<LocalDate> scheduledDates(ScheduleInput in) {
         EngagementModel model = in.modelOrDefault();
-        if (model == EngagementModel.ONE_TIME) {
-            return 1;
+        if (model == EngagementModel.ONE_DAY) {
+            return in.workDate() != null ? List.of(in.workDate()) : List.of();
         }
         if (!isOngoing(in) && in.startDate() != null && in.endDate() != null
                 && !in.endDate().isBefore(in.startDate())) {
             List<String> days = in.daysOrEmpty();
-            int count = 0;
+            List<LocalDate> dates = new ArrayList<>();
             for (LocalDate d = in.startDate(); !d.isAfter(in.endDate()); d = d.plusDays(1)) {
                 if (days.isEmpty() || days.contains(DAY_KEYS.get(d.getDayOfWeek().getValue() - 1))) {
-                    count++;
+                    dates.add(d);
                 }
             }
-            return count;
+            return dates;
         }
-        // Ongoing: the month figure, so every model can be compared on the same footing.
-        return (int) Math.round(workingDaysPerWeek(in) * WEEKS_PER_MONTH);
+        int count = (int) Math.round(workingDaysPerWeek(in) * WEEKS_PER_MONTH);
+        List<String> days = in.daysOrEmpty();
+        List<LocalDate> dates = new ArrayList<>();
+        LocalDate anchor = in.startDate() != null ? in.startDate() : SYNTHETIC_ANCHOR;
+        for (LocalDate d = anchor; dates.size() < count; d = d.plusDays(1)) {
+            if (days.isEmpty() || days.contains(DAY_KEYS.get(d.getDayOfWeek().getValue() - 1))) {
+                dates.add(d);
+            }
+        }
+        return dates;
+    }
+
+    public int scheduledDays(ScheduleInput in) {
+        return scheduledDates(in).size();
     }
 
     // ------------------------------------------------------------------ validation
 
-    /** Throws a 400 with a plain-language message when the model's rules are broken. */
+    /** Throws a 400 with a plain-language message when the duration's rules are broken. */
     public void validate(ScheduleInput in) {
         EngagementModel model = in.modelOrDefault();
-        boolean ongoing = isOngoing(in);
 
         switch (model) {
-            case ONE_TIME -> {
+            case ONE_DAY -> {
                 if (in.workDate() == null) {
-                    throw ApiException.badRequest("A one-time job needs a single work date");
+                    throw ApiException.badRequest("Choose a work date.");
                 }
-                if (in.shiftsOrEmpty().isEmpty()) {
-                    throw ApiException.badRequest("A one-time job needs at least one shift");
+                if (in.shiftsOrEmpty().isEmpty() && in.dayTimesOrEmpty().isEmpty()) {
+                    throw ApiException.badRequest("Add a start time and end time.");
                 }
             }
-            case DAILY -> {
-                requireRange(in, "A daily job needs a start date and an end date");
-                requireDays(in, "A daily job needs the working days it runs on");
-            }
-            case TEMPORARY -> {
-                if (in.durationType() == JobDuration.ONGOING) {
-                    throw ApiException.badRequest(
-                            "A temporary job cannot be ongoing - give it a start and end date");
-                }
-                requireRange(in, "A temporary job needs a start date and an end date");
-                requireDays(in, "A temporary job needs the working days it runs on");
-            }
-            case PART_TIME, FULL_TIME -> {
-                requireDays(in, "This job needs the working days it runs on");
+            case FEW_DAYS -> {
+                requireRange(in, 2, 7, "End date must be 2\u20137 days after start date.");
+                requireDays(in);
                 requireShifts(in);
-                if (!ongoing) {
-                    requireRange(in, "A fixed-duration job needs a start date and an end date");
+                requireWorkingDayInRange(in);
+            }
+            case FEW_WEEKS -> {
+                requireRange(in, 8, 31, "End date must be 8\u201331 days after start date.");
+                requireDays(in);
+                requireShifts(in);
+                requireWorkingDayInRange(in);
+            }
+            case MONTHS -> {
+                if (in.startDate() == null) {
+                    throw ApiException.badRequest("Choose a start date.");
                 }
+                boolean fixedMonths = in.durationMonths() != null;
+                if (fixedMonths && (in.durationMonths() < 1 || in.durationMonths() > 12)) {
+                    throw ApiException.badRequest("Choose between 1 and 12 months.");
+                }
+                boolean fixedRange = in.endDate() != null || in.durationType() == JobDuration.SPECIFIC;
+                boolean ongoing = in.durationType() == JobDuration.ONGOING
+                        && in.endDate() == null && !fixedMonths;
+                int bounds = (fixedMonths ? 1 : 0) + (fixedRange ? 1 : 0) + (ongoing ? 1 : 0);
+                if (bounds == 0) {
+                    throw ApiException.badRequest(
+                            "Choose how long the job runs: a number of months, an end date, or ongoing.");
+                }
+                if (bounds > 1) {
+                    throw ApiException.badRequest("Choose either a number of months or an end date.");
+                }
+                requireDays(in);
+                requireShifts(in);
             }
             case PERMANENT -> {
-                requireDays(in, "A permanent job needs the working days it runs on");
+                requireDays(in);
                 requireShifts(in);
+                if (in.startDate() == null) {
+                    throw ApiException.badRequest("Choose a start date.");
+                }
                 if (in.durationType() == JobDuration.SPECIFIC || in.endDate() != null) {
-                    throw ApiException.badRequest(
-                            "A permanent job is ongoing - it cannot have a fixed end date");
+                    throw ApiException.badRequest("A permanent job cannot have an end date.");
                 }
             }
         }
 
         if (in.startDate() != null && in.endDate() != null && in.endDate().isBefore(in.startDate())) {
-            throw ApiException.badRequest("The end date cannot be before the start date");
+            throw ApiException.badRequest("The end date cannot be before the start date.");
         }
 
-        if (in.salaryUnit() != null && !model.allowedSalaryUnits().contains(in.salaryUnit())) {
+        WorkPattern pattern = in.patternOrDefault();
+        if (in.salaryUnit() != null && !model.allowedSalaryUnits(pattern).contains(in.salaryUnit())) {
             throw ApiException.badRequest("A " + label(model) + " job cannot be paid "
                     + label(in.salaryUnit()) + ". Allowed: "
-                    + String.join(", ", model.allowedSalaryUnits().stream().map(u -> u.name()).toList()));
+                    + String.join(", ", model.allowedSalaryUnits(pattern).stream().map(u -> u.name()).toList()));
         }
+
+        validateWindows(in);
     }
 
-    private void requireRange(ScheduleInput in, String message) {
+    private void requireRange(ScheduleInput in, int minDays, int maxDays, String message) {
         if (in.startDate() == null || in.endDate() == null) {
+            throw ApiException.badRequest("Choose a start date and an end date.");
+        }
+        long apart = ChronoUnit.DAYS.between(in.startDate(), in.endDate());
+        if (apart < minDays || apart > maxDays) {
             throw ApiException.badRequest(message);
         }
     }
 
-    private void requireDays(ScheduleInput in, String message) {
+    private void requireDays(ScheduleInput in) {
         if (in.daysOrEmpty().isEmpty()) {
-            throw ApiException.badRequest(message);
+            throw ApiException.badRequest("Choose at least one working day.");
         }
     }
 
     private void requireShifts(ScheduleInput in) {
-        if (in.shiftsOrEmpty().isEmpty()) {
-            throw ApiException.badRequest("This job needs at least one shift");
+        if (in.shiftsOrEmpty().isEmpty() && in.dayTimesOrEmpty().isEmpty()) {
+            throw ApiException.badRequest("Add a start time and end time.");
+        }
+    }
+
+    private void requireWorkingDayInRange(ScheduleInput in) {
+        if (scheduledDates(in).isEmpty()) {
+            throw ApiException.badRequest("No working day falls in this date range.");
+        }
+    }
+
+    /** End times run after start times and no break swallows its own shift. */
+    private void validateWindows(ScheduleInput in) {
+        for (ShiftWindow s : in.shiftsOrEmpty()) {
+            if (s.startTime() == null || s.endTime() == null) {
+                throw ApiException.badRequest("Add a start time and end time.");
+            }
+            if (s.endTime().equals(s.startTime())) {
+                throw ApiException.badRequest("End time must be after start time.");
+            }
+            int span = minutesBetween(s.startTime(), s.endTime());
+            if (breakMinutesOf(s) > span) {
+                throw ApiException.badRequest("The break cannot be longer than the shift.");
+            }
+        }
+        for (DayTime d : in.dayTimesOrEmpty()) {
+            if (d.getStartTime() == null || d.getEndTime() == null) {
+                throw ApiException.badRequest("Add a start time and end time.");
+            }
+            if (d.getEndTime().equals(d.getStartTime())) {
+                throw ApiException.badRequest("End time must be after start time.");
+            }
         }
     }
 
@@ -243,18 +373,35 @@ public class ScheduleCalculator {
 
     public ScheduleEstimateDto estimate(ScheduleInput in) {
         EngagementModel model = in.modelOrDefault();
+        WorkPattern pattern = in.patternOrDefault();
         boolean ongoing = isOngoing(in);
         List<String> warnings = new ArrayList<>();
 
-        double paidMinutesPerDay = paidMinutesPerDay(in);
+        List<LocalDate> dates = scheduledDates(in);
+        int scheduledDays = dates.size();
+        boolean perDate = !in.dayTimesOrEmpty().isEmpty() && scheduledDays > 0;
+
+        double paidMinutesPerDay;
+        double expectedPaidHours;
+        if (perDate) {
+            long total = 0;
+            for (LocalDate d : dates) {
+                total += paidMinutesOn(in, d);
+            }
+            paidMinutesPerDay = total / (double) scheduledDays;
+            expectedPaidHours = round2(total / 60.0);
+        } else {
+            paidMinutesPerDay = paidMinutesPerDay(in);
+            expectedPaidHours = round2(scheduledDays * paidMinutesPerDay / 60.0);
+        }
         double paidHoursPerDay = round2(paidMinutesPerDay / 60.0);
-        int shiftsPerDay = in.arrangementOrDefault() == ShiftArrangement.ALL_SHIFTS
-                ? in.shiftsOrEmpty().size() : Math.min(1, in.shiftsOrEmpty().size());
+        int shiftsPerDay = !in.shiftsOrEmpty().isEmpty()
+                ? (in.arrangementOrDefault() == ShiftArrangement.ALL_SHIFTS
+                        ? in.shiftsOrEmpty().size() : Math.min(1, in.shiftsOrEmpty().size()))
+                : (in.dayTimesOrEmpty().isEmpty() ? 0 : 1);
         int daysPerWeek = workingDaysPerWeek(in);
         double paidHoursPerWeek = round2(paidHoursPerDay
-                * (model == EngagementModel.ONE_TIME ? 1 : daysPerWeek));
-        int scheduledDays = scheduledDays(in);
-        double expectedPaidHours = round2(scheduledDays * paidHoursPerDay);
+                * (model == EngagementModel.ONE_DAY ? 1 : daysPerWeek));
 
         for (ShiftWindow s : in.shiftsOrEmpty()) {
             if (s.startTime() == null || s.endTime() == null) {
@@ -262,8 +409,7 @@ public class ScheduleCalculator {
                 continue;
             }
             int span = minutesBetween(s.startTime(), s.endTime());
-            int brk = minutesBetween(s.breakStart(), s.breakEnd());
-            if (brk >= span) {
+            if (breakMinutesOf(s) >= span) {
                 warnings.add("A shift is shorter than the break inside it ("
                         + s.startTime() + "-" + s.endTime() + ")");
             }
@@ -274,13 +420,13 @@ public class ScheduleCalculator {
         if (in.shiftsOrEmpty().isEmpty()) {
             warnings.add("No shift has been added yet, so the hours cannot be worked out");
         }
-        if (model != EngagementModel.ONE_TIME && in.daysOrEmpty().isEmpty()) {
+        if (model != EngagementModel.ONE_DAY && in.daysOrEmpty().isEmpty()) {
             warnings.add("No working days have been picked yet - assuming a six-day week");
         }
         if (scheduledDays == 0) {
             warnings.add("No working day falls inside this date range");
         }
-        if (in.salaryUnit() != null && !model.allowedSalaryUnits().contains(in.salaryUnit())) {
+        if (in.salaryUnit() != null && !model.allowedSalaryUnits(pattern).contains(in.salaryUnit())) {
             warnings.add("A " + label(model) + " job cannot be paid " + label(in.salaryUnit()));
         }
 
@@ -290,7 +436,7 @@ public class ScheduleCalculator {
         SalaryUnit unit = in.salaryUnit();
         if (unit != null && rate > 0) {
             switch (unit) {
-                case PER_HOUR -> {
+                case HOURLY -> {
                     earnings = rate * expectedPaidHours;
                     basisLabel = money(rate) + "/hour x " + trim(expectedPaidHours) + " hours";
                 }
@@ -301,7 +447,7 @@ public class ScheduleCalculator {
                     earnings = rate * totalShifts;
                     basisLabel = money(rate) + "/shift x " + totalShifts + " shifts";
                 }
-                case PER_DAY -> {
+                case DAILY -> {
                     earnings = rate * scheduledDays;
                     basisLabel = money(rate) + "/day x " + scheduledDays + " days";
                 }
@@ -310,7 +456,7 @@ public class ScheduleCalculator {
                     earnings = rate * weeks;
                     basisLabel = money(rate) + "/week x " + trim(round2(weeks)) + " weeks";
                 }
-                case PER_MONTH -> {
+                case MONTHLY -> {
                     if (ongoing) {
                         earnings = rate;
                         basisLabel = money(rate) + "/month";
@@ -327,6 +473,14 @@ public class ScheduleCalculator {
             earnings = round2(earnings);
         }
 
+        // The platform fee comes from configuration; with no percentage the total is just earnings.
+        Double platformFee = null;
+        Double employerTotal = earnings;
+        if (earnings != null && platformFeePercent > 0) {
+            platformFee = Math.round(earnings * platformFeePercent) / 100.0;
+            employerTotal = earnings + platformFee;
+        }
+
         PayrollCycle cycle = in.payrollCycle() != null ? in.payrollCycle() : model.defaultPayrollCycle();
         String fundingWhen = cycle == PayrollCycle.ON_COMPLETION ? "BEFORE_WORK" : "PAYROLL_CYCLE";
 
@@ -338,12 +492,12 @@ public class ScheduleCalculator {
                 expectedPaidHours,
                 periodLabel(in, ongoing),
                 ongoing,
-                model.allowedSalaryUnits(),
-                model.recommendedSalaryUnit(),
+                model.allowedSalaryUnits(pattern),
+                model.recommendedSalaryUnit(pattern),
                 earnings,
                 basisLabel,
-                null,           // no platform fee is configured - never invent one
-                earnings,       // employer total == worker earnings while there is no fee
+                platformFee,
+                employerTotal,
                 cycle,
                 fundingWhen,
                 warnings);
@@ -353,7 +507,7 @@ public class ScheduleCalculator {
 
     private String periodLabel(ScheduleInput in, boolean ongoing) {
         EngagementModel model = in.modelOrDefault();
-        if (model == EngagementModel.ONE_TIME) {
+        if (model == EngagementModel.ONE_DAY) {
             return in.workDate() != null ? in.workDate().format(DAY_MONTH_YEAR) : "One shift";
         }
         if (ongoing) {
@@ -367,7 +521,7 @@ public class ScheduleCalculator {
         String from = in.startDate().getYear() == in.endDate().getYear()
                 ? in.startDate().format(DAY_MONTH)
                 : in.startDate().format(DAY_MONTH_YEAR);
-        return from + " – " + in.endDate().format(DAY_MONTH_YEAR);
+        return from + " \u2013 " + in.endDate().format(DAY_MONTH_YEAR);
     }
 
     private static String label(Enum<?> value) {
@@ -375,7 +529,7 @@ public class ScheduleCalculator {
     }
 
     private static String money(double amount) {
-        return "₹" + trim(amount);
+        return "\u20B9" + trim(amount);
     }
 
     private static String trim(double value) {

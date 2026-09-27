@@ -4,16 +4,18 @@ import Icon from '../../../marketing/icons'
 import { useDocumentTitle } from '../../../marketing/components'
 import { ErrorNote } from '../../../worker/components'
 import { Stepper } from '../../../onboarding/components'
-import { createJob, updateJob, getJob, pay, timeLabel } from '../api'
+import { createJob, updateJob, getJob, timeLabel } from '../api'
 import {
-  WORKER_CATEGORIES, DAYS, EXPERIENCE_LEVELS, LANGUAGE_OPTIONS, GENDER_PREFS,
-  AGE_RANGES, INTERVIEW_TYPES, RESPONSIBILITY_SUGGESTIONS, SKILL_SUGGESTIONS,
-  WIZARD_STEPS, EMPTY_JOB,
+  WORKER_CATEGORIES, EXPERIENCE_LEVELS, LANGUAGE_OPTIONS, GENDER_PREFS,
+  AGE_RANGES, RESPONSIBILITY_SUGGESTIONS, SKILL_SUGGESTIONS, WIZARD_STEPS, EMPTY_JOB,
 } from '../jobForm'
-import { StepEmployment, StepSchedule, StepSalary } from './JobWizardSteps'
 import {
-  modelOf, calculateSchedule, calculateEarnings, scheduleReady,
-  PAY_BASIS_LABEL, PAY_BASIS_SUFFIX, BENEFIT_TYPES,
+  StepDuration, StepSchedule, StepPay, StepHiring, usePlatformFee,
+} from './JobWizardSteps'
+import {
+  durationOf, DAYS, BENEFIT_TYPES, HIRING_METHODS, whatHappensNext,
+  calculateSchedule, calculateEarnings, calculateCost, scheduleReady,
+  PAY_BASIS_SUFFIX, WORK_PATTERN_LABEL, fmtDate, money,
 } from '../engagement'
 
 const LAST = WIZARD_STEPS.length - 1
@@ -24,21 +26,22 @@ export default function PostJob() {
   const navigate = useNavigate()
   const editingId = params.get('edit')
   const step = Math.min(LAST, Math.max(0, Number(params.get('step') || 0)))
+  const feePercent = usePlatformFee()
 
   const [job, setJob] = useState(EMPTY_JOB)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [published, setPublished] = useState(null)
 
-  useDocumentTitle(published ? 'Job published' : editingId ? 'Edit job' : 'Post a job')
+  useDocumentTitle(published ? 'Job posted' : editingId ? 'Edit job' : 'Post a job')
 
-  // Editing an existing job reuses the same wizard.
   useEffect(() => {
     if (!editingId) return
     getJob(editingId)
       .then((d) => setJob({
         ...EMPTY_JOB,
         ...d,
+        durationType: d.engagementModel || EMPTY_JOB.durationType,
         shifts: d.shifts?.length ? d.shifts : EMPTY_JOB.shifts,
         benefits: d.jobBenefits || [],
       }))
@@ -57,34 +60,53 @@ export default function PostJob() {
 
   const submit = async (draft) => {
     setBusy(true); setError('')
+    const model = durationOf(job.durationType)
+    const sched = calculateSchedule(job)
     const [ageMin, ageMax] = (job.ageRange || '').split('-')
-    // The API keeps a legacy list of benefit names alongside the structured rows.
     const jobBenefits = (job.benefits || []).map((b) => ({
       benefitType: b.benefitType,
       amount: b.amount === '' || b.amount == null ? null : Number(b.amount),
       unit: b.unit || null,
       note: b.note || null,
     }))
+
     const body = {
       ...job,
       draft,
-      jobBenefits,
-      benefits: jobBenefits.map((b) => b.benefitType),
-      overtimeRate: job.overtimeRate === '' || job.overtimeRate == null ? null : Number(job.overtimeRate),
+      // The server keeps duration (ONE_DAY…) and the ongoing/fixed flag separately.
+      engagementModel: job.durationType,
+      // durationType means "bounded by an explicit end date". A month count is its
+      // own bound, so those jobs are sent without one.
+      durationType: (model?.scheduleVariant === 'RECURRING_ONGOING'
+        || (model?.value === 'MONTHS' && Number(job.durationMonths) > 0))
+        ? 'ONGOING' : 'SPECIFIC',
+      workPattern: sched.workPattern,
+      workDate: sched.isSingleDate ? job.workDate || null : null,
+      startDate: sched.isSingleDate ? job.workDate || null : job.startDate || null,
+      // The server takes a month count OR an end date, never both.
+      endDate: sched.isSingleDate ? job.workDate || null
+        : sched.isOngoing ? null
+          : (model?.value === 'MONTHS' && Number(job.durationMonths) > 0) ? null
+            : job.endDate || null,
+      durationMonths: model?.value === 'MONTHS' && Number(job.durationMonths) > 0
+        ? Number(job.durationMonths) : null,
       salary: Number(job.salary) || 0,
       workersNeeded: Number(job.workersNeeded) || 1,
       minExperienceYears: Number(job.minExperienceYears) || 0,
+      overtimeRate: job.overtimeRate === '' || job.overtimeRate == null ? null : Number(job.overtimeRate),
       ageMin: ageMin ? Number(ageMin) : null,
       ageMax: ageMax ? Number(ageMax) : null,
       applicationDeadline: job.applicationDeadline || null,
-      startDate: job.durationType === 'SPECIFIC' ? job.startDate || null : null,
-      endDate: job.durationType === 'SPECIFIC' ? job.endDate || null : null,
+      jobBenefits,
+      benefits: jobBenefits.map((b) => b.benefitType),
+      paymentMode: 'SKILLBRIDGE',
     }
     delete body.ageRange
+
     try {
       const saved = editingId ? await updateJob(editingId, body) : await createJob(body)
       if (draft) navigate('/employer/jobs?status=DRAFT')
-      else setPublished(saved)
+      else setPublished({ ...saved, durationType: job.durationType })
     } catch (e) {
       setError(e?.response?.data?.message || 'We could not save this job. Please try again.')
     } finally {
@@ -101,7 +123,7 @@ export default function PostJob() {
           <Icon name="chevronLeft" size={18} />
         </Link>
         <div className="grow">
-          <h1 className="wk-h1">{editingId ? 'Edit Job' : 'Create a New Job'}</h1>
+          <h1 className="wk-h1">{editingId ? 'Edit job' : 'Post a job'}</h1>
           <p className="wk-sub">Step {step + 1} of {WIZARD_STEPS.length} · {WIZARD_STEPS[step]}</p>
         </div>
         {step > 0 && (
@@ -113,7 +135,7 @@ export default function PostJob() {
 
       <div className="wk-card pad-lg">
         <div style={{ overflowX: 'auto', paddingBottom: 4 }}>
-          <div style={{ minWidth: 560 }}>
+          <div style={{ minWidth: 580 }}>
             <Stepper steps={WIZARD_STEPS} current={step} />
           </div>
         </div>
@@ -121,13 +143,13 @@ export default function PostJob() {
         <ErrorNote>{error}</ErrorNote>
 
         {step === 0 && <StepCategory job={job} set={set} />}
-        {step === 1 && <StepEmployment job={job} set={set} />}
+        {step === 1 && <StepDuration job={job} set={set} />}
         {step === 2 && <StepDetails job={job} set={set} />}
         {step === 3 && <StepSchedule job={job} set={set} />}
-        {step === 4 && <StepSalary job={job} set={set} onEditSchedule={() => goto(3)} />}
+        {step === 4 && <StepPay job={job} set={set} feePercent={feePercent} onEditSchedule={() => goto(3)} />}
         {step === 5 && <StepRequirements job={job} set={set} />}
-        {step === 6 && <StepInterview job={job} set={set} />}
-        {step === 7 && <StepReview job={job} onEdit={goto} />}
+        {step === 6 && <StepHiring job={job} set={set} />}
+        {step === 7 && <StepReview job={job} onEdit={goto} feePercent={feePercent} />}
 
         <div className="ob-nav">
           {step === 0 ? (
@@ -139,18 +161,14 @@ export default function PostJob() {
           )}
           <span className="grow" />
           {step < LAST ? (
-            <button
-              className="mk-btn mk-btn-primary"
-              style={{ minWidth: 150, opacity: invalid ? 0.6 : 1 }}
-              disabled={!!invalid}
-              title={invalid || undefined}
-              onClick={() => goto(step + 1)}
-            >
+            <button className="mk-btn mk-btn-primary" style={{ minWidth: 150, opacity: invalid ? 0.6 : 1 }}
+              disabled={!!invalid} title={invalid || undefined} onClick={() => goto(step + 1)}>
               Continue <Icon name="arrowRight" size={17} />
             </button>
           ) : (
-            <button className="mk-btn mk-btn-primary" style={{ minWidth: 150 }} disabled={busy} onClick={() => submit(false)}>
-              {busy ? 'Publishing…' : 'Publish Job'}
+            <button className="mk-btn mk-btn-primary" style={{ minWidth: 150 }} disabled={busy}
+              onClick={() => submit(false)}>
+              {busy ? 'Posting…' : 'Post Job'}
             </button>
           )}
         </div>
@@ -160,30 +178,27 @@ export default function PostJob() {
   )
 }
 
-/** Returns a message when the current step is incomplete, otherwise ''. */
+/** Plain-language validation, checked on the step where it can be fixed. */
 function validate(j, step) {
-  if (step === 0 && !j.workerCategory) return 'Choose the type of worker you need'
-  if (step === 1 && !j.engagementModel) return 'Choose an employment type'
+  if (step === 0 && !j.workerCategory) return 'Choose the kind of worker you need'
+  if (step === 1 && !j.durationType) return 'Choose how long you need the worker'
   if (step === 2) {
     if (!j.title.trim()) return 'Add a job title'
-    if (!Number(j.workersNeeded)) return 'Add how many people you need'
-    if (j.description.trim().length < 20) return 'Add a short job description (at least 20 characters)'
+    if (!Number(j.workersNeeded)) return 'How many workers do you need?'
   }
   if (step === 3) return scheduleReady(j, calculateSchedule(j))
   if (step === 4) {
-    if (!(Number(j.salary) > 0)) return 'Add the wage you are offering'
-    const allowed = modelOf(j.engagementModel)?.payBases || []
-    if (allowed.length && !allowed.includes(j.salaryUnit)) {
-      return `A ${modelOf(j.engagementModel).label.toLowerCase()} job cannot be paid ${PAY_BASIS_LABEL[j.salaryUnit].toLowerCase()}`
-    }
-    if (j.overtimeExpected && !j.overtimePayBasis) return 'Choose how overtime is paid'
+    if (!(Number(j.salary) > 0)) return 'Add how much you will pay'
+    const allowed = durationOf(j.durationType)?.allowedPayBasis || []
+    if (allowed.length && !allowed.includes(j.salaryUnit)) return 'Choose a pay type for this job'
+    if (j.overtimeExpected && !j.overtimePayBasis) return 'Choose how extra hours are paid'
   }
-  // The API requires at least one skill; ask for it here rather than failing at publish.
-  if (step === 5 && !j.requiredSkills.length) return 'Add at least one required skill'
+  if (step === 5 && !j.requiredSkills.length) return 'Add at least one skill'
+  if (step === 6 && !j.hiringMethod) return 'Choose how you want to hire'
   return ''
 }
 
-/* ---------- 2. worker type ---------- */
+/* ---------- 1. worker type ---------- */
 function StepCategory({ job, set }) {
   return (
     <Section title="What type of worker do you need?" sub="Select the category that best matches your requirement.">
@@ -384,50 +399,17 @@ function StepRequirements({ job, set }) {
 }
 
 /* ---------- 8. interview & hiring method ---------- */
-function StepInterview({ job, set }) {
-  return (
-    <Section title="Interview & hiring method" sub="Choose how you want to shortlist and hire workers.">
-      <div className="wk-field">
-        <label>Interview Type</label>
-        <div className="emp-radios">
-          {INTERVIEW_TYPES.map((t) => (
-            <RadioRow key={t.value} on={job.interviewType === t.value}
-              onClick={() => set({ interviewType: t.value })}
-              icon={t.icon} title={t.label} sub={t.sub} />
-          ))}
-        </div>
-      </div>
 
-      <div className="wk-field" style={{ marginTop: 18, maxWidth: 320 }}>
-        <label htmlFor="pj-deadline">Application Deadline</label>
-        <input id="pj-deadline" className="wk-input" type="date"
-          min={new Date().toISOString().slice(0, 10)}
-          value={job.applicationDeadline} onChange={(e) => set({ applicationDeadline: e.target.value })} />
-      </div>
-
-      <div className="wk-field" style={{ marginTop: 18 }}>
-        <label>Auto-close job when filled</label>
-        <label className="wk-checkrow">
-          <input type="checkbox" checked={job.autoCloseWhenFilled}
-            onChange={(e) => set({ autoCloseWhenFilled: e.target.checked })} />
-          Yes, close automatically once all openings are filled
-        </label>
-      </div>
-    </Section>
-  )
-}
-
-/* ---------- 9. review ---------- */
-function StepReview({ job, onEdit }) {
+/* ---------- 8. review ---------- */
+function StepReview({ job, onEdit, feePercent }) {
   const cat = WORKER_CATEGORIES.find((c) => c.value === job.workerCategory)
-  const model = modelOf(job.engagementModel)
+  const model = durationOf(job.durationType)
   const sched = calculateSchedule(job)
   const earnings = calculateEarnings(job, sched)
+  const cost = calculateCost(earnings.amount, feePercent)
   const days = (job.workingDays || []).map((d) => DAYS.find((x) => x.value === d)?.label).filter(Boolean).join(', ')
-  const interview = INTERVIEW_TYPES.find((i) => i.value === job.interviewType)
-  const money = (n) => '₹' + Math.round(Number(n) || 0).toLocaleString('en-IN')
-
-  const benefitLine = (b) => {
+  const shift = job.shifts?.[0] || {}
+  const benefitLabel = (b) => {
     const meta = BENEFIT_TYPES.find((x) => x.value === b.benefitType)
     const label = meta?.label || b.benefitType
     if (b.amount) return `${label} — ${money(b.amount)}${b.unit ? ` ${b.unit}` : ''}`
@@ -435,8 +417,12 @@ function StepReview({ job, onEdit }) {
     return label
   }
 
+  const timeLine = shift.startTime
+    ? `${timeLabel(shift.startTime)} – ${timeLabel(shift.endTime)}${shift.breakMinutes ? ` (${shift.breakMinutes} min break)` : ''}`
+    : '—'
+
   return (
-    <Section title="Review your job posting" sub="Please check all details before publishing.">
+    <Section title="Check everything" sub="Make sure this is right before you post.">
       <div className="emp-review">
         <div className="hd">
           <span className={`mk-icon-box sm ${cat?.tone || ''}`} style={{ width: 30, height: 30, marginBottom: 0 }}>
@@ -446,75 +432,62 @@ function StepReview({ job, onEdit }) {
           <button className="wk-link" style={{ border: 0, background: 0, cursor: 'pointer', font: 'inherit' }}
             onClick={() => onEdit(2)}>Edit</button>
         </div>
-        <Row k="Employment Type" v={model?.label || '—'} />
-        <Row k="Openings" v={job.workersNeeded} />
-        <Row k="Period" v={sched.periodLabel} />
-        {!sched.isOneTime && <Row k="Working Days" v={days || '—'} />}
-        <Row k="Shift Timings" v={
+
+        <Row k="How long" v={model?.label || '—'} />
+        <Row k={sched.isSingleDate ? 'Date' : sched.isOngoing ? 'Joining from' : 'Dates'} v={sched.periodLabel} />
+        {sched.usesWeekdays && <Row k="Working days" v={days || '—'} />}
+        <Row k="Working time" v={timeLine} />
+        {!sched.isSingleDate && (
+          <Row k="Work days" v={`${sched.scheduledDays} ${sched.isOngoing ? 'days a month' : 'days'} · ${sched.paidHoursPerDay} hrs/day`} />
+        )}
+        <Row k="Workers needed" v={job.workersNeeded} />
+        <Row k="Pay" v={
           <>
-            {job.shifts.map((s, i) => (
-              <div key={i}>
-                {timeLabel(s.startTime)} – {timeLabel(s.endTime)}
-                {s.breakStart && s.breakEnd && (
-                  <span className="wk-sub" style={{ marginTop: 0 }}>
-                    {' '}(break {timeLabel(s.breakStart)}–{timeLabel(s.breakEnd)}, {job.breakPaid ? 'paid' : 'unpaid'})
-                  </span>
-                )}
-              </div>
-            ))}
-            {job.shifts.length > 1 && (
-              <div className="wk-sub" style={{ marginTop: 2 }}>
-                {job.shiftArrangement === 'ONE_OF_SHIFTS' ? 'Worker is assigned one of these shifts' : 'Worker works all shifts'}
-              </div>
+            <strong>{money(job.salary)}{PAY_BASIS_SUFFIX[job.salaryUnit] || ''}</strong>
+            {earnings.amount > 0 && sched.scheduledDays > 1 && (
+              <div className="wk-sub" style={{ marginTop: 2 }}>Worker pay about {money(earnings.amount)}</div>
             )}
           </>
         } />
-        <Row k="Paid hours" v={`${sched.paidHoursPerDay} hrs/day · ${sched.scheduledDays} working days · ${sched.expectedPaidHours} hrs total`} />
-        <Row k="Wage" v={
+        <Row k="You will pay" v={
           <>
-            {money(job.salary)}{PAY_BASIS_SUFFIX[job.salaryUnit] || ''}
-            {earnings.amount > 0 && (
-              <div className="wk-sub" style={{ marginTop: 2 }}>
-                Estimated {money(earnings.amount)} for the period — actual pay follows approved attendance
-              </div>
-            )}
+            <strong style={{ color: 'var(--blue-dark)' }}>{money(cost.total)}</strong>
+            <div className="wk-sub" style={{ marginTop: 2 }}>
+              {cost.fee === null ? 'Fee confirmed before you pay' : `Worker ${money(cost.workerPay)} + fee ${money(cost.fee)}`}
+            </div>
           </>
         } />
         {(job.benefits || []).length > 0 && (
-          <Row k="Benefits & Additional Pay" v={<ul>{job.benefits.map((b) => <li key={b.benefitType}>{benefitLine(b)}</li>)}</ul>} />
+          <Row k="Extras" v={<ul>{job.benefits.map((b) => <li key={b.benefitType}>{benefitLabel(b)}</li>)}</ul>} />
         )}
-        <Row k="Overtime" v={
-          job.overtimeExpected
-            ? `May be required${job.overtimeRate ? ` — ${money(job.overtimeRate)}` : ''}${job.overtimePayBasis === 'PER_HOUR' ? '/hour' : ''}`
-            : 'Not expected'
-        } />
-        {job.responsibilities.length > 0 && (
-          <Row k="Key Responsibilities" v={<ul>{job.responsibilities.map((r) => <li key={r}>{r}</li>)}</ul>} />
-        )}
-        <Row k="Requirements" v={
-          [
-            job.minExperienceYears
-              ? EXPERIENCE_LEVELS.find((x) => x.value === job.minExperienceYears)?.label
-              : 'No experience required',
-            job.requiredSkills.join(', '),
-            job.languages.join(', '),
-            job.ageRange ? `Age: ${job.ageRange.replace('-', ' - ')} years` : '',
-            job.genderPreference !== 'ANY' ? `Gender: ${job.genderPreference.toLowerCase()}` : '',
-          ].filter(Boolean).join(' · ')
-        } />
-        <Row k="Interview Type" v={interview?.label || '—'} />
-        <Row k="Application Deadline" v={job.applicationDeadline || 'No deadline'} />
-        <Row k="Payment" v={
-          model?.payroll === 'MONTHLY'
-            ? 'Through SkillBridge — monthly payroll'
-            : 'Through SkillBridge — funded before work, released on completion'
-        } />
+        {job.requiredSkills.length > 0 && <Row k="Skills" v={job.requiredSkills.join(', ')} />}
+        {job.languages.length > 0 && <Row k="Languages" v={job.languages.join(', ')} />}
+        <Row k="Experience" v={EXPERIENCE_LEVELS.find((x) => x.value === job.minExperienceYears)?.label || 'No experience needed'} />
+        <Row k="Hiring" v={HIRING_METHODS[job.hiringMethod]?.label || '—'} />
+        <Row k="Payment" v={model?.payroll === 'MONTHLY'
+          ? 'Monthly payroll through SkillBridge'
+          : 'Through SkillBridge, after the work is confirmed'} />
+      </div>
+
+      <div className="wk-card" style={{ marginTop: 18 }}>
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--ink)' }}>What happens next?</div>
+        <div style={{ display: 'grid', gap: 9, marginTop: 12 }}>
+          {whatHappensNext(model).map((s, i) => (
+            <div key={s} style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 14, color: 'var(--body)' }}>
+              <span style={{
+                width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                background: 'var(--blue-50)', color: 'var(--blue-dark)',
+                display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 700,
+              }}>{i + 1}</span>
+              {s}
+            </div>
+          ))}
+        </div>
       </div>
     </Section>
   )
 }
 
-/* ---------- 10. published ---------- */
 function Published({ job }) {
   const [copied, setCopied] = useState(false)
   const link = `${window.location.origin}/worker/jobs/${job.id}`

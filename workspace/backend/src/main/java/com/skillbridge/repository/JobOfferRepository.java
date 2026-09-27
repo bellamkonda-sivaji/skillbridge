@@ -15,6 +15,10 @@ public interface JobOfferRepository extends JpaRepository<JobOffer, Long> {
     @Query("select o from JobOffer o where o.application.worker.id = :workerId order by o.sentAt desc")
     List<JobOffer> findByWorkerId(@Param("workerId") Long workerId);
 
+    @Query("select o from JobOffer o where o.application.job.employer.id = :employerId "
+            + "order by o.sentAt desc")
+    List<JobOffer> findByEmployerId(@Param("employerId") Long employerId);
+
     @Query("select count(o) from JobOffer o where o.application.worker.id = :workerId and o.status = :status")
     long countByWorkerIdAndStatus(@Param("workerId") Long workerId, @Param("status") OfferStatus status);
 }

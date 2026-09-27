@@ -52,4 +52,17 @@ public class JobApplication {
     @Builder.Default
     @Column(nullable = false)
     private boolean paymentSettled = false;
+
+    // ------------------------------------------------------------------ interview outcome
+
+    /** What the employer recorded after the interview. null until a result is entered. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "interview_result")
+    private InterviewResult interviewResult;
+
+    @Column(name = "interview_feedback", length = 2000)
+    private String interviewFeedback;
+
+    private java.time.LocalDateTime interviewResultAt;
+
 }

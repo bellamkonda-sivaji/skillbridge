@@ -13,6 +13,7 @@ public interface InterviewRepository extends JpaRepository<Interview, Long> {
     List<Interview> findByEmployerOrderByScheduledAtDesc(EmployerAccount employer);
     List<Interview> findByWorkerOrderByScheduledAtDesc(WorkerAccount worker);
     List<Interview> findAllByOrderByScheduledAtDesc();
+    List<Interview> findByJobIdOrderByScheduledAtDesc(Long jobId);
     long countByStatus(InterviewStatus status);
     long countByScheduledAtAfter(LocalDateTime time);
     long countByWorkerAndStatusNot(WorkerAccount worker, InterviewStatus status);

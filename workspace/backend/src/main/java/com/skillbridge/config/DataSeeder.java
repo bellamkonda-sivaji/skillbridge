@@ -140,61 +140,61 @@ public class DataSeeder implements CommandLineRunner {
         WorkerAccount john = worker("John Kamau", "john.kamau@mail.com", "9000000007",
                 List.of("Carpentry", "Cabinet Making", "Tiling"), 6, "Carpenter",
                 "Finishing carpenter for doors, cabinets and temple guest-house interiors.",
-                13.6360, 79.4170, Availability.FULL_TIME, 800, SalaryUnit.PER_DAY,
+                13.6360, 79.4170, Availability.FULL_TIME, 800, SalaryUnit.DAILY,
                 VerificationStatus.VERIFIED, List.of(EmploymentType.FULL_TIME, EmploymentType.DAILY));
 
         WorkerAccount mary = worker("Mary Wanjiru", "mary.wanjiru@mail.com", "9000000008",
                 List.of("Cleaning", "Housekeeping", "Laundry"), 3, "Housekeeping Staff",
                 "Reliable housekeeping for homes, lodges and offices around Tirupati.",
-                13.6420, 79.4280, Availability.IMMEDIATE, 550, SalaryUnit.PER_DAY,
+                13.6420, 79.4280, Availability.IMMEDIATE, 550, SalaryUnit.DAILY,
                 VerificationStatus.VERIFIED, List.of(EmploymentType.PART_TIME, EmploymentType.DAILY));
 
         WorkerAccount lakshmiS = worker("Lakshmi Sridevi", "lakshmi.sridevi@mail.com", "9000000009",
                 List.of("Retail", "Sales", "Cashier", "Packing"), 2, "Store Helper",
                 "Retail floor and billing counter experience at a grocery chain.",
-                13.6288, 79.4192, Availability.FULL_TIME, 700, SalaryUnit.PER_DAY,
+                13.6288, 79.4192, Availability.FULL_TIME, 700, SalaryUnit.DAILY,
                 VerificationStatus.PENDING, List.of(EmploymentType.FULL_TIME));
 
         WorkerAccount suresh = worker("Suresh Babu", "suresh.babu@mail.com", "9000000010",
                 List.of("Welding", "Metal Fabrication", "Grinding"), 8, "Welder / Fabricator",
                 "Certified welder for gates, railings and structural steel work.",
-                13.6100, 79.4450, Availability.FULL_TIME, 950, SalaryUnit.PER_DAY,
+                13.6100, 79.4450, Availability.FULL_TIME, 950, SalaryUnit.DAILY,
                 VerificationStatus.VERIFIED, List.of(EmploymentType.FULL_TIME, EmploymentType.MONTHLY));
 
         WorkerAccount anitha = worker("Anitha Rani", "anitha.rani@mail.com", "9000000011",
                 List.of("Cooking", "Kitchen", "Waiter"), 4, "Cook / Kitchen Helper",
                 "South Indian tiffin and meals cook, used to high-volume pilgrim kitchens.",
-                13.6420, 79.4180, Availability.PART_TIME, 650, SalaryUnit.PER_DAY,
+                13.6420, 79.4180, Availability.PART_TIME, 650, SalaryUnit.DAILY,
                 VerificationStatus.UNVERIFIED, List.of(EmploymentType.PART_TIME, EmploymentType.DAILY));
 
         WorkerAccount ravi = worker("Ravi Kumar", "ravi.kumar@mail.com", "9000000012",
                 List.of("Driving", "Delivery", "Taxi"), 5, "Driver / Delivery Rider",
                 "LMV licence holder, knows every route between Tirupati and Renigunta.",
-                13.6400, 79.5120, Availability.IMMEDIATE, 22000, SalaryUnit.PER_MONTH,
+                13.6400, 79.5120, Availability.IMMEDIATE, 22000, SalaryUnit.MONTHLY,
                 VerificationStatus.VERIFIED, List.of(EmploymentType.FULL_TIME, EmploymentType.PERMANENT));
 
         WorkerAccount david = worker("David Kiprop", "david.kiprop@mail.com", "9000000013",
                 List.of("Electrical Wiring", "Electrical Work", "Solar Installation"), 5, "Electrician",
                 "Licensed electrician for apartment wiring, repairs and solar installs.",
-                13.6330, 79.4050, Availability.FULL_TIME, 900, SalaryUnit.PER_DAY,
+                13.6330, 79.4050, Availability.FULL_TIME, 900, SalaryUnit.DAILY,
                 VerificationStatus.VERIFIED, List.of(EmploymentType.FULL_TIME, EmploymentType.DAILY));
 
         WorkerAccount padma = worker("Padma Latha", "padma.latha@mail.com", "9000000014",
                 List.of("Tailoring", "Sewing", "Stitching"), 2, "Tailor",
                 "Blouse stitching, alterations and uniform orders.",
-                13.6230, 79.4340, Availability.WEEKENDS_ONLY, 450, SalaryUnit.PER_DAY,
+                13.6230, 79.4340, Availability.WEEKENDS_ONLY, 450, SalaryUnit.DAILY,
                 VerificationStatus.PENDING, List.of(EmploymentType.PART_TIME));
 
         WorkerAccount murali = worker("Murali Krishna", "murali.krishna@mail.com", "9000000015",
                 List.of("Plumbing", "Pipe Fitting", "Bathroom Fitting"), 7, "Plumber",
                 "Plumbing repairs, fittings and renovation work. Fast and tidy.",
-                13.6230, 79.4340, Availability.FULL_TIME, 850, SalaryUnit.PER_DAY,
+                13.6230, 79.4340, Availability.FULL_TIME, 850, SalaryUnit.DAILY,
                 VerificationStatus.VERIFIED, List.of(EmploymentType.FULL_TIME, EmploymentType.MONTHLY));
 
         WorkerAccount divya = worker("Divya Sree", "divya.sree@mail.com", "9000000016",
                 List.of("Data Entry", "Typing", "Office Assistant"), 2, "Data Entry Operator",
                 "Fast typist, comfortable with spreadsheets and billing software.",
-                13.6288, 79.4192, Availability.IMMEDIATE, 16000, SalaryUnit.PER_MONTH,
+                13.6288, 79.4192, Availability.IMMEDIATE, 16000, SalaryUnit.MONTHLY,
                 VerificationStatus.PENDING, List.of(EmploymentType.FULL_TIME));
 
         // ---------------------------------------------------------------- worker demographics
@@ -232,121 +232,138 @@ public class DataSeeder implements CommandLineRunner {
         JobPost carpenterJob = job(safiri, "Skilled Carpenter for guest house interiors",
                 "Doors, wardrobes and shelving for a 40-room pilgrim guest house. Around five weeks of work.",
                 List.of("Carpentry", "Cabinet Making"), WorkType.WEEKLY, EmploymentType.FULL_TIME,
-                800, SalaryUnit.PER_DAY, "Korlagunta", 13.6360, 79.4170, 3, true, 2, "te");
+                800, SalaryUnit.DAILY, "Korlagunta", 13.6360, 79.4170, 3, true, 2, "te");
 
         JobPost kitchenJob = job(bloom, "Kitchen Helper / Cook",
-                "Tiffin and meals counter. Uniform and two meals provided. Daily shifts from 6am.",
+                "Evening counter shifts, 4pm to 9pm. Uniform and a meal provided, six days a week.",
                 List.of("Cooking", "Kitchen"), WorkType.DAILY, EmploymentType.DAILY,
-                650, SalaryUnit.PER_DAY, "Leela Mahal", 13.6420, 79.4180, 4, true, 0, "te");
+                650, SalaryUnit.DAILY, "Leela Mahal", 13.6420, 79.4180, 4, true, 0, "te");
 
         JobPost storeHelperJob = job(freshMart, "Store Helper",
                 "Stocking shelves, handling deliveries and helping customers on the floor.",
                 List.of("Retail", "Packing", "Sales"), WorkType.DAILY, EmploymentType.FULL_TIME,
-                700, SalaryUnit.PER_DAY, "Gandhi Road", 13.6288, 79.4192, 3, true, 0, "te");
+                700, SalaryUnit.DAILY, "Gandhi Road", 13.6288, 79.4192, 3, true, 0, "te");
 
         JobPost cashierJob = job(freshMart, "Cashier (evening shift)",
                 "Billing counter from 4pm to 10pm. Training on the billing software provided.",
                 List.of("Cashier", "Billing", "Retail"), WorkType.DAILY, EmploymentType.PART_TIME,
-                450, SalaryUnit.PER_DAY, "Gandhi Road", 13.6288, 79.4192, 2, false, 1, "en");
+                450, SalaryUnit.DAILY, "Gandhi Road", 13.6288, 79.4192, 2, false, 1, "en");
 
         JobPost loadingJob = job(logistics, "Loading and packing staff",
                 "Warehouse loading, packing and inventory support at the Renigunta hub.",
                 List.of("Packing", "Loading", "Warehouse"), WorkType.MONTHLY, EmploymentType.FULL_TIME,
-                18000, SalaryUnit.PER_MONTH, "Renigunta", 13.6400, 79.5120, 5, false, 0, "te");
+                18000, SalaryUnit.MONTHLY, "Renigunta", 13.6400, 79.5120, 5, false, 0, "te");
 
         JobPost driverJob = job(logistics, "Delivery driver (permanent)",
                 "Last-mile delivery across Tirupati and Chittoor. Salary plus fuel allowance.",
                 List.of("Driving", "Delivery"), WorkType.PERMANENT, EmploymentType.PERMANENT,
-                22000, SalaryUnit.PER_MONTH, "Renigunta", 13.6400, 79.5120, 4, true, 2, "te");
+                22000, SalaryUnit.MONTHLY, "Renigunta", 13.6400, 79.5120, 4, true, 2, "te");
 
         JobPost electricianJob = job(homeServices, "Electrician for apartment wiring",
                 "Wiring, fixture fitting and testing for a new 24-flat apartment block.",
                 List.of("Electrical Wiring", "Electrical Work"), WorkType.DAILY, EmploymentType.DAILY,
-                900, SalaryUnit.PER_DAY, "Air Bypass Road", 13.6330, 79.4050, 2, false, 3, "te");
+                900, SalaryUnit.DAILY, "Air Bypass Road", 13.6330, 79.4050, 2, false, 3, "te");
 
         JobPost plumberJob = job(homeServices, "Plumber for bathroom fittings",
                 "Two bathrooms: pipe fitting, fixture installation and leak repairs.",
                 List.of("Plumbing", "Pipe Fitting"), WorkType.MONTHLY, EmploymentType.FULL_TIME,
-                850, SalaryUnit.PER_DAY, "Padmavathi Nagar", 13.6230, 79.4340, 1, false, 2, "te");
+                850, SalaryUnit.DAILY, "Padmavathi Nagar", 13.6230, 79.4340, 1, false, 2, "te");
 
         JobPost welderJob = job(safiri, "Welder for gates and railings",
                 "Fabricate and install steel gates and balcony railings at an ongoing site.",
                 List.of("Welding", "Metal Fabrication"), WorkType.MONTHLY, EmploymentType.FULL_TIME,
-                950, SalaryUnit.PER_DAY, "Tiruchanoor", 13.6100, 79.4450, 2, false, 3, "te");
+                950, SalaryUnit.DAILY, "Tiruchanoor", 13.6100, 79.4450, 2, false, 3, "te");
 
         JobPost waiterJob = job(bloom, "Weekend server / waiter",
                 "Saturday and Sunday shifts at the Leela Mahal branch. Training provided.",
                 List.of("Waiter", "Restaurant Service"), WorkType.WEEKLY, EmploymentType.PART_TIME,
-                500, SalaryUnit.PER_DAY, "Leela Mahal", 13.6420, 79.4180, 3, false, 0, "te");
+                500, SalaryUnit.DAILY, "Leela Mahal", 13.6420, 79.4180, 3, false, 0, "te");
 
         JobPost cleaningJob = job(homeServices, "House cleaning staff",
                 "Daily cleaning rounds for apartments in MR Palli. Morning slots only.",
                 List.of("Cleaning", "Housekeeping"), WorkType.DAILY, EmploymentType.PART_TIME,
-                550, SalaryUnit.PER_DAY, "MR Palli", 13.6420, 79.4280, 3, false, 0, "te");
+                550, SalaryUnit.DAILY, "MR Palli", 13.6420, 79.4280, 3, false, 0, "te");
 
         JobPost dataEntryJob = job(freshMart, "Data entry operator",
                 "Stock and billing data entry. Comfortable with spreadsheets required.",
                 List.of("Data Entry", "Typing"), WorkType.MONTHLY, EmploymentType.FULL_TIME,
-                16000, SalaryUnit.PER_MONTH, "Gandhi Road", 13.6288, 79.4192, 1, false, 1, "en");
+                16000, SalaryUnit.MONTHLY, "Gandhi Road", 13.6288, 79.4192, 1, false, 1, "en");
 
         // Safiri Constructions (the employer demo login, 9000000002) carries the full spread of
         // statuses so every tab of the employer job list has something in it.
         JobPost siteHelperJob = job(safiri, "Site helper / loading staff",
                 "General site support: moving material, mixing, clearing and helping the fitters.",
                 List.of("Loading", "Packing", "Cleaning"), WorkType.DAILY, EmploymentType.DAILY,
-                600, SalaryUnit.PER_DAY, "Korlagunta", 13.6360, 79.4170, 4, true, 0, "te");
+                600, SalaryUnit.DAILY, "Korlagunta", 13.6360, 79.4170, 4, true, 0, "te");
 
         JobPost securityJob = job(safiri, "Night security guard for site",
                 "Overnight watch at the Korlagunta site. Cabin, fan and tea provided.",
                 List.of("Security"), WorkType.MONTHLY, EmploymentType.FULL_TIME,
-                17000, SalaryUnit.PER_MONTH, "Korlagunta", 13.6360, 79.4170, 2, false, 1, "te");
+                17000, SalaryUnit.MONTHLY, "Korlagunta", 13.6360, 79.4170, 2, false, 1, "te");
 
         JobPost sweepingJob = job(safiri, "Site cleaning crew",
                 "Daily clearing and washing down of finished floors before handover.",
                 List.of("Cleaning", "Housekeeping"), WorkType.DAILY, EmploymentType.PART_TIME,
-                500, SalaryUnit.PER_DAY, "Korlagunta", 13.6360, 79.4170, 2, false, 0, "te");
+                500, SalaryUnit.DAILY, "Korlagunta", 13.6360, 79.4170, 2, false, 0, "te");
 
         JobPost materialDriverJob = job(safiri, "Material delivery driver (draft)",
                 "Moving cement, steel and tools between the yard and the three live sites.",
                 List.of("Driving", "Delivery"), WorkType.MONTHLY, EmploymentType.FULL_TIME,
-                19000, SalaryUnit.PER_MONTH, "Korlagunta", 13.6360, 79.4170, 1, false, 2, "te");
+                19000, SalaryUnit.MONTHLY, "Korlagunta", 13.6360, 79.4170, 1, false, 2, "te");
 
-        // A short DAILY engagement whose fixed range holds exactly ten working days: the
-        // payroll demo hangs off it (ten scheduled, nine attended, paid for nine).
+        // A few-weeks engagement whose fixed range holds exactly ten working days: the payroll
+        // demo hangs off it (ten scheduled, nine attended, paid for nine). The 11-day range is
+        // what makes it FEW_WEEKS rather than FEW_DAYS under the new duration rules.
         LocalDate payrollEnd = LocalDate.now().with(DayOfWeek.FRIDAY).minusWeeks(1);
         LocalDate payrollStart = payrollEnd.minusDays(11);
         JobPost inventoryJob = job(freshMart, "Inventory count support (two weeks)",
                 "A two-week stock count across both branches. Fixed weekday schedule.",
                 List.of("Retail", "Data Entry", "Packing"), WorkType.DAILY, EmploymentType.DAILY,
-                700, SalaryUnit.PER_DAY, "Gandhi Road", 13.6288, 79.4192, 2, false, 0, "te");
+                700, SalaryUnit.DAILY, "Gandhi Road", 13.6288, 79.4192, 2, false, 0, "te");
 
         // ---------------------------------------------------------------- employment rules engine
-        // Every engagement model appears at least once, each with a schedule and a pay basis
-        // its model actually allows.
-        model(plumberJob, EngagementModel.ONE_TIME, SalaryUnit.PER_SHIFT, 1200,
+        // Every duration appears at least once, each with a schedule and a pay basis it allows.
+        // The date ranges sit inside what the duration's validation accepts: 2-7 days for
+        // FEW_DAYS, 8-31 days for FEW_WEEKS, a start date plus months or ongoing for MONTHS.
+        model(plumberJob, EngagementModel.ONE_DAY, SalaryUnit.PER_SHIFT, 1200,
                 LocalDate.now().plusDays(4), null, null);
-        model(kitchenJob, EngagementModel.DAILY, SalaryUnit.PER_DAY, 650, null,
-                LocalDate.now().minusDays(2), LocalDate.now().plusDays(12));
-        model(electricianJob, EngagementModel.DAILY, SalaryUnit.PER_DAY, 900, null,
-                LocalDate.now().plusDays(3), LocalDate.now().plusDays(24));
-        model(siteHelperJob, EngagementModel.DAILY, SalaryUnit.PER_DAY, 600, null,
-                LocalDate.now().minusDays(1), LocalDate.now().plusDays(20));
-        model(inventoryJob, EngagementModel.DAILY, SalaryUnit.PER_DAY, 700, null,
-                payrollStart, payrollEnd);
-        model(carpenterJob, EngagementModel.TEMPORARY, SalaryUnit.PER_DAY, 800, null,
-                LocalDate.now().plusDays(2), LocalDate.now().plusDays(37));
-        model(welderJob, EngagementModel.TEMPORARY, SalaryUnit.PER_DAY, 950, null,
-                LocalDate.now().minusDays(20), LocalDate.now().plusDays(40));
-        model(cashierJob, EngagementModel.PART_TIME, SalaryUnit.PER_HOUR, 90, null, null, null);
-        model(waiterJob, EngagementModel.PART_TIME, SalaryUnit.PER_DAY, 500, null, null, null);
-        model(cleaningJob, EngagementModel.PART_TIME, SalaryUnit.PER_HOUR, 110, null, null, null);
-        model(sweepingJob, EngagementModel.PART_TIME, SalaryUnit.PER_DAY, 500, null, null, null);
-        model(storeHelperJob, EngagementModel.FULL_TIME, SalaryUnit.PER_DAY, 700, null, null, null);
-        model(loadingJob, EngagementModel.FULL_TIME, SalaryUnit.PER_MONTH, 18000, null, null, null);
-        model(securityJob, EngagementModel.FULL_TIME, SalaryUnit.PER_MONTH, 17000, null, null, null);
-        model(dataEntryJob, EngagementModel.FULL_TIME, SalaryUnit.PER_MONTH, 16000, null, null, null);
-        model(materialDriverJob, EngagementModel.FULL_TIME, SalaryUnit.PER_MONTH, 19000, null, null, null);
-        model(driverJob, EngagementModel.PERMANENT, SalaryUnit.PER_MONTH, 22000, null, null, null);
+        model(kitchenJob, EngagementModel.FEW_WEEKS, SalaryUnit.DAILY, 650, null,
+                LocalDate.now().minusDays(2), LocalDate.now().plusDays(12),
+                null, WorkPattern.PART_TIME, null);
+        model(electricianJob, EngagementModel.FEW_DAYS, SalaryUnit.DAILY, 900, null,
+                LocalDate.now().plusDays(3), LocalDate.now().plusDays(9),
+                null, WorkPattern.FULL_DAY, null);
+        model(siteHelperJob, EngagementModel.FEW_DAYS, SalaryUnit.DAILY, 600, null,
+                LocalDate.now().minusDays(1), LocalDate.now().plusDays(5),
+                null, WorkPattern.SHIFT_BASED, null);
+        model(inventoryJob, EngagementModel.FEW_WEEKS, SalaryUnit.DAILY, 700, null,
+                payrollStart, payrollEnd, null, WorkPattern.FULL_DAY, null);
+        model(carpenterJob, EngagementModel.FEW_WEEKS, SalaryUnit.DAILY, 800, null,
+                LocalDate.now().plusDays(2), LocalDate.now().plusDays(30),
+                null, WorkPattern.FULL_DAY, null);
+        model(welderJob, EngagementModel.FEW_WEEKS, SalaryUnit.DAILY, 950, null,
+                LocalDate.now().minusDays(20), LocalDate.now().plusDays(10),
+                null, WorkPattern.FULL_DAY, null);
+        model(cashierJob, EngagementModel.MONTHS, SalaryUnit.HOURLY, 90, null,
+                LocalDate.now().minusDays(10), null, 3, WorkPattern.PART_TIME, null);
+        model(waiterJob, EngagementModel.MONTHS, SalaryUnit.DAILY, 500, null,
+                LocalDate.now().minusDays(6), null, 1, WorkPattern.FULL_DAY, null);
+        model(cleaningJob, EngagementModel.MONTHS, SalaryUnit.HOURLY, 110, null,
+                LocalDate.now().minusDays(3), null, 6, WorkPattern.PART_TIME, null);
+        model(sweepingJob, EngagementModel.MONTHS, SalaryUnit.DAILY, 500, null,
+                LocalDate.now().minusDays(30), null, 1, WorkPattern.PART_TIME, null);
+        model(storeHelperJob, EngagementModel.MONTHS, SalaryUnit.DAILY, 700, null,
+                LocalDate.now().minusDays(5), null, null, WorkPattern.FULL_DAY, null);
+        model(loadingJob, EngagementModel.MONTHS, SalaryUnit.MONTHLY, 18000, null,
+                LocalDate.now().minusDays(40), null, 6, WorkPattern.FULL_DAY, null);
+        model(securityJob, EngagementModel.MONTHS, SalaryUnit.MONTHLY, 17000, null,
+                LocalDate.now().minusDays(15), null, null, WorkPattern.SHIFT_BASED, null);
+        model(dataEntryJob, EngagementModel.MONTHS, SalaryUnit.MONTHLY, 16000, null,
+                LocalDate.now().minusDays(8), null, null, WorkPattern.FULL_DAY, null);
+        model(materialDriverJob, EngagementModel.MONTHS, SalaryUnit.MONTHLY, 19000, null,
+                LocalDate.now().plusDays(7), null, 6, WorkPattern.FULL_DAY, null);
+        model(driverJob, EngagementModel.PERMANENT, SalaryUnit.MONTHLY, 22000, null,
+                LocalDate.now().minusDays(20), null, null, WorkPattern.FULL_DAY, null);
 
         // ---------------------------------------------------------------- posting-wizard detail
         enrich(carpenterJob, WorkerCategory.OTHER, JobStatus.OPEN, 142,
@@ -357,7 +374,7 @@ public class DataSeeder implements CommandLineRunner {
         enrich(welderJob, WorkerCategory.OTHER, JobStatus.OPEN, 96,
                 List.of("Fabricate gates and railings", "Install on site", "Maintain the welding kit"),
                 SIX_DAYS, List.of("MEALS", "BONUS"), List.of("Telugu"),
-                InterviewType.SKILL_TEST, 18, "Day shift|09:00|18:00|13:00|13:30");
+                InterviewType.SKILL_TEST, 18, "Day shift|09:00|18:00|13:00|13:30|60");
         enrich(siteHelperJob, WorkerCategory.STORE_HELPER, JobStatus.OPEN, 211,
                 List.of("Move material around the site", "Mix and carry mortar",
                         "Clear debris at the end of the day", "Assist the fitters"),
@@ -378,14 +395,16 @@ public class DataSeeder implements CommandLineRunner {
                 InterviewType.IN_PERSON, 30, "Day shift|08:00|18:00");
 
         // The other businesses get the same treatment so their screens are not bare either.
+        // The restaurant job is the 4pm-9pm part-time evening engagement, with an explicit
+        // zero-minute break so the calculator's breakMinutes path is exercised end to end.
         enrich(kitchenJob, WorkerCategory.KITCHEN_STAFF, JobStatus.OPEN, 88,
                 List.of("Prepare tiffin items", "Maintain kitchen hygiene", "Support the head cook"),
                 ALL_DAYS, List.of("MEALS"), List.of("Telugu"), InterviewType.IN_PERSON, 10,
-                "Morning|06:00|11:00", "Evening|17:00|21:00");
+                "Evening|16:00|21:00|||0");
         enrich(storeHelperJob, WorkerCategory.STORE_HELPER, JobStatus.OPEN, 134,
                 List.of("Arrange items on shelves", "Assist customers", "Support the billing area"),
                 SIX_DAYS, List.of("MEALS", "BONUS"), List.of("Telugu", "English"),
-                InterviewType.PHONE, 14, "Day shift|09:00|18:00");
+                InterviewType.PHONE, 14, "Day shift|09:00|18:00|13:00|13:30|60");
         enrich(cashierJob, WorkerCategory.CASHIER, JobStatus.OPEN, 71,
                 List.of("Handle billing and cash", "Operate the POS machine", "Reconcile daily sales"),
                 SIX_DAYS, List.of("MEALS"), List.of("Telugu", "English"),
@@ -393,7 +412,7 @@ public class DataSeeder implements CommandLineRunner {
         enrich(loadingJob, WorkerCategory.OTHER, JobStatus.OPEN, 57,
                 List.of("Load and unload vehicles", "Pack and label consignments", "Support stock counts"),
                 SIX_DAYS, List.of("MEALS", "TRAVEL"), List.of("Telugu"),
-                InterviewType.NONE, 21, "Day shift|09:00|18:00");
+                InterviewType.NONE, 21, "Day shift|09:00|18:00|||60");
         enrich(driverJob, WorkerCategory.DELIVERY_PARTNER, JobStatus.OPEN, 163,
                 List.of("Deliver consignments on time", "Maintain the vehicle", "Update delivery status"),
                 SIX_DAYS, List.of("TRAVEL", "BONUS"), List.of("Telugu", "Hindi"),
@@ -417,11 +436,19 @@ public class DataSeeder implements CommandLineRunner {
         enrich(inventoryJob, WorkerCategory.STORE_HELPER, JobStatus.OPEN, 33,
                 List.of("Count and record stock", "Reconcile against the system", "Flag damaged goods"),
                 WEEKDAYS, List.of("MEALS", "TRAVEL"), List.of("Telugu", "English"),
-                InterviewType.NONE, 5, "Day shift|09:00|18:00|13:00|13:30");
+                InterviewType.NONE, 5, "Day shift|09:00|18:00|13:00|13:30|60");
         enrich(dataEntryJob, WorkerCategory.OTHER, JobStatus.OPEN, 29,
                 List.of("Enter stock and billing data", "Reconcile daily sheets", "File the paperwork"),
                 WEEKDAYS, List.of("MEALS"), List.of("English", "Telugu"),
                 InterviewType.SKILL_TEST, 25, "Day shift|10:00|18:00");
+
+        // The electrician job carries day-specific timings: Monday and Wednesday each have their
+        // own window, every other scheduled date falls back to the plain shift above.
+        electricianJob.getDayTimes().add(DayTime.builder().dayCode("MON")
+                .startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(13, 0)).build());
+        electricianJob.getDayTimes().add(DayTime.builder().dayCode("WED")
+                .startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(18, 0)).build());
+        jobRepository.save(electricianJob);
 
         // ---------------------------------------------------------------- applications
         // John's applications deliberately cover every state the new timeline can render.
@@ -515,7 +542,7 @@ public class DataSeeder implements CommandLineRunner {
                 .reportingTime(LocalTime.of(9, 0))
                 .status(EmploymentStatus.ACTIVE)
                 .salary(700)
-                .salaryUnit(SalaryUnit.PER_DAY)
+                .salaryUnit(SalaryUnit.DAILY)
                 .employmentType(EmploymentType.DAILY)
                 .workLocation("FreshMart, Gandhi Road, Tirupati")
                 .contactPersonName("Priya Sharma")
@@ -623,6 +650,247 @@ public class DataSeeder implements CommandLineRunner {
         review(ravi, logistics, driverJob, 5, "Reliable schedule and fuel allowance paid promptly.");
         review(david, homeServices, electricianJob, 4, "Steady flow of work and prompt settlements.");
 
+
+        // ================================================================ offer lifecycle demo
+        // Safiri Constructions (9000000002) gets one ONE_DAY job and one MONTHS job, each with a
+        // handful of interviewed applicants, so the interview-results, offer-draft, offer-tracking
+        // and joining screens all have real rows on both sides of the duration split.
+        JobPost siteClearanceJob = job(safiri, "One-day site clearance crew",
+                "A single day clearing the finished block before handover. Tools provided.",
+                List.of("Cleaning", "Loading", "Packing"), WorkType.DAILY, EmploymentType.DAILY,
+                900, SalaryUnit.DAILY, "Korlagunta", 13.6360, 79.4170, 4, true, 0, "te");
+        model(siteClearanceJob, EngagementModel.ONE_DAY, SalaryUnit.DAILY, 900,
+                LocalDate.now().plusDays(12), null, null);
+        enrich(siteClearanceJob, WorkerCategory.STORE_HELPER, JobStatus.OPEN, 87,
+                List.of("Clear debris from the finished floors", "Load the skip",
+                        "Wash down before handover"),
+                SIX_DAYS, List.of("MEALS"), List.of("Telugu"), InterviewType.PHONE, 10,
+                "Day shift|09:00|18:00|||60");
+
+        JobPost supervisorJob = job(safiri, "Site supervisor (6 months)",
+                "Running the day crew on the Korlagunta block for the rest of the build.",
+                List.of("Supervision", "Construction", "Safety"), WorkType.MONTHLY,
+                EmploymentType.FULL_TIME, 24000, SalaryUnit.MONTHLY, "Korlagunta",
+                13.6360, 79.4170, 1, false, 3, "te");
+        model(supervisorJob, EngagementModel.MONTHS, SalaryUnit.MONTHLY, 24000, null,
+                LocalDate.now().plusDays(10), null, 6, WorkPattern.FULL_DAY, null);
+        enrich(supervisorJob, WorkerCategory.OTHER, JobStatus.OPEN, 54,
+                List.of("Run the daily crew brief", "Track material against the plan",
+                        "Enforce site safety", "Sign off each day's work"),
+                SIX_DAYS, List.of("MEALS", "TRAVEL", "BONUS"), List.of("Telugu", "English"),
+                InterviewType.IN_PERSON, 14, "Day shift|09:00|18:00|||60");
+
+        // ---- the one-day job's applicants, spread across the interview results
+        JobApplication johnClearance = application(john, siteClearanceJob, ApplicationStatus.OFFERED, 4,
+                "Free that day, happy to bring my own tools.");
+        result(johnClearance, InterviewResult.SELECTED, "Strong on site, knows the block already.");
+        JobApplication sureshClearance = application(suresh, siteClearanceJob,
+                ApplicationStatus.SHORTLISTED, 4, "Available for the clearance day.");
+        result(sureshClearance, InterviewResult.INTERVIEWED, "Phone interview done, waiting on the crew list.");
+        JobApplication muraliClearance = application(murali, siteClearanceJob,
+                ApplicationStatus.REJECTED, 5, "Can help with the clearing.");
+        result(muraliClearance, InterviewResult.REJECTED, "Already booked on another site that day.");
+        JobApplication maryClearance = application(mary, siteClearanceJob, ApplicationStatus.ACCEPTED, 6,
+                "I do handover cleaning regularly.");
+        result(maryClearance, InterviewResult.SELECTED, "Has done our handover cleans before.");
+
+        // ---- the monthly job's applicants
+        JobApplication raviSupervisor = application(ravi, supervisorJob, ApplicationStatus.SHORTLISTED, 6,
+                "Five years on site, ready to move into supervision.");
+        result(raviSupervisor, InterviewResult.SHORTLISTED, "Good on logistics, second round to book.");
+        JobApplication davidSupervisor = application(david, supervisorJob,
+                ApplicationStatus.INTERVIEW_SCHEDULED, 5, "Electrical background, used to running a crew.");
+        result(davidSupervisor, InterviewResult.INTERVIEWED, "Interviewed in person, decision pending.");
+        JobApplication anithaSupervisor = application(anitha, supervisorJob, ApplicationStatus.REJECTED, 7,
+                "Looking for a steady monthly role.");
+        result(anithaSupervisor, InterviewResult.REJECTED, "No construction site experience.");
+        JobApplication lakshmiSupervisor = application(lakshmiS, supervisorJob,
+                ApplicationStatus.ACCEPTED, 9, "Two years of stock supervision on a retail floor.");
+        result(lakshmiSupervisor, InterviewResult.SELECTED, "Clear communicator, strong on record keeping.");
+        JobApplication divyaSupervisor = application(divya, supervisorJob, ApplicationStatus.WITHDRAWN, 8,
+                "Interested in the supervisor role.");
+        result(divyaSupervisor, InterviewResult.SHORTLISTED, "Shortlisted, then took another offer.");
+
+        // ---- offers: one PENDING, one DECLINED, and two ACCEPTED ones with joining underway
+        offerRepository.save(JobOffer.builder()
+                .application(johnClearance)
+                .salary(900).salaryUnit(SalaryUnit.DAILY)
+                .employmentType(EmploymentType.DAILY)
+                .joiningDate(siteClearanceJob.getWorkDate())
+                .workDate(siteClearanceJob.getWorkDate())
+                .workLocation("Safiri Constructions, Korlagunta, Tirupati")
+                .offerType(EngagementModel.ONE_DAY.offerType())
+                .benefits(new ArrayList<>(List.of(BenefitType.MEALS)))
+                .message("Please report to the site office at 9am.")
+                .status(OfferStatus.PENDING)
+                .sentAt(LocalDateTime.now().minusDays(1))
+                .expiresAt(siteClearanceJob.getWorkDate().atStartOfDay())
+                .build());
+
+        offerRepository.save(JobOffer.builder()
+                .application(divyaSupervisor)
+                .salary(23000).salaryUnit(SalaryUnit.MONTHLY)
+                .employmentType(EmploymentType.FULL_TIME)
+                .joiningDate(LocalDate.now().plusDays(10))
+                .workLocation("Safiri Constructions, Korlagunta, Tirupati")
+                .offerType(EngagementModel.MONTHS.offerType())
+                .probationMonths(3)
+                .benefits(new ArrayList<>(List.of(BenefitType.MEALS, BenefitType.TRAVEL_ALLOWANCE)))
+                .message("We would like you to lead the day crew.")
+                .status(OfferStatus.DECLINED)
+                .sentAt(LocalDateTime.now().minusDays(7))
+                .respondedAt(LocalDateTime.now().minusDays(6))
+                .expiresAt(LocalDateTime.now().plusDays(3))
+                .build());
+
+        // A short-job hire whose joining timeline is one step in (HIRED done, JOINED next).
+        JobOffer maryClearanceOffer = offerRepository.save(JobOffer.builder()
+                .application(maryClearance)
+                .salary(900).salaryUnit(SalaryUnit.DAILY)
+                .employmentType(EmploymentType.DAILY)
+                .joiningDate(siteClearanceJob.getWorkDate())
+                .workDate(siteClearanceJob.getWorkDate())
+                .workLocation("Safiri Constructions, Korlagunta, Tirupati")
+                .offerType(EngagementModel.ONE_DAY.offerType())
+                .benefits(new ArrayList<>(List.of(BenefitType.MEALS)))
+                .status(OfferStatus.ACCEPTED)
+                .sentAt(LocalDateTime.now().minusDays(5))
+                .respondedAt(LocalDateTime.now().minusDays(4))
+                .expiresAt(siteClearanceJob.getWorkDate().atStartOfDay())
+                .build());
+        employmentRepository.save(Employment.builder()
+                .worker(mary).employer(safiri).job(siteClearanceJob)
+                .application(maryClearance).offer(maryClearanceOffer)
+                .joiningDate(siteClearanceJob.getWorkDate())
+                .reportingTime(LocalTime.of(9, 0))
+                .status(EmploymentStatus.OFFER_ACCEPTED)
+                .salary(900).salaryUnit(SalaryUnit.DAILY)
+                .employmentType(EmploymentType.DAILY)
+                .workLocation("Safiri Constructions, Korlagunta, Tirupati")
+                .contactPersonName("James Otieno").contactPersonPhone("9000000002")
+                .documentsToCarry(new ArrayList<>(List.of("Aadhaar card")))
+                .createdAt(LocalDateTime.now().minusDays(4))
+                .build());
+
+        // A monthly hire far enough along that the employment track is already in progress.
+        JobOffer lakshmiSupervisorOffer = offerRepository.save(JobOffer.builder()
+                .application(lakshmiSupervisor)
+                .salary(24000).salaryUnit(SalaryUnit.MONTHLY)
+                .employmentType(EmploymentType.FULL_TIME)
+                .joiningDate(LocalDate.now().minusDays(2))
+                .workLocation("Safiri Constructions, Korlagunta, Tirupati")
+                .offerType(EngagementModel.MONTHS.offerType())
+                .probationMonths(3)
+                .benefits(new ArrayList<>(List.of(BenefitType.MEALS, BenefitType.TRAVEL_ALLOWANCE,
+                        BenefitType.PERFORMANCE_BONUS)))
+                .message("Six-month supervisor contract, three months probation.")
+                .status(OfferStatus.ACCEPTED)
+                .sentAt(LocalDateTime.now().minusDays(8))
+                .respondedAt(LocalDateTime.now().minusDays(7))
+                .expiresAt(LocalDateTime.now().minusDays(1))
+                .build());
+        Employment lakshmiEmployment = employmentRepository.save(Employment.builder()
+                .worker(lakshmiS).employer(safiri).job(supervisorJob)
+                .application(lakshmiSupervisor).offer(lakshmiSupervisorOffer)
+                .joiningDate(LocalDate.now().minusDays(2))
+                .actualJoiningDate(LocalDate.now().minusDays(2))
+                .reportingTime(LocalTime.of(9, 0))
+                .status(EmploymentStatus.ACTIVE)
+                .salary(24000).salaryUnit(SalaryUnit.MONTHLY)
+                .employmentType(EmploymentType.FULL_TIME)
+                .workLocation("Safiri Constructions, Korlagunta, Tirupati")
+                .contactPersonName("James Otieno").contactPersonPhone("9000000002")
+                .employeeId("SAF-2026-014")
+                .department("Site Operations")
+                .documentsVerified(new ArrayList<>(List.of(DocumentType.AADHAAR, DocumentType.BANK)))
+                .joiningNotes("Inducted on site, safety briefing completed.")
+                .documentsToCarry(new ArrayList<>(List.of("Aadhaar card", "Bank passbook")))
+                .joiningAcknowledgedAt(LocalDateTime.now().minusDays(3))
+                .startedAt(LocalDateTime.now().minusDays(2).withHour(9).withMinute(0))
+                .createdAt(LocalDateTime.now().minusDays(7))
+                .build());
+
+        interviewRepository.save(Interview.builder()
+                .employer(safiri).worker(ravi).job(supervisorJob)
+                .scheduledAt(LocalDateTime.now().minusDays(3).withHour(11).withMinute(0)
+                        .withSecond(0).withNano(0))
+                .durationMinutes(45).mode(InterviewMode.IN_PERSON)
+                .location("Safiri Constructions site office, Korlagunta")
+                .status(InterviewStatus.COMPLETED).build());
+        interviewRepository.save(Interview.builder()
+                .employer(safiri).worker(david).job(supervisorJob)
+                .scheduledAt(thisWeek(DayOfWeek.TUESDAY, 15, 0))
+                .durationMinutes(45).mode(InterviewMode.IN_PERSON)
+                .location("Safiri Constructions site office, Korlagunta")
+                .status(InterviewStatus.CONFIRMED).build());
+        interviewRepository.save(Interview.builder()
+                .employer(safiri).worker(suresh).job(siteClearanceJob)
+                .scheduledAt(LocalDateTime.now().minusDays(2).withHour(17).withMinute(0)
+                        .withSecond(0).withNano(0))
+                .durationMinutes(15).mode(InterviewMode.PHONE)
+                .status(InterviewStatus.COMPLETED).build());
+
+        // ================================================================ real work history
+        // Finished engagements with pay, dates and (mostly) a review, so workHistory,
+        // ratingBreakdown and workHistoryCount are genuinely populated. John Kamau carries six.
+        history(john, freshMart, storeHelperJob, "FreshMart, Gandhi Road, Tirupati",
+                LocalDate.now().minusMonths(6).withDayOfMonth(1),
+                LocalDate.now().minusMonths(6).withDayOfMonth(1).plusDays(30),
+                700, SalaryUnit.DAILY, 5, "Very punctual and hard working.");
+        history(john, safiri, carpenterJob, "Safiri Constructions, Korlagunta, Tirupati",
+                LocalDate.now().minusMonths(11).withDayOfMonth(1),
+                LocalDate.now().minusMonths(10).withDayOfMonth(1),
+                800, SalaryUnit.DAILY, null, null);   // the carpenter review is already seeded
+        history(john, homeServices, cleaningJob, "Sai Home Services, MR Palli, Tirupati",
+                LocalDate.now().minusMonths(14).withDayOfMonth(1),
+                LocalDate.now().minusMonths(14).withDayOfMonth(20),
+                550, SalaryUnit.DAILY, 4, "Good worker, finished every flat on schedule.");
+        history(john, bloom, kitchenJob, "Bloom Tiffins, Leela Mahal, Tirupati",
+                LocalDate.now().minusMonths(17).withDayOfMonth(1),
+                LocalDate.now().minusMonths(17).withDayOfMonth(15),
+                600, SalaryUnit.DAILY, 3, "Did the job, needed a little supervision.");
+        history(john, freshMart, inventoryJob, "FreshMart, Gandhi Road, Tirupati",
+                LocalDate.now().minusMonths(20).withDayOfMonth(1),
+                LocalDate.now().minusMonths(20).withDayOfMonth(12),
+                700, SalaryUnit.DAILY, 5, "Counted the whole floor without a single error.");
+        // The sixth is the logistics engagement already seeded above; it only needs its review.
+        review(logistics, john, loadingJob, 5, "Dependable on every shift, never late.");
+
+        history(mary, homeServices, cleaningJob, "Sai Home Services, MR Palli, Tirupati",
+                LocalDate.now().minusMonths(4).withDayOfMonth(1),
+                LocalDate.now().minusMonths(4).withDayOfMonth(28),
+                550, SalaryUnit.DAILY, 5, "Thorough and trustworthy.");
+        history(lakshmiS, freshMart, storeHelperJob, "FreshMart, Gandhi Road, Tirupati",
+                LocalDate.now().minusMonths(3).withDayOfMonth(1),
+                LocalDate.now().minusMonths(3).withDayOfMonth(25),
+                700, SalaryUnit.DAILY, 4, "Quick on the billing counter.");
+        history(suresh, safiri, welderJob, "Safiri Constructions yard, Korlagunta, Tirupati",
+                LocalDate.now().minusMonths(9).withDayOfMonth(1),
+                LocalDate.now().minusMonths(9).withDayOfMonth(26),
+                950, SalaryUnit.DAILY, 5, "Excellent fabrication work on the main gates.");
+
+        // ================================================================ richer worker profiles
+        richProfile(john, 10, LocalDate.now().plusDays(5),
+                List.of("Store Helper", "Cashier"), List.of("Morning", "Evening"),
+                DocumentStatus.VERIFIED, DocumentStatus.VERIFIED, DocumentStatus.NOT_UPLOADED,
+                DocumentStatus.VERIFIED, DocumentStatus.NOT_UPLOADED);
+        richProfile(mary, 8, LocalDate.now().plusDays(1),
+                List.of("Housekeeping Staff", "Cleaning Staff"), List.of("Morning"),
+                DocumentStatus.VERIFIED, DocumentStatus.VERIFIED, DocumentStatus.NOT_UPLOADED,
+                DocumentStatus.PENDING, DocumentStatus.NOT_UPLOADED);
+        richProfile(lakshmiS, 12, LocalDate.now().plusDays(3),
+                List.of("Store Helper", "Cashier", "Sales Assistant"), List.of("Morning", "Afternoon"),
+                DocumentStatus.PENDING, DocumentStatus.VERIFIED, DocumentStatus.NOT_UPLOADED,
+                DocumentStatus.NOT_UPLOADED, DocumentStatus.NOT_UPLOADED);
+        richProfile(suresh, 25, LocalDate.now().plusDays(14),
+                List.of("Welder / Fabricator", "Site Helper"), List.of("Morning", "Evening"),
+                DocumentStatus.VERIFIED, DocumentStatus.VERIFIED, DocumentStatus.VERIFIED,
+                DocumentStatus.VERIFIED, DocumentStatus.NOT_UPLOADED);
+        richProfile(ravi, 40, LocalDate.now(),
+                List.of("Driver / Delivery Rider"), List.of("Morning", "Night"),
+                DocumentStatus.VERIFIED, DocumentStatus.VERIFIED, DocumentStatus.PENDING,
+                DocumentStatus.VERIFIED, DocumentStatus.NOT_UPLOADED);
+
         // ---------------------------------------------------------------- wallets
         wallet(AccountType.ADMIN, admin.getId(), 200000);
         for (EmployerAccount e : List.of(safiri, bloom, freshMart, logistics, homeServices)) {
@@ -642,7 +910,70 @@ public class DataSeeder implements CommandLineRunner {
                 .forEach(matchingService::generateMatchesForJob);
     }
 
+
+    /** Records the outcome the employer entered after the interview. */
+    private void result(JobApplication application, InterviewResult result, String feedback) {
+        application.setInterviewResult(result);
+        application.setInterviewFeedback(feedback);
+        application.setInterviewResultAt(application.getAppliedAt().plusDays(2));
+        applicationRepository.save(application);
+    }
+
+    /**
+     * A finished engagement plus, when a rating is given, the employer's review of it. This is
+     * what the employer-facing work history reads; an entry with a null rating deliberately has
+     * no review, so the history row comes back with null rating and null feedback.
+     */
+    private void history(WorkerAccount worker, EmployerAccount employer, JobPost job, String location,
+                         LocalDate from, LocalDate to, double pay, SalaryUnit unit,
+                         Integer rating, String comment) {
+        employmentRepository.save(Employment.builder()
+                .worker(worker).employer(employer).job(job)
+                .joiningDate(from)
+                .actualJoiningDate(from)
+                .reportingTime(LocalTime.of(9, 0))
+                .status(EmploymentStatus.COMPLETED)
+                .salary(pay).salaryUnit(unit)
+                .employmentType(EmploymentType.DAILY)
+                .workLocation(location)
+                .contactPersonName(employer.getName())
+                .contactPersonPhone(employer.getPhone())
+                .documentsToCarry(new ArrayList<>(List.of("Aadhaar card")))
+                .joiningAcknowledgedAt(from.minusDays(1).atTime(18, 0))
+                .startedAt(from.atTime(9, 0))
+                .workProgressAt(from.atTime(9, 30))
+                .endedAt(to.atTime(18, 0))
+                .settledAt(to.atTime(18, 30))
+                .createdAt(from.minusDays(3).atStartOfDay())
+                .build());
+        if (rating != null) {
+            review(employer, worker, job, rating, comment);
+        }
+    }
+
+    /** The extra profile fields the employer-facing worker screen renders. */
+    private void richProfile(WorkerAccount account, int canTravelKm, LocalDate availableFrom,
+                             List<String> preferredRoles, List<String> preferredHours,
+                             DocumentStatus aadhaar, DocumentStatus bank, DocumentStatus pan,
+                             DocumentStatus address, DocumentStatus passport) {
+        WorkerProfile profile = workerProfileRepository.findByAccountId(account.getId()).orElseThrow();
+        profile.setCanTravelKm(canTravelKm);
+        profile.setAvailableFrom(availableFrom);
+        profile.setPreferredRoles(new ArrayList<>(preferredRoles));
+        profile.setPreferredHours(new ArrayList<>(preferredHours));
+        profile.setAadhaarStatus(aadhaar);
+        profile.setBankStatus(bank);
+        profile.setPanStatus(pan);
+        profile.setAddressStatus(address);
+        profile.setPassportStatus(passport);
+        // A tiny real data URL, so the CLOB-backed photo collection is exercised end to end.
+        profile.setPhotos(new ArrayList<>(List.of(
+                "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==")));
+        workerProfileRepository.save(profile);
+    }
+
     // ---------------------------------------------------------------- builders
+
 
     private EmployerAccount employer(String name, String email, String phone) {
         return employerAccountRepository.save(EmployerAccount.builder()
@@ -725,17 +1056,23 @@ public class DataSeeder implements CommandLineRunner {
             String[] parts = spec.split("\\|");
             JobShift built1 = JobShift.builder().label(parts[0])
                     .startTime(LocalTime.parse(parts[1])).endTime(LocalTime.parse(parts[2])).build();
-            if (parts.length >= 5) {
+            if (parts.length >= 5 && !parts[3].isBlank()) {
                 built1.setBreakStart(LocalTime.parse(parts[3]));
                 built1.setBreakEnd(LocalTime.parse(parts[4]));
+            }
+            if (parts.length >= 6 && !parts[5].isBlank()) {
+                built1.setBreakMinutes(Integer.parseInt(parts[5]));
             }
             built.add(built1);
         }
         job.replaceShifts(built);
         if (job.getEngagementModel() == null) {
-            job.setEngagementModel(EngagementModel.FULL_TIME);
+            job.setEngagementModel(EngagementModel.MONTHS);
         }
-        job.setEmploymentType(job.getEngagementModel().legacyEmploymentType());
+        if (job.getWorkPattern() == null) {
+            job.setWorkPattern(WorkPattern.FULL_DAY);
+        }
+        job.setEmploymentType(job.getEngagementModel().legacyEmploymentType(job.getWorkPattern()));
         if (job.getPayrollCycle() == null) {
             job.setPayrollCycle(job.getEngagementModel().defaultPayrollCycle());
         }
@@ -743,20 +1080,30 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * Applies the employment rules engine to a seeded job: the model, its schedule and the
+     * Applies the employment rules engine to a seeded job: the duration, its schedule and the
      * payroll cycle that follows from it. Called before {@link #enrich}, which then keeps the
      * legacy employmentType column in step.
      */
     private JobPost model(JobPost job, EngagementModel engagementModel, SalaryUnit unit,
                           double salary, LocalDate workDate, LocalDate startDate, LocalDate endDate) {
+        return model(job, engagementModel, unit, salary, workDate, startDate, endDate,
+                null, WorkPattern.FULL_DAY, null);
+    }
+
+    private JobPost model(JobPost job, EngagementModel engagementModel, SalaryUnit unit,
+                          double salary, LocalDate workDate, LocalDate startDate, LocalDate endDate,
+                          Integer durationMonths, WorkPattern workPattern, HiringMethod hiringMethod) {
         job.setEngagementModel(engagementModel);
-        job.setEmploymentType(engagementModel.legacyEmploymentType());
+        job.setWorkPattern(workPattern != null ? workPattern : WorkPattern.FULL_DAY);
+        job.setHiringMethod(hiringMethod != null ? hiringMethod : engagementModel.defaultHiringMethod());
+        job.setEmploymentType(engagementModel.legacyEmploymentType(job.getWorkPattern()));
         job.setSalaryUnit(unit);
         job.setSalary(salary);
         job.setWorkDate(workDate);
+        job.setDurationMonths(durationMonths);
         job.setShiftArrangement(ShiftArrangement.ALL_SHIFTS);
         job.setPayrollCycle(engagementModel.defaultPayrollCycle());
-        if (engagementModel == EngagementModel.ONE_TIME && workDate != null) {
+        if (engagementModel == EngagementModel.ONE_DAY && workDate != null) {
             job.setDurationType(JobDuration.SPECIFIC);
             job.setStartDate(workDate);
             job.setEndDate(workDate);
@@ -769,8 +1116,7 @@ public class DataSeeder implements CommandLineRunner {
             job.setStartDate(startDate);
             job.setEndDate(null);
         }
-        if (engagementModel == EngagementModel.PART_TIME || engagementModel == EngagementModel.FULL_TIME
-                || engagementModel == EngagementModel.PERMANENT) {
+        if (engagementModel == EngagementModel.MONTHS || engagementModel == EngagementModel.PERMANENT) {
             job.setSalaryDueDayOfMonth(5);
         }
         return jobRepository.save(job);

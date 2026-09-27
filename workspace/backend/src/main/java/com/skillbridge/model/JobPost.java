@@ -50,7 +50,7 @@ public class JobPost {
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    private SalaryUnit salaryUnit = SalaryUnit.PER_MONTH;
+    private SalaryUnit salaryUnit = SalaryUnit.MONTHLY;
 
     @Column(nullable = false)
     private String city;
@@ -118,11 +118,34 @@ public class JobPost {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "engagement_model")
-    private EngagementModel engagementModel = EngagementModel.FULL_TIME;
+    private EngagementModel engagementModel = EngagementModel.MONTHS;
 
-    /** ONE_TIME jobs run on exactly this date. */
+    /** How the working hours are spread across a day, independent of the duration. */
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "work_pattern")
+    private WorkPattern workPattern = WorkPattern.FULL_DAY;
+
+    /** How the employer meets the worker before hiring. */
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "hiring_method")
+    private HiringMethod hiringMethod = HiringMethod.DIRECT;
+
+    /** ONE_DAY jobs run on exactly this date. */
     @Column(name = "work_date")
     private LocalDate workDate;
+
+    /** For MONTHS: the fixed number of months the engagement is hired for (1-12). */
+    @Column(name = "duration_months")
+    private Integer durationMonths;
+
+    /** Day-specific timings; a scheduled date falls back to {@link #shifts} without an entry. */
+    @Builder.Default
+    @ElementCollection
+    @CollectionTable(name = "job_day_times", joinColumns = @JoinColumn(name = "job_id"))
+    @OrderColumn(name = "position")
+    private List<DayTime> dayTimes = new ArrayList<>();
 
     @Builder.Default
     @Enumerated(EnumType.STRING)

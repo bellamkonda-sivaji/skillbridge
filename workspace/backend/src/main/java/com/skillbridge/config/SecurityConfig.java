@@ -49,7 +49,7 @@ public class SecurityConfig {
                         .requestMatchers("/ws/**", "/h2-console/**", "/api/health").permitAll()
                         // --- open: the public job / worker / employer listings ---
                         .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/jobs/*",
-                                "/api/workers", "/api/employers/*").permitAll()
+                                "/api/workers", "/api/employers/*", "/api/config/pricing").permitAll()
                         // --- role walls, enforced by the framework rather than by hand ---
                         .requestMatchers("/api/worker/**").hasRole("WORKER")
                         .requestMatchers("/api/employer/**").hasRole("EMPLOYER")

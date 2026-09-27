@@ -12,54 +12,11 @@ export const WORKER_CATEGORIES = [
   { value: 'OTHER', label: 'Other', sub: 'Custom Requirement', icon: 'grid', tone: 'teal' },
 ]
 
-export const EMPLOYMENT_TYPES = [
-  { value: 'DAILY', label: 'Daily Work', sub: 'For short-term or one-time work', icon: 'clock' },
-  { value: 'PART_TIME', label: 'Part-time', sub: 'Few hours per day/week', icon: 'clock' },
-  { value: 'FULL_TIME', label: 'Full-time', sub: 'Regular long-term employment', icon: 'briefcase' },
-  { value: 'TEMPORARY', label: 'Temporary', sub: 'For a specific period', icon: 'calendar' },
-  { value: 'PERMANENT', label: 'Permanent', sub: 'Long-term position', icon: 'checkCircle' },
-]
-
-export const DAYS = [
-  { value: 'MON', label: 'Mon' }, { value: 'TUE', label: 'Tue' },
-  { value: 'WED', label: 'Wed' }, { value: 'THU', label: 'Thu' },
-  { value: 'FRI', label: 'Fri' }, { value: 'SAT', label: 'Sat' },
-  { value: 'SUN', label: 'Sun' },
-]
-
-export const SALARY_UNITS = [
-  { value: 'PER_DAY', label: 'Per Day' },
-  { value: 'PER_HOUR', label: 'Per Hour' },
-  { value: 'PER_MONTH', label: 'Per Month' },
-]
-
-export const BENEFITS = [
-  { value: 'MEALS', label: 'Meals / Food' },
-  { value: 'TRAVEL', label: 'Travel Allowance' },
-  { value: 'BONUS', label: 'Performance Bonus' },
-  { value: 'OTHER', label: 'Other' },
-]
-
-export const PAYMENT_MODES = [
-  {
-    value: 'SKILLBRIDGE',
-    label: 'SkillBridge Payment (Recommended)',
-    sub: 'We handle secure payments to workers.',
-  },
-  {
-    value: 'CASH',
-    label: 'Cash / Direct Payment',
-    sub: 'You pay the worker directly. No wage protection.',
-  },
-]
-
+/** Local roles rarely need a years-of-experience framework. */
 export const EXPERIENCE_LEVELS = [
-  { value: 0, label: 'No prior experience required' },
-  { value: 1, label: '6 months – 1 year' },
-  { value: 2, label: '1 – 2 years' },
-  { value: 3, label: '2 – 3 years' },
-  { value: 5, label: '3 – 5 years' },
-  { value: 8, label: 'More than 5 years' },
+  { value: 0, label: 'No experience needed' },
+  { value: 1, label: 'Some experience preferred' },
+  { value: 3, label: 'Experienced' },
 ]
 
 export const LANGUAGE_OPTIONS = ['Telugu', 'Hindi', 'English', 'Tamil', 'Kannada', 'Malayalam', 'Marathi']
@@ -105,40 +62,47 @@ export const SKILL_SUGGESTIONS = [
 ]
 
 export const WIZARD_STEPS = [
-  'Worker Type', 'Employment', 'Details', 'Schedule',
-  'Salary', 'Requirements', 'Interview', 'Review',
+  'Worker Type', 'Duration', 'Job Details', 'Schedule',
+  'Pay & Benefits', 'Requirements', 'Hiring', 'Review',
 ]
 
 /** A blank posting. Kept here so the wizard and the edit screen agree. */
 export const EMPTY_JOB = {
+  // who
   workerCategory: '',
-  engagementModel: '',
-  employmentType: '',
-  workDate: '',
   title: '',
   workersNeeded: 1,
   description: '',
   responsibilities: [],
-  workingDays: ['MON', 'TUE', 'WED', 'THU', 'FRI'],
-  shifts: [{ label: 'Shift 1', startTime: '09:00', endTime: '18:00', breakStart: '13:00', breakEnd: '14:00' }],
-  shiftArrangement: 'ALL_SHIFTS',
-  breakPaid: false,
-  durationType: 'ONGOING',
+  // how long
+  durationType: '',
+  workDate: '',
   startDate: '',
   endDate: '',
+  durationMonths: 1,
+  // when
+  workingDays: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
+  shifts: [{ startTime: '09:00', endTime: '18:00', breakMinutes: 60 }],
+  sameTimeEveryDay: true,
+  dayTimes: [],
+  shiftArrangement: 'ALL_SHIFTS',
+  workPattern: 'FULL_DAY',
+  // pay
   salary: '',
-  salaryUnit: 'PER_DAY',
+  salaryUnit: 'DAILY',
   benefits: [],
   overtimeExpected: false,
   overtimePayBasis: null,
   overtimeRate: '',
   paymentMode: 'SKILLBRIDGE',
+  // who can apply
   requiredSkills: [],
   minExperienceYears: 0,
   languages: [],
   genderPreference: 'ANY',
   ageRange: '',
-  interviewType: 'NONE',
+  // hiring
+  hiringMethod: 'DIRECT',
   applicationDeadline: '',
   autoCloseWhenFilled: true,
 }

@@ -3,6 +3,7 @@ package com.skillbridge.service;
 import com.skillbridge.dto.ApplicantCardDto;
 import com.skillbridge.dto.WorkExperienceDto;
 import com.skillbridge.dto.WorkerDetailDto;
+import com.skillbridge.dto.WorkHistoryEntryDto;
 import com.skillbridge.dto.WorkerReviewDto;
 import com.skillbridge.model.AccountType;
 import com.skillbridge.model.Availability;
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Builds the single {@link ApplicantCardDto} shape every employer screen renders - the applicants
@@ -38,9 +40,12 @@ public class ApplicantCardAssembler {
     private final GeoService geoService;
     private final ReviewRepository reviewRepository;
     private final AccountDirectory accountDirectory;
+    private final WorkerHistoryAssembler historyAssembler;
 
     public ApplicantCardAssembler(MatchingService matchingService, GeoService geoService,
-                                  ReviewRepository reviewRepository, AccountDirectory accountDirectory) {
+                                  ReviewRepository reviewRepository, AccountDirectory accountDirectory,
+                                  WorkerHistoryAssembler historyAssembler) {
+        this.historyAssembler = historyAssembler;
         this.matchingService = matchingService;
         this.geoService = geoService;
         this.reviewRepository = reviewRepository;
@@ -97,6 +102,12 @@ public class ApplicantCardAssembler {
                 .findByTargetTypeAndTargetIdOrderByCreatedAtDesc(AccountType.WORKER, profile.getAccount().getId())
                 .stream().map(this::review).toList();
 
+        List<WorkHistoryEntryDto> fullHistory = historyAssembler.workHistory(profile.getAccount().getId());
+        List<WorkHistoryEntryDto> recent = fullHistory.size() > WorkerHistoryAssembler.RECENT_HISTORY
+                ? List.copyOf(fullHistory.subList(0, WorkerHistoryAssembler.RECENT_HISTORY))
+                : List.copyOf(fullHistory);
+        Map<String, Integer> breakdown = historyAssembler.ratingBreakdown(profile.getAccount().getId());
+
         return new WorkerDetailDto(
                 card.applicationId(), card.workerId(), card.name(), card.gender(), card.age(),
                 card.experienceYears(), card.jobTitle(), card.distanceKm(), card.matchScore(),
@@ -113,7 +124,56 @@ public class ApplicantCardAssembler {
                 availabilityLabel(profile.getAvailability()),
                 profile.getAccount().getAvgRating(),
                 profile.getAccount().getRatingCount(),
-                reviews);
+                reviews,
+                livesIn(profile),
+                profile.getCanTravelKm(),
+                profile.getAvailableFrom(),
+                profile.isProfileCompleted(),
+                reliable(profile),
+                List.copyOf(profile.getPreferredRoles()),
+                preferredWorkTypes(profile),
+                List.copyOf(profile.getPreferredHours()),
+                breakdown,
+                historyAssembler.documents(profile),
+                List.copyOf(profile.getPhotos()),
+                recent,
+                fullHistory.size());
+    }
+
+    /** "Area, City" when both are known, otherwise whichever half the profile holds. */
+    private String livesIn(WorkerProfile profile) {
+        String area = profile.getArea();
+        String city = profile.getCity();
+        // On a worker profile the area column carries the region, so it reads "City, Region".
+        if (area != null && !area.isBlank() && city != null && !city.isBlank()) {
+            return city + ", " + area;
+        }
+        if (city != null && !city.isBlank()) return city;
+        return area != null && !area.isBlank() ? area : null;
+    }
+
+    /**
+     * "Reliable" is earned, not asserted: a verified worker with at least three reviews averaging
+     * four stars or better. Anything short of that reads false.
+     */
+    private boolean reliable(WorkerProfile profile) {
+        return profile.getVerificationStatus() == VerificationStatus.VERIFIED
+                && profile.getAccount().getRatingCount() >= 3
+                && profile.getAccount().getAvgRating() >= 4.0;
+    }
+
+    /** The employment types the worker opted into, as plain enum names for the filter chips. */
+    private List<String> preferredWorkTypes(WorkerProfile profile) {
+        List<String> types = new ArrayList<>();
+        if (profile.getEmploymentTypes() != null) {
+            profile.getEmploymentTypes().forEach(t -> {
+                if (t == null) return;
+                // The matching screens label day work "ONE_TIME"; everything else keeps its name.
+                String token = t == com.skillbridge.model.EmploymentType.DAILY ? "ONE_TIME" : t.name();
+                if (!types.contains(token)) types.add(token);
+            });
+        }
+        return types;
     }
 
     // ------------------------------------------------------------------ helpers

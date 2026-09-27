@@ -11,11 +11,12 @@ public record JobShiftDto(
         String label,
         @JsonFormat(pattern = "HH:mm") LocalTime startTime,
         @JsonFormat(pattern = "HH:mm") LocalTime endTime,
+        Integer breakMinutes,
         @JsonFormat(pattern = "HH:mm") LocalTime breakStart,
         @JsonFormat(pattern = "HH:mm") LocalTime breakEnd
 ) {
     public static JobShiftDto from(JobShift s) {
         return new JobShiftDto(s.getId(), s.getLabel(), s.getStartTime(), s.getEndTime(),
-                s.getBreakStart(), s.getBreakEnd());
+                s.getBreakMinutes(), s.getBreakStart(), s.getBreakEnd());
     }
 }

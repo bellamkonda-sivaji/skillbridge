@@ -1,6 +1,7 @@
 package com.skillbridge.service;
 
 import com.skillbridge.dto.ApplicantCardDto;
+import com.skillbridge.dto.DayTimeDto;
 import com.skillbridge.dto.EmployerDashboardDto;
 import com.skillbridge.dto.EmployerOnboardingRequest;
 import com.skillbridge.dto.EmployerProfileDto;
@@ -8,6 +9,7 @@ import com.skillbridge.dto.JobBenefitDto;
 import com.skillbridge.dto.JobDetailDto;
 import com.skillbridge.dto.JobShiftDto;
 import com.skillbridge.dto.JobSummaryDto;
+import com.skillbridge.dto.WorkHistoryEntryDto;
 import com.skillbridge.dto.WorkerDetailDto;
 import com.skillbridge.exception.ApiException;
 import com.skillbridge.model.*;
@@ -56,13 +58,15 @@ public class EmployerService {
     private final ApplicantCardAssembler assembler;
     private final NotificationService notificationService;
     private final ChatService chatService;
+    private final WorkerHistoryAssembler historyAssembler;
 
     public EmployerService(JobPostRepository jobRepository, JobApplicationRepository applicationRepository,
                            InterviewRepository interviewRepository, WorkerProfileRepository workerProfileRepository,
                            EmployerProfileRepository employerProfileRepository,
                            EmployerAccountRepository employerAccountRepository,
                            ApplicantCardAssembler assembler, NotificationService notificationService,
-                           ChatService chatService) {
+                           ChatService chatService, WorkerHistoryAssembler historyAssembler) {
+        this.historyAssembler = historyAssembler;
         this.jobRepository = jobRepository;
         this.applicationRepository = applicationRepository;
         this.interviewRepository = interviewRepository;
@@ -139,7 +143,8 @@ public class EmployerService {
                 job.getId(), job.getTitle(), job.getWorkerCategory(), job.getCity(), job.getArea(),
                 job.getStatus(), applicationRepository.countByJobId(job.getId()), job.getPostedAt(),
                 job.getSalary(), job.getSalaryUnit(), job.getEmploymentType(), job.getWorkersNeeded(),
-                applicationRepository.countByJobIdAndStatus(job.getId(), ApplicationStatus.ACCEPTED));
+                applicationRepository.countByJobIdAndStatus(job.getId(), ApplicationStatus.ACCEPTED),
+                job.getEngagementModel(), job.getWorkPattern());
     }
 
     public JobDetailDto jobDetail(EmployerAccount employer, Long jobId) {
@@ -172,7 +177,13 @@ public class EmployerService {
                 job.getPayrollCycle(),
                 job.getSalaryDueDayOfMonth(),
                 job.getJobBenefits() == null ? List.of()
-                        : job.getJobBenefits().stream().map(JobBenefitDto::from).toList());
+                        : job.getJobBenefits().stream().map(JobBenefitDto::from).toList(),
+                job.getWorkPattern(),
+                job.getHiringMethod(),
+                job.getDurationMonths(),
+                job.getDayTimes() == null ? List.of()
+                        : job.getDayTimes().stream().map(d -> new DayTimeDto(
+                                d.getDayCode(), d.getStartTime(), d.getEndTime())).toList());
     }
 
     // ------------------------------------------------------------------ applicants
@@ -315,6 +326,13 @@ public class EmployerService {
         JobApplication application = job == null ? null
                 : applicationRepository.findByWorkerIdAndJobId(workerId, job.getId()).orElse(null);
         return assembler.detail(profile, job, application);
+    }
+
+    /** The full work history - the profile screen only carries the five most recent inline. */
+    public List<WorkHistoryEntryDto> workHistory(EmployerAccount employer, Long workerId) {
+        workerProfileRepository.findByAccountId(workerId)
+                .orElseThrow(() -> ApiException.notFound("Worker not found"));
+        return historyAssembler.workHistory(workerId);
     }
 
     public List<WorkerDetailDto> compare(EmployerAccount employer, List<Long> workerIds, Long jobId) {

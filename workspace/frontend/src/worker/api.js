@@ -32,7 +32,7 @@ export const getUserReviews = (type, id) =>
 
 /* ---------- display helpers ---------- */
 
-const UNIT = { PER_DAY: '/day', PER_WEEK: '/week', PER_MONTH: '/month' }
+const UNIT = { DAILY: '/day', PER_WEEK: '/week', MONTHLY: '/month' }
 
 export const money = (n) => '₹' + Number(n || 0).toLocaleString('en-IN')
 

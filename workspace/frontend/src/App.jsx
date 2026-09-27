@@ -59,6 +59,10 @@ import CompareWorkers from './employer/app/pages/Compare'
 import ApplicationDecision from './employer/app/pages/ApplicationDecision'
 import ScheduleInterview from './employer/app/pages/ScheduleInterview'
 import InterviewCalendar from './employer/app/pages/InterviewCalendar'
+import InterviewResults from './employer/app/pages/InterviewResults'
+import CreateOffer from './employer/app/pages/CreateOffer'
+import OfferTracking from './employer/app/pages/OfferTracking'
+import JoiningConfirmation from './employer/app/pages/JoiningConfirmation'
 
 // ---- signup + worker onboarding ----
 import { OnboardingProvider } from './onboarding/OnboardingContext'
@@ -244,11 +248,15 @@ export default function App() {
         <Route path="jobs/:jobId/applicants" element={<Applicants />} />
         <Route path="jobs/:jobId/recommended" element={<RecommendedWorkers />} />
         <Route path="jobs/:jobId/shortlist" element={<Shortlist />} />
+        <Route path="jobs/:jobId/interview-results" element={<InterviewResults />} />
         <Route path="workers/:workerId" element={<EmpWorkerProfile />} />
         <Route path="compare" element={<CompareWorkers />} />
         <Route path="applications/:applicationId/decide" element={<ApplicationDecision />} />
         <Route path="interviews" element={<InterviewCalendar />} />
         <Route path="interviews/schedule" element={<ScheduleInterview />} />
+        <Route path="applications/:applicationId/offer" element={<CreateOffer />} />
+        <Route path="offers" element={<OfferTracking />} />
+        <Route path="offers/:offerId/joining" element={<JoiningConfirmation />} />
         <Route path="applications" element={<EmpApplications />} />
         <Route path="find-workers" element={<EmpFindWorkers />} />
         <Route path="attendance" element={<EmpAttendance />} />

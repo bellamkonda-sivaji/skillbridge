@@ -495,3 +495,135 @@
 @media (max-width: 560px) {
   .emp-app-row > .mk-btn { width: 100%; }
 }
+
+/* ==========================================================================
+   Hiring flow: interview results, offers, joining, rich worker detail
+   ========================================================================== */
+
+/* --- "when does this screen appear" explainer banner --- */
+.emp-when {
+  display: flex; gap: 11px; align-items: flex-start;
+  border: 1px solid var(--blue-100); background: var(--blue-50);
+  border-radius: 12px; padding: 13px 15px; margin-bottom: 16px;
+}
+.emp-when .ic {
+  width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+  background: #fff; color: var(--blue); display: grid; place-items: center;
+  border: 1px solid var(--blue-100);
+}
+.emp-when .bd { flex: 1; min-width: 0; }
+.emp-when .t { font-size: 13.5px; font-weight: 700; color: var(--blue-dark); }
+.emp-when .d { font-size: 13px; color: var(--body); margin-top: 3px; line-height: 1.5; }
+.emp-when .x {
+  border: 0; background: transparent; color: var(--muted); cursor: pointer;
+  padding: 2px; border-radius: 6px; flex-shrink: 0;
+}
+.emp-when .x:hover { background: #fff; color: var(--ink); }
+
+/* --- generic data table --- */
+.emp-tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; padding: 0 4px; }
+.emp-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13.5px; min-width: 620px; }
+.emp-table th {
+  text-align: left; font-size: 11.5px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--muted); padding: 10px 12px;
+  border-bottom: 1px solid var(--line); white-space: nowrap;
+}
+.emp-table td { padding: 13px 12px; border-bottom: 1px solid var(--line); color: var(--body); vertical-align: middle; }
+.emp-table tr:last-child td { border-bottom: 0; }
+.emp-table tbody tr:hover { background: var(--soft); }
+.emp-table .nm { font-weight: 700; color: var(--ink); }
+.emp-table .sb { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.emp-table .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.emp-table .acts { display: flex; gap: 6px; white-space: nowrap; }
+
+/* --- summary / key-value table used by offer preview --- */
+.emp-sum { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.emp-sum .r { display: flex; gap: 14px; padding: 11px 15px; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.emp-sum .r:last-child { border-bottom: 0; }
+.emp-sum .r:nth-child(odd) { background: var(--soft); }
+.emp-sum .k { color: var(--muted); width: 190px; flex-shrink: 0; }
+.emp-sum .v { color: var(--ink); font-weight: 600; flex: 1; min-width: 0; }
+@media (max-width: 560px) {
+  .emp-sum .r { flex-direction: column; gap: 3px; }
+  .emp-sum .k { width: auto; }
+}
+
+/* --- "You will pay" estimate box --- */
+.emp-estimate { border: 1px solid var(--blue-100); background: var(--blue-50); border-radius: 12px; padding: 15px 16px; }
+.emp-estimate .hd { font-size: 13.5px; font-weight: 700; color: var(--blue-dark); margin-bottom: 10px; }
+.emp-estimate .r { display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; color: var(--body); padding: 5px 0; }
+.emp-estimate .r.total {
+  border-top: 1px dashed var(--blue-100); margin-top: 6px; padding-top: 11px;
+  font-size: 15.5px; font-weight: 800; color: var(--ink);
+}
+.emp-estimate .note { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+
+/* --- vertical progress timeline --- */
+.emp-timeline { display: grid; gap: 0; }
+.emp-step { display: flex; gap: 14px; }
+.emp-step .rail { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.emp-step .dot {
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  background: #fff; border: 2px solid var(--line); color: var(--muted);
+  font-size: 12px; font-weight: 700;
+}
+.emp-step .line { width: 2px; flex: 1; background: var(--line); min-height: 22px; }
+.emp-step:last-child .line { display: none; }
+.emp-step .bd { padding-bottom: 20px; flex: 1; min-width: 0; }
+.emp-step:last-child .bd { padding-bottom: 0; }
+.emp-step .t { font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.5; }
+.emp-step .d { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.emp-step.done .dot { background: #10b981; border-color: #10b981; color: #fff; }
+.emp-step.done .line { background: #10b981; }
+.emp-step.current .dot { border-color: var(--blue); color: var(--blue); box-shadow: 0 0 0 4px var(--blue-50); }
+.emp-step.current .t { color: var(--blue-dark); }
+.emp-step.pending .t { color: var(--muted); font-weight: 600; }
+
+/* --- rating distribution bars --- */
+.emp-bars { display: grid; gap: 7px; }
+.emp-bar { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--muted); }
+.emp-bar .lbl { width: 34px; flex-shrink: 0; white-space: nowrap; }
+.emp-bar .track { flex: 1; height: 7px; border-radius: 99px; background: var(--soft); overflow: hidden; }
+.emp-bar .fill { height: 100%; border-radius: 99px; background: #f59e0b; }
+.emp-bar .cnt { width: 26px; text-align: right; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+
+/* --- worker detail header --- */
+.emp-wd-head { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; }
+.emp-wd-head .grow { flex: 1; min-width: 200px; }
+.emp-badges { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+.emp-badge {
+  display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px;
+  border-radius: 99px; font-size: 12px; font-weight: 600;
+  background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;
+}
+.emp-badge.blue { background: var(--blue-50); color: var(--blue-dark); border-color: var(--blue-100); }
+.emp-badge.amber { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+.emp-badge.grey { background: var(--soft); color: var(--muted); border-color: var(--line); }
+
+.emp-photos { display: flex; gap: 10px; flex-wrap: wrap; }
+.emp-photos img {
+  width: 110px; height: 110px; object-fit: cover; border-radius: 12px;
+  border: 1px solid var(--line); background: var(--soft);
+}
+
+.emp-sec { margin-top: 22px; }
+.emp-sec-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.emp-sec-head .grow { flex: 1; }
+
+/* --- sticky action bar on the worker detail screen --- */
+.emp-actionbar {
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--line);
+}
+.emp-actionbar .hint { font-size: 12.5px; color: var(--muted); flex-basis: 100%; }
+
+/* Form grid used by the offer + joining screens. `.wk-field` already handles
+   the stacking; these add the two-column layout and the label style for the
+   `<label class="wk-field"><span class="lb">` shape used there. */
+.wk-form { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); align-items: start; }
+.wk-field > .lb { font-size: 13px; font-weight: 600; color: var(--ink); }
+.wk-form > .wk-field.wide { grid-column: 1 / -1; }
+
+/* Ratings summary sits beside the reviews on desktop, stacks on a phone. */
+.emp-rating-grid { display: grid; gap: 22px; grid-template-columns: minmax(180px, 220px) 1fr; align-items: start; }
+@media (max-width: 720px) { .emp-rating-grid { grid-template-columns: 1fr; } }

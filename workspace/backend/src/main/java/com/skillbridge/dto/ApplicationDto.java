@@ -1,6 +1,7 @@
 package com.skillbridge.dto;
 
 import com.skillbridge.model.ApplicationStatus;
+import com.skillbridge.model.InterviewResult;
 import com.skillbridge.model.JobApplication;
 
 import java.time.LocalDateTime;
@@ -17,7 +18,9 @@ public record ApplicationDto(
         String coverMessage,
         ApplicationStatus status,
         LocalDateTime appliedAt,
-        Double matchScore
+        Double matchScore,
+        InterviewResult interviewResult,
+        String interviewFeedback
 ) {
     public static ApplicationDto from(JobApplication a, Double matchScore) {
         return new ApplicationDto(
@@ -26,6 +29,7 @@ public record ApplicationDto(
                 a.getJob().getEmployer().getProfile() != null
                         ? a.getJob().getEmployer().getProfile().getBusinessName() : null,
                 a.getWorker().getId(), a.getWorker().getName(),
-                a.getCoverMessage(), a.getStatus(), a.getAppliedAt(), matchScore);
+                a.getCoverMessage(), a.getStatus(), a.getAppliedAt(), matchScore,
+                a.getInterviewResult(), a.getInterviewFeedback());
     }
 }

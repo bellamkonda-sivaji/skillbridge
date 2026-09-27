@@ -1,7 +1,9 @@
 package com.skillbridge.dto;
 
 import com.skillbridge.model.EmploymentType;
+import com.skillbridge.model.EngagementModel;
 import com.skillbridge.model.SalaryUnit;
+import com.skillbridge.model.WorkPattern;
 import com.skillbridge.model.WorkType;
 
 import java.time.LocalDateTime;
@@ -31,5 +33,7 @@ public record JobCardDto(
         boolean applied,
         List<String> requiredSkills,
         LocalDateTime postedAt,
-        int workersNeeded
+        int workersNeeded,
+        EngagementModel engagementModel,
+        WorkPattern workPattern
 ) {}

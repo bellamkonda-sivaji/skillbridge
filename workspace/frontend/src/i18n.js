@@ -123,7 +123,7 @@ const resources = {
         schedule: 'Schedule Interview'
       },
       workType: { DAILY: 'Daily', WEEKLY: 'Weekly', MONTHLY: 'Monthly', PERMANENT: 'Permanent' },
-      salaryUnit: { PER_DAY: 'per day', PER_WEEK: 'per week', PER_MONTH: 'per month' },
+      salaryUnit: { DAILY: 'per day', PER_WEEK: 'per week', MONTHLY: 'per month' },
       availability: {
         IMMEDIATE: 'Immediately', PART_TIME: 'Part-time', FULL_TIME: 'Full-time',
         WEEKENDS_ONLY: 'Weekends only', EVENINGS: 'Evenings'
@@ -342,7 +342,7 @@ const resources = {
         reject: 'Kataa'
       },
       workType: { DAILY: 'Kila Siku', WEEKLY: 'Kila Wiki', MONTHLY: 'Kila Mwezi', PERMANENT: 'Kudumu' },
-      salaryUnit: { PER_DAY: 'kwa siku', PER_WEEK: 'kwa wiki', PER_MONTH: 'kwa mwezi' },
+      salaryUnit: { DAILY: 'kwa siku', PER_WEEK: 'kwa wiki', MONTHLY: 'kwa mwezi' },
       availability: {
         IMMEDIATE: 'Mara moja', PART_TIME: 'Sehemu ya muda', FULL_TIME: 'Muda wote',
         WEEKENDS_ONLY: 'Wikendi tu', EVENINGS: 'Jioni'
@@ -481,7 +481,7 @@ const resources = {
         reject: 'अस्वीकार करें'
       },
       workType: { DAILY: 'दैनिक', WEEKLY: 'साप्ताहिक', MONTHLY: 'मासिक', PERMANENT: 'स्थायी' },
-      salaryUnit: { PER_DAY: 'प्रति दिन', PER_WEEK: 'प्रति सप्ताह', PER_MONTH: 'प्रति माह' },
+      salaryUnit: { DAILY: 'प्रति दिन', PER_WEEK: 'प्रति सप्ताह', MONTHLY: 'प्रति माह' },
       availability: {
         IMMEDIATE: 'तुरंत', PART_TIME: 'अंशकालिक', FULL_TIME: 'पूर्णकालिक',
         WEEKENDS_ONLY: 'केवल सप्ताहांत', EVENINGS: 'शाम'

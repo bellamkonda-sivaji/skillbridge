@@ -7,7 +7,7 @@ import { TagInput } from '../../components/controls'
 import { Badge } from '../../components/ui'
 
 const AVAILS = ['IMMEDIATE', 'PART_TIME', 'FULL_TIME', 'WEEKENDS_ONLY', 'EVENINGS']
-const UNITS = ['PER_DAY', 'PER_WEEK', 'PER_MONTH']
+const UNITS = ['DAILY', 'PER_WEEK', 'MONTHLY']
 
 export default function WorkerProfileTab() {
   const { t } = useTranslation()
@@ -15,7 +15,7 @@ export default function WorkerProfileTab() {
   const [form, setForm] = useState({
     skills: [], experienceYears: 0, jobTitle: '', bio: '', city: '', area: '',
     latitude: 0, longitude: 0, locationEnabled: true,
-    availability: 'IMMEDIATE', expectedSalary: 0, salaryUnit: 'PER_MONTH', verificationDoc: ''
+    availability: 'IMMEDIATE', expectedSalary: 0, salaryUnit: 'MONTHLY', verificationDoc: ''
   })
   const [loaded, setLoaded] = useState(false)
   const [msg, setMsg] = useState('')
@@ -30,7 +30,7 @@ export default function WorkerProfileTab() {
         latitude: res.data.latitude || 0, longitude: res.data.longitude || 0,
         locationEnabled: res.data.locationEnabled !== false,
         availability: res.data.availability || 'IMMEDIATE',
-        expectedSalary: res.data.expectedSalary || 0, salaryUnit: res.data.salaryUnit || 'PER_MONTH',
+        expectedSalary: res.data.expectedSalary || 0, salaryUnit: res.data.salaryUnit || 'MONTHLY',
         verificationDoc: ''
       })
       setVerification(res.data.verificationStatus || 'UNVERIFIED')

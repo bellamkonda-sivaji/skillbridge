@@ -26,6 +26,9 @@ skillbridge:
   jwt:
     secret: "SkillBridgeSecretKeyForJwtSigning2026!SecureEnoughForProductionUse"
     expiration-ms: 86400000
+  pricing:
+    # Platform fee on worker earnings, percent. Drives the schedule estimate and /api/config/pricing.
+    platform-fee-percent: 5
   otp:
     length: 6
     ttl-seconds: 300

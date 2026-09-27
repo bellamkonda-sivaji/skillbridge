@@ -130,7 +130,7 @@ public class ApplicationService {
     @Transactional
     public OfferDto acceptOffer(WorkerAccount worker, Long offerId) {
         JobOffer offer = requireWorkerOffer(worker, offerId);
-        if (offer.getStatus() != OfferStatus.PENDING) {
+        if (!offer.getStatus().isOpen()) {
             throw ApiException.badRequest("This offer has already been "
                     + offer.getStatus().name().toLowerCase());
         }
@@ -150,7 +150,7 @@ public class ApplicationService {
     @Transactional
     public OfferDto declineOffer(WorkerAccount worker, Long offerId) {
         JobOffer offer = requireWorkerOffer(worker, offerId);
-        if (offer.getStatus() != OfferStatus.PENDING) {
+        if (!offer.getStatus().isOpen()) {
             throw ApiException.badRequest("This offer has already been "
                     + offer.getStatus().name().toLowerCase());
         }
@@ -227,34 +227,6 @@ public class ApplicationService {
 
     private String employerName(EmployerAccount employer) {
         return accountDirectory.displayNameOf(AccountType.EMPLOYER, employer.getId());
-    }
-
-    @Transactional
-    public OfferDto createOffer(EmployerAccount employer, Long applicationId, OfferRequest request) {
-        JobApplication application = requireEmployerApplication(employer, applicationId);
-        if (offerRepository.findByApplicationId(applicationId).isPresent()) {
-            throw ApiException.conflict("An offer already exists for this application");
-        }
-        JobPost job = application.getJob();
-        OfferRequest req = request != null ? request
-                : new OfferRequest(null, null, null, null, null);
-
-        transition(application, ApplicationStatus.OFFERED);
-
-        JobOffer offer = offerRepository.save(JobOffer.builder()
-                .application(application)
-                .salary(req.salary() != null ? req.salary() : job.getSalary())
-                .salaryUnit(req.salaryUnit() != null ? req.salaryUnit() : job.getSalaryUnit())
-                .employmentType(req.employmentType() != null ? req.employmentType() : job.getEmploymentType())
-                .joiningDate(req.joiningDate() != null ? req.joiningDate() : LocalDate.now().plusDays(7))
-                .workLocation(req.workLocation() != null ? req.workLocation() : workLocation(job))
-                .status(OfferStatus.PENDING)
-                .build());
-
-        notificationService.notify(application.getWorker(), "You received a job offer",
-                "You have an offer for \"" + job.getTitle() + "\"",
-                NotificationType.APPLICATION, "/worker/offers");
-        return toOfferDto(offer);
     }
 
     public List<ApplicationDto> applicationsForEmployer(EmployerAccount employer) {

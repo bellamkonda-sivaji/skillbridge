@@ -59,7 +59,7 @@ public class Employment {
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    private SalaryUnit salaryUnit = SalaryUnit.PER_DAY;
+    private SalaryUnit salaryUnit = SalaryUnit.DAILY;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
@@ -98,4 +98,43 @@ public class Employment {
                 || status == EmploymentStatus.JOINING_CONFIRMED
                 || status == EmploymentStatus.ACTIVE;
     }
+
+    // ------------------------------------------------------------------ joining screen
+
+    /** The date the worker actually turned up, which may differ from the offered joining date. */
+    @Column(name = "actual_joining_date")
+    private LocalDate actualJoiningDate;
+
+    /** Employer-side payroll identifier. Only collected for monthly / permanent hires. */
+    @Column(name = "employee_ref")
+    private String employeeId;
+
+    @Column(name = "department")
+    private String department;
+
+    /** Which documents the employer checked at joining. */
+    @Builder.Default
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "employment_documents_verified",
+            joinColumns = @JoinColumn(name = "employment_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "document_type")
+    private List<DocumentType> documentsVerified = new ArrayList<>();
+
+    /** A base64 data URL of the joining photo proof, so it needs a CLOB. */
+    @Lob
+    @Column(name = "photo_proof_url", columnDefinition = "CLOB")
+    private String photoProofUrl;
+
+    @Column(name = "joining_notes", length = 2000)
+    private String joiningNotes;
+
+    /** Stamped by the third step of the joining timeline (WORK_DONE / WORK_IN_PROGRESS). */
+    @Column(name = "work_progress_at")
+    private LocalDateTime workProgressAt;
+
+    /** Stamped by the fourth step (PAYMENT / COMPLETE). Purely a marker - it moves no money. */
+    @Column(name = "settled_at")
+    private LocalDateTime settledAt;
+
 }

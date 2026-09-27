@@ -5,7 +5,9 @@ import com.skillbridge.model.ApplicationStatus;
 import com.skillbridge.model.Gender;
 import com.skillbridge.model.SalaryUnit;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.List;
 
 /** ApplicantCard plus everything the worker profile and compare screens render. */
@@ -41,5 +43,21 @@ public record WorkerDetailDto(
         String availabilityLabel,
         double rating,
         int ratingCount,
-        List<WorkerReviewDto> reviews
+        List<WorkerReviewDto> reviews,
+        // ---- richer employer-facing profile ----
+        String livesIn,
+        Integer canTravelKm,
+        LocalDate availableFrom,
+        boolean profileComplete,
+        boolean reliable,
+        List<String> preferredRoles,
+        List<String> preferredWorkTypes,
+        List<String> preferredHours,
+        /** Star -> number of real reviews at that star, keyed "5".."1". */
+        Map<String, Integer> ratingBreakdown,
+        List<WorkerDocumentDto> documents,
+        List<String> photos,
+        /** The five most recent finished engagements. */
+        List<WorkHistoryEntryDto> workHistory,
+        int workHistoryCount
 ) {}

@@ -7,7 +7,7 @@ import {
   getJob, setJobStatus, getApplicants, pay, timeLabel, formatDate,
   JOB_STATUS_LABEL, JOB_STATUS_TONE, EMPLOYMENT_LABEL,
 } from '../api'
-import { DAYS } from '../jobForm'
+import { DAYS } from '../engagement'
 
 export default function JobManagement() {
   const { jobId } = useParams()
@@ -159,6 +159,9 @@ export default function JobManagement() {
               </Link>
               <Link className="mk-btn mk-btn-outline mk-btn-sm" to={`/employer/jobs/${job.id}/shortlist`}>
                 Shortlist
+              </Link>
+              <Link className="mk-btn mk-btn-outline mk-btn-sm" to={`/employer/jobs/${job.id}/interview-results`}>
+                Results &amp; offers
               </Link>
             </div>
           </div>

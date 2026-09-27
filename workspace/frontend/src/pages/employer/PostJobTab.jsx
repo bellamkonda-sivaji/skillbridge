@@ -6,7 +6,7 @@ import { MapPicker } from '../../components/MapPicker'
 
 const empty = {
   title: '', description: '', requiredSkills: [], workType: 'DAILY',
-  salary: 0, salaryUnit: 'PER_DAY', city: '', area: '',
+  salary: 0, salaryUnit: 'DAILY', city: '', area: '',
   latitude: 0, longitude: 0, workersNeeded: 1, urgent: false
 }
 
@@ -58,7 +58,7 @@ export default function PostJobTab({ onPosted }) {
           <div className="field">
             <label>{t('worker.salaryUnit')}</label>
             <select value={form.salaryUnit} onChange={(e) => set('salaryUnit', e.target.value)}>
-              {['PER_DAY', 'PER_WEEK', 'PER_MONTH'].map((u) => <option key={u} value={u}>{t(`salaryUnit.${u}`)}</option>)}
+              {['DAILY', 'PER_WEEK', 'MONTHLY'].map((u) => <option key={u} value={u}>{t(`salaryUnit.${u}`)}</option>)}
             </select>
           </div>
         </div>

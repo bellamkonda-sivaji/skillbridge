@@ -79,7 +79,9 @@ public class JobCardAssembler {
                 context.appliedJobIds().contains(job.getId()),
                 List.copyOf(job.getRequiredSkills()),
                 job.getPostedAt(),
-                job.getWorkersNeeded());
+                job.getWorkersNeeded(),
+                job.getEngagementModel(),
+                job.getWorkPattern());
     }
 
     /** Sort rule the contract fixes: match score desc, then distance asc, unknowns last. */
