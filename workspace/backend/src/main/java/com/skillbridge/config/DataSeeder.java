@@ -21,6 +21,9 @@ import java.util.List;
  * lifecycle so each worker screen has something real to render.
  */
 @Component
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+        name = "skillbridge.seed.enabled", havingValue = "true", matchIfMissing = true)
+@org.springframework.core.annotation.Order(1)
 public class DataSeeder implements CommandLineRunner {
 
     private final WorkerAccountRepository workerAccountRepository;
@@ -86,12 +89,46 @@ public class DataSeeder implements CommandLineRunner {
     private static final String REGION = "AP";
 
     private void seed() {
-        // ---------------------------------------------------------------- admin
+        // ---------------------------------------------------------------- admin team
+        // 9000000001 stays the documented demo login; it is now the SUPER_ADMIN rather than an
+        // orphaned account, and two more logins cover the ADMIN and HR roles.
         AdminAccount admin = adminAccountRepository.save(AdminAccount.builder()
-                .name("Admin")
-                .email("admin@skillbridge.com")
+                .name("Super Admin")
+                .email("superadmin@skillbridge.in")
                 .phone("9000000001")
                 .password(passwordEncoder.encode("admin123"))
+                .adminRole(AdminRole.SUPER_ADMIN)
+                .enabled(true)
+                .build());
+        adminAccountRepository.save(AdminAccount.builder()
+                .name("Operations Admin")
+                .email("admin@skillbridge.in")
+                .phone("9000000010")
+                .password(passwordEncoder.encode("admin123"))
+                .adminRole(AdminRole.ADMIN)
+                .createdById(admin.getId())
+                .enabled(true)
+                .build());
+        adminAccountRepository.save(AdminAccount.builder()
+                .name("HR Executive")
+                .email("hr@skillbridge.in")
+                .phone("9000000011")
+                .password(passwordEncoder.encode("admin123"))
+                .adminRole(AdminRole.HR)
+                .createdById(admin.getId())
+                .enabled(true)
+                .build());
+
+        // The project owner's own login. Seeded rather than created through the UI
+        // because this database is in-memory and is rebuilt on every restart — an
+        // account added at runtime would silently disappear on the next boot.
+        adminAccountRepository.save(AdminAccount.builder()
+                .name("Sivaji")
+                .email("sivaji80086@gmail.com")
+                .phone("9000000012")
+                .password(passwordEncoder.encode("Sivaji@123"))
+                .adminRole(AdminRole.SUPER_ADMIN)
+                .createdById(admin.getId())
                 .enabled(true)
                 .build());
 

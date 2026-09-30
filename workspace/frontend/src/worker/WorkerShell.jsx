@@ -1,34 +1,34 @@
 import React, { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { LANGUAGE_OPTIONS as LANGUAGES } from '../i18n'
 import Icon from '../marketing/icons'
 import { SITE } from '../marketing/content'
 import { useAuth } from '../context/AuthContext'
 import api from '../api'
 import { useStomp } from '../hooks/useStomp'
 import './worker.css'
+import Logo from '../marketing/Logo'
 
 const NAV = [
-  { to: '/worker', end: true, icon: 'grid', label: 'Dashboard' },
-  { to: '/worker/jobs', icon: 'search', label: 'Find Jobs' },
-  { to: '/worker/applications', icon: 'doc', label: 'My Applications' },
-  { to: '/worker/work', icon: 'briefcase', label: 'My Work' },
-  { to: '/worker/interviews', icon: 'calendar', label: 'Interviews' },
-  { to: '/worker/messages', icon: 'chat', label: 'Messages', badge: 'messages' },
-  { to: '/worker/earnings', icon: 'wallet', label: 'Earnings' },
-  { to: '/worker/reviews', icon: 'star', label: 'Reviews' },
-  { to: '/worker/profile', icon: 'user', label: 'My Profile' },
-  { to: '/worker/settings', icon: 'target', label: 'Settings' },
+  { to: '/worker', end: true, icon: 'grid', key: 'dashboard' },
+  { to: '/worker/jobs', icon: 'search', key: 'findJobs' },
+  { to: '/worker/applications', icon: 'doc', key: 'myApplications' },
+  { to: '/worker/work', icon: 'briefcase', key: 'myWork' },
+  { to: '/worker/attendance', icon: 'checkCircle', key: 'attendance' },
+  { to: '/worker/interviews', icon: 'calendar', key: 'interviews' },
+  { to: '/worker/messages', icon: 'chat', key: 'messages', badge: 'messages' },
+  { to: '/worker/earnings', icon: 'wallet', key: 'earnings' },
+  { to: '/worker/reviews', icon: 'star', key: 'reviews' },
+  { to: '/worker/profile', icon: 'user', key: 'profile' },
+  { to: '/worker/settings', icon: 'target', key: 'settings' },
 ]
 
-const LANGUAGES = [
-  { code: 'en', label: 'English' },
-  { code: 'hi', label: 'हिन्दी' },
-]
+
 
 export default function WorkerShell() {
   const { user, logout } = useAuth()
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const [open, setOpen] = useState(false)
@@ -63,8 +63,7 @@ export default function WorkerShell() {
           </button>
 
           <Link to="/worker" className="mk-brand" style={{ marginRight: 0 }}>
-            <span className="mk-brand-mark" aria-hidden="true">SB</span>
-            {SITE.name}
+            <Logo size={30} />
           </Link>
 
           <span className="spacer" />
@@ -105,13 +104,13 @@ export default function WorkerShell() {
                   className="wk-card"
                   style={{ position: 'absolute', right: 0, top: 46, width: 190, padding: 6, zIndex: 60, boxShadow: 'var(--shadow-lg)' }}
                 >
-                  <Link className="wk-nav-item" to="/worker/profile" style={itemStyle} onClick={() => setMenu(false)}>My Profile</Link>
-                  <Link className="wk-nav-item" to="/worker/settings" style={itemStyle} onClick={() => setMenu(false)}>Settings</Link>
+                  <Link className="wk-nav-item" to="/worker/profile" style={itemStyle} onClick={() => setMenu(false)}>{t('wk.nav.profile')}</Link>
+                  <Link className="wk-nav-item" to="/worker/settings" style={itemStyle} onClick={() => setMenu(false)}>{t('wk.nav.settings')}</Link>
                   <button
                     style={{ ...itemStyle, width: '100%', textAlign: 'left', border: 0, background: 'transparent', font: 'inherit', cursor: 'pointer', color: '#b91c1c' }}
                     onClick={() => { logout(); navigate('/') }}
                   >
-                    Log out
+                    {t('wk.nav.logOut')}
                   </button>
                 </div>
               </>
@@ -133,17 +132,17 @@ export default function WorkerShell() {
                   className={({ isActive }) => (isActive ? 'active' : undefined)}
                 >
                   <Icon name={n.icon} size={17} />
-                  <span>{n.label}</span>
+                  <span>{t(`wk.nav.${n.key}`)}</span>
                   {n.badge === 'messages' && unread > 0 && <span className="ct">{unread}</span>}
                 </NavLink>
               ))}
             </nav>
 
             <div className="wk-help">
-              <div className="t">Need Help?</div>
-              <div className="d">Contact Support</div>
+              <div className="t">{t('wk.settings.needHelp')}</div>
+              <div className="d">{t('wk.settings.contactSupport')}</div>
               <Link className="mk-btn mk-btn-outline mk-btn-sm" to="/help" style={{ marginTop: 10, width: '100%' }}>
-                Get help
+                {t('wk.settings.getHelp')}
               </Link>
             </div>
           </aside>

@@ -272,7 +272,7 @@ export default function WorkerProfile() {
             ))}
           </DataTable>
         ) : (
-          <Empty icon="briefcase" title="No work history yet" text="Jobs completed through SkillBridge will show here with pay and ratings." />
+          <Empty icon="briefcase" title="No work history yet" text="Jobs completed through JobOn will show here with pay and ratings." />
         )}
       </Section>
 
@@ -307,7 +307,7 @@ export default function WorkerProfile() {
                 ))}
               </div>
             ) : (
-              <Empty icon="star" title="No reviews yet" text="Reviews appear once this worker completes jobs through SkillBridge." />
+              <Empty icon="star" title="No reviews yet" text="Reviews appear once this worker completes jobs through JobOn." />
             )}
           </div>
         </div>

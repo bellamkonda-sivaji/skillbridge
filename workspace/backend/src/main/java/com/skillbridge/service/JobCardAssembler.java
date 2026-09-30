@@ -64,7 +64,9 @@ public class JobCardAssembler {
                 job.getEmployer().getProfile() != null
                         ? job.getEmployer().getProfile().getBusinessName() : job.getEmployer().getName(),
                 job.getEmployer().getId(),
-                job.getSalary(),
+                // Worker-facing screens show the take-home, never the employer's gross. A
+                // worker who reads one number and is paid a smaller one stops trusting us.
+                job.getWorkerSalary() > 0 ? job.getWorkerSalary() : job.getSalary(),
                 job.getSalaryUnit(),
                 job.getWorkType(),
                 job.getEmploymentType(),

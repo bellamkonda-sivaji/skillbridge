@@ -5,10 +5,15 @@ import { useDocumentTitle } from '../../marketing/components'
 import { searchJobs, saveJob, unsaveJob, applyToJob } from '../api'
 import { JobCard, Loading, Empty, ErrorNote } from '../components'
 import { QUICK, fromParams, toQuery, toSearchBody, countActive } from '../filters'
+import { useTranslation } from 'react-i18next'
+import { useSimple, SimpleModeToggle } from '../../a11y/SimpleMode'
+import { WorkTiles, BigJobCard, VoiceSearch } from '../../a11y/components'
 
 export default function FindJobs() {
   useDocumentTitle('Find Jobs')
   const navigate = useNavigate()
+  const { t } = useTranslation()
+  const { simple } = useSimple()
   const [params, setParams] = useSearchParams()
   const filters = fromParams(params)
 
@@ -67,9 +72,10 @@ export default function FindJobs() {
     <>
       <div className="wk-row" style={{ marginBottom: 16 }}>
         <div className="grow">
-          <h1 className="wk-h1">Find Jobs</h1>
-          <p className="wk-sub">Discover opportunities near you</p>
+          <h1 className="wk-h1">{t('wk.nav.findJobs', 'Find Jobs')}</h1>
+          <p className="wk-sub">{t('wk.nav.findJobsSub', 'Work near you')}</p>
         </div>
+        <SimpleModeToggle compact />
         <Link className="mk-btn mk-btn-outline mk-btn-sm" to="/worker/saved">
           <Icon name="heart" size={15} /> Saved
         </Link>
@@ -78,24 +84,39 @@ export default function FindJobs() {
         </Link>
       </div>
 
+      {/* Speaking is easier than spelling a job title, so the mic sits in the
+          search box itself rather than behind a menu. */}
       <form onSubmit={submitSearch}>
-        <div className="wk-bar">
-          <Icon name="search" size={17} style={{ color: '#64748b', flexShrink: 0 }} />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search for jobs, skills or company..."
-            aria-label="Search jobs"
-          />
-          {q && (
-            <button type="button" className="act" onClick={() => { setQ(''); update({ q: '' }) }}>
-              Clear
+        <VoiceSearch
+          value={q}
+          onChange={(v) => { setQ(v); update({ q: v.trim() }) }}
+          placeholder={t('wk.nav.findJobs', 'Find Jobs')}
+        />
+      </form>
+
+      {/* Pictures first: somebody who cannot read still recognises the car,
+          the broom and the shop. */}
+      <div style={{ marginTop: 18 }}>
+        <div className="wk-row" style={{ marginBottom: 10 }}>
+          <h2 className="wk-h2 grow" style={{ margin: 0 }}>{t('a11y.whatWork', 'What work do you want?')}</h2>
+          {filters.category && (
+            <button
+              className="wk-link"
+              style={{ background: 0, border: 0, padding: 0, cursor: 'pointer', font: 'inherit' }}
+              onClick={() => update({ category: '' })}
+            >
+              {t('a11y.clear', 'Clear')}
             </button>
           )}
         </div>
-      </form>
+        <WorkTiles
+          single
+          selected={filters.category}
+          onToggle={(v) => update({ category: filters.category === v ? '' : v })}
+        />
+      </div>
 
-      <div className="wk-row" style={{ marginTop: 12, alignItems: 'flex-start' }}>
+      <div className="wk-row" style={{ marginTop: 12, alignItems: 'flex-start', display: simple ? 'none' : undefined }}>
         <div className="wk-tabs grow">
           {QUICK.map((f) => (
             <button
@@ -138,8 +159,10 @@ export default function FindJobs() {
               {jobs.length} {jobs.length === 1 ? 'job' : 'jobs'} found
             </p>
             <div className="wk-list">
-              {jobs.map((j) => (
-                <JobCard key={j.id} job={j} onToggleSave={toggleSave} onApply={apply} applying={applying} />
+              {jobs.map((j) => (simple
+                ? <BigJobCard key={j.id} job={j} onApply={apply} applying={applying}
+                    onOpen={() => navigate(`/worker/jobs/${j.id}`)} />
+                : <JobCard key={j.id} job={j} onToggleSave={toggleSave} onApply={apply} applying={applying} />
               ))}
             </div>
           </>

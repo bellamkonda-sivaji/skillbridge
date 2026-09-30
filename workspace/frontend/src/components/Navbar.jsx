@@ -72,7 +72,7 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="container">
         <Link className="brand" to="/">
-          <span>SkillBridge</span>
+          <span>JobOn</span>
         </Link>
         <div className="nav-links">
           {!user && (
@@ -104,8 +104,9 @@ export default function Navbar() {
             onChange={(e) => changeLang(e.target.value)}
           >
             <option value="en">English</option>
-            <option value="sw">Kiswahili</option>
+            <option value="te">తెలుగు</option>
             <option value="hi">हिन्दी</option>
+            <option value="sw">Kiswahili</option>
           </select>
           {user && (
             <div style={{ position: 'relative' }} ref={panelRef}>

@@ -9,6 +9,7 @@ import {
 import {
   SITE, STATS, CATEGORIES, STEPS, TESTIMONIALS, SAFETY, HIGHLIGHTS, APP_FEATURES,
 } from '../content'
+import HowItWorksFilm from '../HowItWorksFilm'
 
 const WHY = [
   { icon: 'pin', tone: '', title: 'Work near home', text: 'Set a radius of 1–10 km and see only the jobs you can actually reach, with the distance on every card.' },
@@ -34,7 +35,7 @@ export default function Home() {
               Or the right <span className="accent">job</span>.
             </h1>
             <p className="mk-lead">
-              SkillBridge connects local businesses with skilled and unskilled workers in real time.
+              JobOn connects local businesses with skilled and unskilled workers in real time.
               Verified profiles. Safe payments. Stronger communities.
             </p>
             <div className="mk-cta-row">
@@ -46,6 +47,9 @@ export default function Home() {
           <HeroCollage />
         </div>
       </section>
+
+      {/* ---------- The animated walkthrough ---------- */}
+      <HowItWorksFilm />
 
       {/* ---------- How it works ---------- */}
       <Section tone="soft">
@@ -75,10 +79,10 @@ export default function Home() {
         </div>
       </Section>
 
-      {/* ---------- Why SkillBridge ---------- */}
+      {/* ---------- Why JobOn ---------- */}
       <Section tone="soft">
         <SectionHead
-          eyebrow="Why SkillBridge"
+          eyebrow="Why JobOn"
           title="More than a job board"
           sub="We stay with the work from the first match to the final payment — and the record it leaves behind."
         />
@@ -140,7 +144,7 @@ export default function Home() {
         <SectionHead
           eyebrow="Success stories"
           title="Real stories. Real impact."
-          sub="People and businesses growing together with SkillBridge."
+          sub="People and businesses growing together with JobOn."
         />
         <Carousel
           items={TESTIMONIALS}
@@ -178,7 +182,7 @@ export default function Home() {
         <div className="mk-grid mk-grid-2" style={{ alignItems: 'center', gap: 40 }}>
           <div>
             <div className="mk-eyebrow">Mobile app</div>
-            <h2 className="mk-h2 mk-mt-8">Take SkillBridge with you</h2>
+            <h2 className="mk-h2 mk-mt-8">Take JobOn with you</h2>
             <p className="mk-lead">
               Find jobs, manage workers and stay updated on the go.
             </p>

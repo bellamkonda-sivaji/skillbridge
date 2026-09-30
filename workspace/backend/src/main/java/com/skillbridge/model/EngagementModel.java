@@ -50,11 +50,17 @@ public enum EngagementModel {
         };
     }
 
-    /** How the employer meets the worker before hiring, unless they pick differently. */
+    /**
+     * How the employer meets the worker before hiring, unless they pick differently.
+     *
+     * <p>Short work defaults to TALK_FIRST: a shop owner filling a day's shift rings the person
+     * and says come tomorrow. DIRECT stays selectable for the employer who wants no call at all,
+     * but it is no longer what we choose on their behalf - an unheard-of worker turning up for a
+     * day's work is how both sides get let down. Only MONTHS / PERMANENT default to INTERVIEW.
+     */
     public HiringMethod defaultHiringMethod() {
         return switch (this) {
-            case ONE_DAY, FEW_DAYS -> HiringMethod.DIRECT;
-            case FEW_WEEKS -> HiringMethod.TALK_FIRST;
+            case ONE_DAY, FEW_DAYS, FEW_WEEKS -> HiringMethod.TALK_FIRST;
             case MONTHS, PERMANENT -> HiringMethod.INTERVIEW;
         };
     }

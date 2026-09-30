@@ -25,7 +25,7 @@ export default function MobileApp() {
         <div className="mk-container mk-hero-grid">
           <div>
             <span className="mk-pill"><span className="dot" />Coming soon</span>
-            <h1 className="mk-h1">Take SkillBridge with you</h1>
+            <h1 className="mk-h1">Take JobOn with you</h1>
             <p className="mk-lead">
               Find jobs, manage workers and stay updated on the go. Built for the phone
               first, because that is where local hiring actually happens.
@@ -58,7 +58,7 @@ export default function MobileApp() {
         <div className="mk-grid mk-grid-3">
           {[
             { icon: 'bell', tone: '', title: 'Real-time job alerts', text: 'Get told the moment a matching job is posted near you — not hours later.' },
-            { icon: 'chat', tone: 'sky', title: 'Chat on the go', text: 'Message the employer, agree the details and confirm your interview.' },
+            { icon: 'chat', tone: 'sky', title: 'Chat on the go', text: 'Message the employer, agree the details and confirm when to start.' },
             { icon: 'calendar', tone: 'violet', title: 'Attendance check-in', text: 'Mark your shift start and end from the workplace, with the record saved.' },
             { icon: 'wallet', tone: 'green', title: 'Earnings & receipts', text: 'See what you earned, what is pending and what has been paid out.' },
             { icon: 'globe', tone: 'teal', title: 'Your language', text: 'Switch language any time — the whole app follows, not just the menus.' },
@@ -114,7 +114,7 @@ export default function MobileApp() {
 
       <CtaBand
         title="No app needed to get started"
-        sub="SkillBridge works in any mobile browser, right now."
+        sub="JobOn works in any mobile browser, right now."
         primary={{ to: '/worker/login', label: 'I need work' }}
         secondary={{ to: '/employer/login', label: 'I want to hire' }}
       />

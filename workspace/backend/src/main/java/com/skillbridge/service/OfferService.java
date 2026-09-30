@@ -13,6 +13,7 @@ import com.skillbridge.exception.ApiException;
 import com.skillbridge.model.*;
 import com.skillbridge.repository.EmployerProfileRepository;
 import com.skillbridge.repository.EmploymentRepository;
+import com.skillbridge.service.payment.EscrowService;
 import com.skillbridge.repository.InterviewRepository;
 import com.skillbridge.repository.JobApplicationRepository;
 import com.skillbridge.repository.JobOfferRepository;
@@ -62,6 +63,7 @@ public class OfferService {
     private final JobApplicationRepository applicationRepository;
     private final JobPostRepository jobRepository;
     private final EmploymentRepository employmentRepository;
+    private final EscrowService escrowService;
     private final InterviewRepository interviewRepository;
     private final WorkerProfileRepository workerProfileRepository;
     private final EmployerProfileRepository employerProfileRepository;
@@ -76,6 +78,7 @@ public class OfferService {
                         JobApplicationRepository applicationRepository,
                         JobPostRepository jobRepository,
                         EmploymentRepository employmentRepository,
+                        EscrowService escrowService,
                         InterviewRepository interviewRepository,
                         WorkerProfileRepository workerProfileRepository,
                         EmployerProfileRepository employerProfileRepository,
@@ -89,6 +92,7 @@ public class OfferService {
         this.applicationRepository = applicationRepository;
         this.jobRepository = jobRepository;
         this.employmentRepository = employmentRepository;
+        this.escrowService = escrowService;
         this.interviewRepository = interviewRepository;
         this.workerProfileRepository = workerProfileRepository;
         this.employerProfileRepository = employerProfileRepository;
@@ -132,10 +136,12 @@ public class OfferService {
                     profile == null ? null : cardAssembler.distanceKm(profile, job),
                     a.getAppliedAt(),
                     interview != null ? interview.getScheduledAt() : a.getInterviewAt(),
-                    interview != null ? interview.getMode() : null,
+                    interview == null || interview.getMode() == null
+                            ? null : interview.getMode().canonical(),
                     a.getStatus(),
                     a.getInterviewResult(),
-                    a.getInterviewFeedback()));
+                    a.getInterviewFeedback(),
+                    interview == null ? null : InterviewMode.labelOf(interview.getMode())));
         }
         return rows;
     }
@@ -417,8 +423,14 @@ public class OfferService {
             markStep(employment, shortJob, req.markStep());
         }
         employmentRepository.save(employment);
-        // Deliberately no wallet call: the payment already happened once, when the offer was
-        // accepted, and JobApplication#paymentSettled keeps it that way.
+        // The engagement finishing is what makes the worker's money withdrawable and what
+        // lets the platform take its fee. Idempotent per employment: an engagement marked
+        // COMPLETE after WORK_DONE releases once, and the second call finds the earning
+        // already PAYABLE and does nothing. Releasing twice is impossible by construction,
+        // not by the caller remembering.
+        if (employment.getStatus() == EmploymentStatus.COMPLETED) {
+            escrowService.release(employment, "EMPLOYER", employer.getId());
+        }
         return joiningDto(offer, employment);
     }
 

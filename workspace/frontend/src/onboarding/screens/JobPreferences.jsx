@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useDocumentTitle } from '../../marketing/components'
 import api, { errMsg } from '../../api'
 import { ObShell, ObCard, ObHead, Stepper, Tile, Pill, StepNav, Alert } from '../components'
@@ -12,6 +13,7 @@ const toggle = (list, value) =>
 export default function JobPreferences() {
   useDocumentTitle('Job preferences')
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { draft, setDraft } = useOnboarding()
 
   const [categories, setCategories] = useState(draft.jobCategories || [])
@@ -30,7 +32,7 @@ export default function JobPreferences() {
       setDraft({ jobCategories: categories, employmentTypes: types })
       navigate('/join/skills')
     } catch (err) {
-      setFailure(errMsg(err, 'Could not save your preferences. Please try again.'))
+      setFailure(errMsg(err, t('ob.prefs.errSave')))
     } finally {
       setBusy(false)
     }
@@ -39,10 +41,10 @@ export default function JobPreferences() {
   return (
     <ObShell>
       <ObCard wide>
-        <Stepper steps={['Account', 'Profile', 'Complete']} current={1} />
+        <Stepper steps={[t('ob.steps.account'), t('ob.steps.profile'), t('ob.steps.complete')]} current={1} />
         <ObHead
-          title="What type of work are you looking for?"
-          sub="Select one or more options."
+          title={t('ob.prefs.title')}
+          sub={t('ob.prefs.sub')}
         />
 
         <Alert>{failure}</Alert>
@@ -52,28 +54,28 @@ export default function JobPreferences() {
             <Tile
               key={c.value}
               icon={c.icon}
-              label={c.label}
+              label={t(`opt.category.${c.value}`)}
               selected={categories.includes(c.value)}
               onClick={() => setCategories((l) => toggle(l, c.value))}
             />
           ))}
         </div>
 
-        <h2 style={{ fontSize: 15, fontWeight: 700, margin: '26px 0 12px' }}>Employment Type</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 700, margin: '26px 0 12px' }}>{t('ob.prefs.employmentType')}</h2>
         <div className="ob-pills">
-          {EMPLOYMENT_TYPES.map((t) => (
+          {EMPLOYMENT_TYPES.map((e) => (
             <Pill
-              key={t.value}
-              label={t.label}
-              selected={types.includes(t.value)}
-              onClick={() => setTypes((l) => toggle(l, t.value))}
+              key={e.value}
+              label={t(`opt.employment.${e.value}`)}
+              selected={types.includes(e.value)}
+              onClick={() => setTypes((l) => toggle(l, e.value))}
             />
           ))}
         </div>
 
         <p className="ob-count">
           {categories.length === 0
-            ? 'Pick at least one kind of work so we can match you.'
+            ? t('ob.prefs.errNone')
             : `${categories.length} selected${types.length ? ` · ${types.length} employment type${types.length > 1 ? 's' : ''}` : ''}`}
         </p>
 

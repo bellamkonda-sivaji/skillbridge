@@ -37,7 +37,7 @@ export default function Careers() {
       <Section tone="soft">
         <div className="mk-grid mk-grid-2" style={{ alignItems: 'center', gap: 40 }}>
           <div>
-            <div className="mk-eyebrow">Why SkillBridge</div>
+            <div className="mk-eyebrow">Why JobOn</div>
             <h2 className="mk-h2 mk-mt-8">Software for people software usually ignores</h2>
             <p className="mk-lead">
               The people who stock our shelves, cook our food and run our shops have been served
@@ -123,7 +123,7 @@ export default function Careers() {
         title="Build brighter lives with us"
         sub="If the mission resonates, we would like to hear from you."
         primary={{ to: '/contact', label: 'Get in touch' }}
-        secondary={{ to: '/about', label: 'About SkillBridge' }}
+        secondary={{ to: '/about', label: 'About JobOn' }}
       />
     </>
   )

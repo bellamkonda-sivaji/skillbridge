@@ -26,7 +26,7 @@ export default function ForWorkers() {
                 'Jobs matched to your skills and area',
                 'Verified employers only',
                 'Apply in one tap, chat directly',
-                'Payment released through SkillBridge',
+                'Payment released through JobOn',
                 'Build a work history you can carry',
               ].map((t) => (
                 <div className="mk-check" key={t}>
@@ -47,7 +47,7 @@ export default function ForWorkers() {
       {/* ---------- Benefits ---------- */}
       <Section tone="soft">
         <SectionHead
-          eyebrow="Why workers choose SkillBridge"
+          eyebrow="Why workers choose JobOn"
           title="Work that fits your life"
           sub="No résumé, no agent, no fee. Just work near you, with the wage agreed up front."
         />

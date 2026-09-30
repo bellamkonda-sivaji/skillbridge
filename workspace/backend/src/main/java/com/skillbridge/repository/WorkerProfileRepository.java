@@ -20,4 +20,7 @@ public interface WorkerProfileRepository extends JpaRepository<WorkerProfile, Lo
     List<WorkerProfile> findBySkillContaining(@Param("skill") String skill);
 
     long countByVerificationStatus(com.skillbridge.model.VerificationStatus status);
+
+    /** Workers registered in a city - the pool a local job can realistically reach. */
+    List<WorkerProfile> findByCityIgnoreCase(String city);
 }

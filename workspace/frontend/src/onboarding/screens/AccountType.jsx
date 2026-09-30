@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Icon from '../../marketing/icons'
 import { useDocumentTitle } from '../../marketing/components'
 import { ObShell, ObCard, ObHead, ChoiceCard } from '../components'
@@ -9,6 +10,7 @@ import { ACCOUNT_TYPES } from '../data'
 export default function AccountType() {
   useDocumentTitle('Choose account type')
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [params] = useSearchParams()
   const { draft, setDraft } = useOnboarding()
 
@@ -25,19 +27,19 @@ export default function AccountType() {
     <ObShell>
       <ObCard wide>
         <ObHead
-          title="How would you like to use SkillBridge?"
-          sub="Choose the option that best describes you."
+          title={t('ob.account.title')}
+          sub={t('ob.account.sub')}
         />
 
         <div style={{ display: 'grid', gap: 14 }}>
-          {ACCOUNT_TYPES.map((t) => (
+          {ACCOUNT_TYPES.map((a) => (
             <ChoiceCard
-              key={t.role}
-              selected={role === t.role}
-              onClick={() => setRole(t.role)}
-              icon={t.icon}
-              title={t.title}
-              points={t.points}
+              key={a.role}
+              selected={role === a.role}
+              onClick={() => setRole(a.role)}
+              icon={a.icon}
+              title={t(`ob.account.${a.role === 'WORKER' ? 'worker' : 'employer'}Title`)}
+              points={t(`ob.account.${a.role === 'WORKER' ? 'worker' : 'employer'}Points`, { returnObjects: true })}
             />
           ))}
         </div>
@@ -48,11 +50,11 @@ export default function AccountType() {
           style={{ marginTop: 22 }}
           onClick={submit}
         >
-          Continue <Icon name="arrowRight" size={17} />
+          {t('common.continue')} <Icon name="arrowRight" size={17} />
         </button>
 
         <p className="ob-foot-note">
-          Already have an account? <a href="/login">Log In</a>
+          {t('common.alreadyHaveAccount')} <a href="/login">{t('common.logIn')}</a>
         </p>
       </ObCard>
     </ObShell>

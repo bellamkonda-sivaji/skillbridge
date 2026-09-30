@@ -60,7 +60,7 @@ export default function ForEmployers() {
               {[
                 'Reach workers in your neighbourhood',
                 'Verified profiles and documents',
-                'Chat and schedule interviews',
+                'Talk to the people who applied',
                 'Manage attendance and payments',
                 'Build a workforce you can rehire',
               ].map((t) => (
@@ -82,7 +82,7 @@ export default function ForEmployers() {
       {/* ---------- Benefits ---------- */}
       <Section tone="soft">
         <SectionHead
-          eyebrow="Why businesses choose SkillBridge"
+          eyebrow="Why businesses choose JobOn"
           title="Staff your shop without the guesswork"
           sub="Stop relying on notice boards and word of mouth. See who is available nearby, right now."
         />
@@ -133,7 +133,7 @@ export default function ForEmployers() {
                 { title: 'How long', text: 'One shift, a few days, a week, a month or permanent.' },
                 { title: 'What it pays', text: 'Daily, weekly or monthly wage, shown clearly to every applicant.' },
                 { title: 'Where and when', text: 'Your shop location and working hours, with the distance shown to workers.' },
-                { title: 'Whether you want an interview', text: 'Direct hire, a phone call, a visit or a quick skill check.' },
+                { title: 'Whether you want to meet first', text: 'Hire straight away, ring them first, or ask them to come to the shop.' },
               ].map((r) => (
                 <div className="mk-check" key={r.title}>
                   <span className="ico"><Icon name="check" size={15} strokeWidth={2.4} /></span>
@@ -176,7 +176,7 @@ export default function ForEmployers() {
 
       {/* ---------- Stories ---------- */}
       <Section tone="soft">
-        <SectionHead title="Businesses hiring on SkillBridge" />
+        <SectionHead title="Businesses hiring on JobOn" />
         <Carousel
           items={TESTIMONIALS}
           label="Employer stories"

@@ -8,13 +8,13 @@ import { LEGAL_DOCS, SITE } from '../content'
 
 /**
  * These policies are written in plain language for the people who use
- * SkillBridge. They are drafts and must be reviewed by counsel before launch,
+ * JobOn. They are drafts and must be reviewed by counsel before launch,
  * which is what the notice below states plainly to any visitor.
  */
 function DraftNotice() {
   return (
     <div className="mk-note">
-      <strong>Draft — pending legal review.</strong> These policies describe how SkillBridge
+      <strong>Draft — pending legal review.</strong> These policies describe how JobOn
       intends to operate and are published for transparency. They are not yet final and do
       not constitute legal advice. Questions? Write to{' '}
       <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.

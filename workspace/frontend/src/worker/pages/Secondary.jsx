@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { getApplications, getUserReviews, money, formatDate, pay } from '../api'
 import { JobArt, Stars, StatusBadge, Loading, Empty, ErrorNote, PageHead } from '../components'
 import api from '../../api'
+import { LANGUAGE_OPTIONS as LANGUAGES } from '../../i18n'
 
 /* ---------- My Work: jobs actually accepted ---------- */
 
@@ -76,7 +77,7 @@ export function Earnings() {
 
   return (
     <>
-      <PageHead title="Earnings" sub="What you have earned through SkillBridge" />
+      <PageHead title="Earnings" sub="What you have earned through JobOn" />
       <ErrorNote onRetry={load}>{error}</ErrorNote>
       {!wallet && !error ? <Loading rows={2} /> : wallet && (
         <>
@@ -180,7 +181,7 @@ export function Reviews() {
 export function Settings() {
   useDocumentTitle('Settings')
   const { user, logout } = useAuth()
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const setLang = (code) => {
     i18n.changeLanguage(code)
@@ -189,48 +190,45 @@ export function Settings() {
 
   return (
     <>
-      <PageHead title="Settings" sub="Your account and preferences" />
+      <PageHead title={t('wk.settings.title')} sub={t('wk.settings.sub')} />
 
       <div className="wk-card pad-lg">
-        <h2 className="wk-h2">Account</h2>
+        <h2 className="wk-h2">{t('wk.settings.account')}</h2>
         <div className="wk-kvlist">
-          <KV icon="user" k="Name" v={user?.name || '—'} />
-          <KV icon="phone" k="Mobile" v={user?.phone ? `+91 ${user.phone}` : '—'} />
-          <KV icon="mail" k="Email" v={user?.email || 'Not added'} />
+          <KV icon="user" k={t('wk.settings.name')} v={user?.name || '—'} />
+          <KV icon="phone" k={t('wk.settings.mobile')} v={user?.phone ? `+91 ${user.phone}` : '—'} />
+          <KV icon="mail" k={t('wk.settings.email')} v={user?.email || t('wk.settings.notAdded')} />
           <KV
             icon="shield"
-            k="Verification"
-            v={user?.phoneVerified ? 'Mobile verified' : 'Not verified'}
+            k={t('wk.settings.verification')}
+            v={user?.phoneVerified ? t('wk.settings.verified') : t('wk.settings.notVerified')}
           />
         </div>
         <Link className="mk-btn mk-btn-outline mk-btn-sm" to="/worker/profile" style={{ marginTop: 16 }}>
-          Edit profile
+          {t('wk.settings.editProfile')}
         </Link>
       </div>
 
       <div className="wk-card pad-lg" style={{ marginTop: 14 }}>
-        <h2 className="wk-h2">Language</h2>
-        <p className="wk-sub">Choose the language you want to use SkillBridge in.</p>
+        <h2 className="wk-h2">{t('wk.settings.language')}</h2>
+        <p className="wk-sub">{t('wk.settings.languageSub')}</p>
         <select
           className="wk-select"
           style={{ marginTop: 12, maxWidth: 260 }}
-          value={['en', 'hi'].includes(i18n.language) ? i18n.language : 'en'}
+          value={LANGUAGES.some((l) => l.code === i18n.language) ? i18n.language : 'en'}
           onChange={(e) => setLang(e.target.value)}
         >
-          <option value="en">English</option>
-          <option value="hi">हिन्दी</option>
+          {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
         </select>
-        <p className="wk-sub">
-          Telugu, Kannada, Tamil, Malayalam and Marathi are on the way.
-        </p>
+        <p className="wk-sub">{t('wk.settings.languageSoon')}</p>
       </div>
 
       <div className="wk-card pad-lg" style={{ marginTop: 14 }}>
-        <h2 className="wk-h2">Help &amp; policies</h2>
+        <h2 className="wk-h2">{t('wk.settings.help')}</h2>
         <div className="wk-kvlist">
-          <div className="r"><span className="ic"><Icon name="chat" size={14} /></span><Link to="/help">Help centre</Link></div>
-          <div className="r"><span className="ic"><Icon name="shield" size={14} /></span><Link to="/safety">Safety &amp; verification</Link></div>
-          <div className="r"><span className="ic"><Icon name="doc" size={14} /></span><Link to="/legal">Terms &amp; policies</Link></div>
+          <div className="r"><span className="ic"><Icon name="chat" size={14} /></span><Link to="/help">{t('wk.settings.helpCentre')}</Link></div>
+          <div className="r"><span className="ic"><Icon name="shield" size={14} /></span><Link to="/safety">{t('wk.settings.safety')}</Link></div>
+          <div className="r"><span className="ic"><Icon name="doc" size={14} /></span><Link to="/legal">{t('wk.settings.legal')}</Link></div>
         </div>
       </div>
 
@@ -239,7 +237,7 @@ export function Settings() {
         style={{ marginTop: 14, background: '#fff', color: '#b91c1c', border: '1px solid #fecaca' }}
         onClick={logout}
       >
-        Log out
+        {t('wk.nav.logOut')}
       </button>
     </>
   )

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Trans, useTranslation } from 'react-i18next'
 import Icon from '../../marketing/icons'
 import { useDocumentTitle } from '../../marketing/components'
 import api, { errMsg } from '../../api'
@@ -14,6 +15,7 @@ const digits = (s) => (s || '').replace(/\D/g, '')
 export default function CreateAccount() {
   useDocumentTitle('Create your account')
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { register } = useAuth()
   const { draft, setDraft } = useOnboarding()
 
@@ -36,10 +38,10 @@ export default function CreateAccount() {
 
   const validate = () => {
     const e = {}
-    if (form.name.trim().length < 2) e.name = 'Please enter your full name'
-    if (digits(form.phone).length !== 10) e.phone = 'Enter a 10-digit mobile number'
-    if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'That email does not look right'
-    if (form.password.length < 6) e.password = 'Use at least 6 characters'
+    if (form.name.trim().length < 2) e.name = t('ob.create.errName')
+    if (digits(form.phone).length !== 10) e.phone = t('ob.create.errPhone')
+    if (form.email && !/^\S+@\S+\.\S+$/.test(form.email)) e.email = t('ob.create.errEmail')
+    if (form.password.length < 6) e.password = t('ob.create.errPassword')
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -48,7 +50,7 @@ export default function CreateAccount() {
     ev.preventDefault()
     setFailure('')
     if (!validate()) return
-    if (!agreed) { setFailure('Please accept the Terms & Conditions to continue.'); return }
+    if (!agreed) { setFailure(t('ob.create.errTerms')); return }
 
     setBusy(true)
     const phone = digits(form.phone)
@@ -74,7 +76,7 @@ export default function CreateAccount() {
       setDraft({ name: form.name.trim(), phone, email: form.email.trim() })
       navigate('/join/verify', { state: { devCode } })
     } catch (err) {
-      setFailure(errMsg(err, 'We could not create your account. Please try again.'))
+      setFailure(errMsg(err, t('ob.create.errFailed')))
     } finally {
       setBusy(false)
     }
@@ -83,48 +85,48 @@ export default function CreateAccount() {
   return (
     <ObShell>
       <ObCard>
-        <Stepper steps={['Account', 'Verify', 'Profile']} current={0} />
-        <ObHead title="Create your account" sub="Let’s get started! It only takes a minute." />
+        <Stepper steps={[t('ob.steps.account'), t('ob.steps.verify'), t('ob.steps.profile')]} current={0} />
+        <ObHead title={t('ob.create.title')} sub={t('ob.create.sub')} />
 
         <Alert>{failure}</Alert>
         {social && <Alert kind="info">{social}</Alert>}
 
         <form onSubmit={submit} noValidate>
-          <Field label="Full Name" htmlFor="ca-name" error={errors.name}>
+          <Field label={t('ob.create.name')} htmlFor="ca-name" error={errors.name}>
             <input
               id="ca-name"
               className="ob-input"
               autoComplete="name"
-              placeholder="Enter your full name"
+              placeholder={t('ob.create.namePlaceholder')}
               aria-invalid={errors.name ? 'true' : undefined}
               value={form.name}
               onChange={(e) => set('name')(e.target.value)}
             />
           </Field>
 
-          <Field label="Mobile Number" htmlFor="ca-phone" error={errors.phone}>
+          <Field label={t('ob.create.phone')} htmlFor="ca-phone" error={errors.phone}>
             <PhoneField id="ca-phone" value={form.phone} onChange={set('phone')} error={errors.phone} />
           </Field>
 
-          <Field label="Email (Optional)" htmlFor="ca-email" error={errors.email}>
+          <Field label={t('ob.create.email')} htmlFor="ca-email" error={errors.email}>
             <input
               id="ca-email"
               className="ob-input"
               type="email"
               autoComplete="email"
-              placeholder="Enter your email"
+              placeholder={t('ob.create.emailPlaceholder')}
               aria-invalid={errors.email ? 'true' : undefined}
               value={form.email}
               onChange={(e) => set('email')(e.target.value)}
             />
           </Field>
 
-          <Field label="Password" htmlFor="ca-pw" error={errors.password}>
+          <Field label={t('ob.create.password')} htmlFor="ca-pw" error={errors.password}>
             <PasswordField
               id="ca-pw"
               value={form.password}
               onChange={set('password')}
-              placeholder="Create a password"
+              placeholder={t('ob.create.passwordPlaceholder')}
               error={errors.password}
             />
           </Field>
@@ -137,28 +139,31 @@ export default function CreateAccount() {
               onChange={(e) => setAgreed(e.target.checked)}
             />
             <label htmlFor="ca-terms">
-              I agree to the <Link to="/legal/terms">Terms &amp; Conditions</Link> and{' '}
-              <Link to="/legal/privacy">Privacy Policy</Link>
+              {/* <1> and <3> map to the two links, so each language orders them itself. */}
+              <Trans i18nKey="ob.create.terms">
+                I agree to the <Link to="/legal/terms">Terms &amp; Conditions</Link> and{' '}
+                <Link to="/legal/privacy">Privacy Policy</Link>
+              </Trans>
             </label>
           </div>
 
           <button className="mk-btn mk-btn-primary mk-btn-block" disabled={busy}>
-            {busy ? 'Creating your account…' : 'Create Account'}
+            {busy ? t('ob.create.submitting') : t('ob.create.submit')}
           </button>
         </form>
 
-        <div className="ob-divider">or continue with</div>
+        <div className="ob-divider">{t('common.or')}</div>
         <div className="ob-social">
-          <button type="button" onClick={() => setSocial('Google and Apple sign-in are coming soon. Please use your mobile number for now.')}>
+          <button type="button" onClick={() => setSocial(t('ob.create.socialSoon'))}>
             <span aria-hidden="true" style={{ fontWeight: 800, color: '#4285F4' }}>G</span> Google
           </button>
-          <button type="button" onClick={() => setSocial('Google and Apple sign-in are coming soon. Please use your mobile number for now.')}>
+          <button type="button" onClick={() => setSocial(t('ob.create.socialSoon'))}>
             <Icon name="apple" size={18} /> Apple
           </button>
         </div>
 
         <p className="ob-foot-note">
-          Already have an account? <Link to="/login">Log In</Link>
+          {t('common.alreadyHaveAccount')} <Link to="/login">{t('common.logIn')}</Link>
         </p>
       </ObCard>
     </ObShell>

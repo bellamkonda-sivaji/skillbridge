@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import Icon from '../../marketing/icons'
 import { useDocumentTitle } from '../../marketing/components'
 import {
-  getJob, saveJob, unsaveJob, applyToJob, pay, distance, EMPLOYMENT_LABEL,
+  getJob, saveJob, unsaveJob, applyToJob, pay, workerPay, distance, EMPLOYMENT_LABEL,
 } from '../api'
 import { JobArt, Stars, Verified, Bookmark, Loading, ErrorNote } from '../components'
 
@@ -101,7 +101,7 @@ export default function JobDetails() {
         </div>
 
         <div className="wk-facts">
-          <Fact icon="rupee" k="Salary" v={pay(job.salary, job.salaryUnit)} />
+          <Fact icon="rupee" k="You get" v={pay(workerPay(job), job.salaryUnit)} />
           <Fact icon="clock" k="Type" v={EMPLOYMENT_LABEL[job.employmentType || job.workType] || job.workType} />
           <Fact icon="pin" k="Distance" v={dist || 'Not set'} />
           <Fact icon="briefcase" k="Location" v={job.city || '—'} />

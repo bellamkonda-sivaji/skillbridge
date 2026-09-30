@@ -34,8 +34,21 @@ export function WhenBanner({ id, title = 'When does this screen appear?', childr
 
 /** Horizontally scrollable table shell — these tables are wide on phones. */
 export function DataTable({ head, children, empty }) {
+  const wrapRef = React.useRef(null)
+  const [scrolling, setScrolling] = React.useState(false)
+
+  React.useEffect(() => {
+    const el = wrapRef.current
+    if (!el) return undefined
+    const measure = () => setScrolling(el.scrollWidth > el.clientWidth + 2)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [children])
+
   return (
-    <div className="emp-tablewrap">
+    <div ref={wrapRef} className={`emp-tablewrap${scrolling ? ' is-scrolling' : ''}`}>
       <table className="emp-table">
         <thead>
           <tr>{head.map((h) => <th key={h}>{h}</th>)}</tr>
@@ -78,7 +91,7 @@ export function EstimateBox({ workerPay, fee, total, heading = 'You will pay (Es
       <div className="hd">{heading}</div>
       <div className="r"><span>Worker pay</span><span className="num">{money(workerPay)}</span></div>
       {fee != null && (
-        <div className="r"><span>SkillBridge fee</span><span className="num">{money(fee)}</span></div>
+        <div className="r"><span>JobOn fee</span><span className="num">{money(fee)}</span></div>
       )}
       <div className="r total"><span>Estimated total</span><span className="num">{money(total)}</span></div>
       <div className="note">Final amount may vary based on platform fee configuration.</div>

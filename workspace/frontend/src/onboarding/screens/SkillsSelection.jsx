@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Icon from '../../marketing/icons'
 import { useDocumentTitle } from '../../marketing/components'
 import api, { errMsg } from '../../api'
@@ -10,6 +11,7 @@ import { SUGGESTED_SKILLS, EXPERIENCE_OPTIONS } from '../data'
 export default function SkillsSelection() {
   useDocumentTitle('Select your skills')
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { draft, setDraft } = useOnboarding()
 
   const [selected, setSelected] = useState(draft.skills || [])
@@ -71,7 +73,7 @@ export default function SkillsSelection() {
       setDraft({ skills: selected, experienceYears: years, fresher })
       navigate('/join/location')
     } catch (err) {
-      setFailure(errMsg(err, 'Could not save your skills. Please try again.'))
+      setFailure(errMsg(err, t('ob.skills.errSave')))
     } finally {
       setBusy(false)
     }
@@ -80,10 +82,10 @@ export default function SkillsSelection() {
   return (
     <ObShell>
       <ObCard wide>
-        <Stepper steps={['Account', 'Profile', 'Complete']} current={1} />
+        <Stepper steps={[t('ob.steps.account'), t('ob.steps.profile'), t('ob.steps.complete')]} current={1} />
         <ObHead
-          title="Select your skills"
-          sub="Choose the skills you have. This helps us match you with relevant jobs."
+          title={t('ob.skills.title')}
+          sub={t('ob.skills.sub')}
         />
 
         <Alert>{failure}</Alert>
@@ -93,8 +95,8 @@ export default function SkillsSelection() {
           <input
             type="search"
             value={q}
-            placeholder="Search skills..."
-            aria-label="Search skills"
+            placeholder={t('ob.skills.search')}
+            aria-label={t('ob.skills.searchLabel')}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addCustom() } }}
           />
@@ -113,7 +115,7 @@ export default function SkillsSelection() {
 
         <p className="ob-count">
           {selected.length === 0
-            ? 'Select at least one skill to continue.'
+            ? t('ob.skills.errNone')
             : `${selected.length} skill${selected.length > 1 ? 's' : ''} selected`}
         </p>
 

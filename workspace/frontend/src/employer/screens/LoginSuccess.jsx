@@ -5,6 +5,7 @@ import { SITE } from '../../marketing/content'
 import { useDocumentTitle } from '../../marketing/components'
 import api from '../../api'
 import '../employer.css'
+import Logo from '../../marketing/Logo'
 
 const CONFETTI = [
   { left: '6%', top: '14%', bg: '#2563eb' },
@@ -51,8 +52,7 @@ export default function LoginSuccess() {
       <div className="emp-wizard">
         <header className="emp-topbar">
           <span className="mk-brand">
-            <span className="mk-brand-mark" aria-hidden="true">SB</span>
-            {SITE.name}
+            <Logo size={30} />
           </span>
         </header>
 

@@ -8,6 +8,7 @@ import {
   Loading, Empty, ErrorNote, PageHead, PillTabs, Stars, Verified,
 } from '../../../worker/components'
 import api from '../../../api'
+import { LANGUAGE_OPTIONS as LANGUAGES } from '../../../i18n'
 import {
   allApplications, listJobs, money, km, timeAgo, formatDate, pay,
   APPLICANT_STATUS_LABEL, APPLICANT_STATUS_TONE,
@@ -390,11 +391,10 @@ export function Settings() {
         <select
           className="wk-select"
           style={{ marginTop: 12, maxWidth: 260 }}
-          value={['en', 'hi'].includes(i18n.language) ? i18n.language : 'en'}
+          value={LANGUAGES.some((l) => l.code === i18n.language) ? i18n.language : 'en'}
           onChange={(e) => setLang(e.target.value)}
         >
-          <option value="en">English</option>
-          <option value="hi">हिन्दी</option>
+          {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
         </select>
       </div>
 

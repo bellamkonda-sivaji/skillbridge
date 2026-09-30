@@ -42,4 +42,39 @@ public class Attendance {
     private Integer minutesWorked;
 
     private String note;
+
+    // ------------------------------------------------------------------ approval
+
+    /**
+     * Whether this day counts towards pay. Set on punch-out from the job's duration
+     * (see {@code AttendanceRules.needsEmployerApproval}), and only ever moved afterwards by an
+     * employer decision, an admin override, or an approved "something is wrong" request.
+     */
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "approval_status", nullable = false, length = 20)
+    private AttendanceApproval approvalStatus = AttendanceApproval.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "approved_by_type", length = 20)
+    private AttendanceActor approvedByType;
+
+    @Column(name = "approved_by_id")
+    private Long approvedById;
+
+    @Column(name = "approved_by_name")
+    private String approvedByName;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    /** Why it was approved or rejected, in the decider's own words. */
+    @Lob
+    @Column(name = "decision_note", columnDefinition = "CLOB")
+    private String decisionNote;
+
+    /** True once the back office has touched the row, so both sides can see it was corrected. */
+    @Builder.Default
+    @Column(name = "edited_by_admin", nullable = false)
+    private boolean editedByAdmin = false;
 }

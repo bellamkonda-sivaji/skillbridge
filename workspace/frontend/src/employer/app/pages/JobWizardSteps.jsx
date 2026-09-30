@@ -414,14 +414,17 @@ export function StepPay({ job, set, onEditSchedule, feePercent }) {
             You will pay <span className="wk-sub" style={{ marginTop: 0, fontWeight: 500 }}>(estimate)</span>
           </div>
           <div className="emp-kv-grid" style={{ marginTop: 12 }}>
-            <KV k="Worker pay" v={<strong>{money(cost.workerPay)}</strong>} />
-            <KV k="SkillBridge fee" v={cost.fee === null
-              ? <span className="wk-sub" style={{ marginTop: 0 }}>Confirmed before you pay</span>
-              : <strong>{money(cost.fee)}</strong>} />
-            <KV k={model?.payroll === 'MONTHLY' ? 'Estimated monthly total' : 'Estimated total'}
+            <KV k={model?.payroll === 'MONTHLY' ? 'You pay each month' : 'You pay'}
               v={<strong style={{ color: 'var(--blue-dark)' }}>{money(cost.total)}</strong>} />
+            <KV k={`JobOn fee (${cost.percent}%)`} v={<strong>− {money(cost.fee)}</strong>} />
+            <KV k="Worker gets" v={<strong style={{ color: 'var(--green-dark, #15803d)' }}>{money(cost.workerPay)}</strong>} />
           </div>
           {earnings.label && <p className="wk-sub">{earnings.label}</p>}
+          <p className="wk-sub">
+            Our fee comes out of this amount — you pay exactly what you typed. The worker sees{' '}
+            <strong>{money(cost.workerPay)}</strong> on the job, which is what reaches them.
+            {cost.slab && ` ${cost.percent}% is the rate for this pay band (${cost.slab.label}).`}
+          </p>
           <p className="wk-sub">
             The worker is paid for the days they actually work, so the final amount can differ.
           </p>
@@ -508,9 +511,9 @@ export function StepPay({ job, set, onEditSchedule, feePercent }) {
             <Icon name="lock" size={16} />
           </span>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>Payment through SkillBridge</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>Payment through JobOn</div>
             <p className="wk-sub" style={{ marginTop: 4 }}>
-              You pay SkillBridge and we pay the worker once the work is confirmed.
+              You pay JobOn and we pay the worker once the work is confirmed.
               {model?.payroll === 'MONTHLY' ? ' Salary runs on a monthly cycle.' : ' Funded before the work starts.'}
             </p>
           </div>

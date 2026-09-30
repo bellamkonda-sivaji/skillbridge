@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next'
 import React, { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Icon from '../marketing/icons'
 import { SITE } from '../marketing/content'
 import './onboarding.css'
+import Logo from '../marketing/Logo'
 
 /* ---------- shell ---------- */
 
@@ -13,8 +15,7 @@ export function ObShell({ children }) {
         <header className="ob-topbar">
           <div className="mk-container ob-topbar-inner">
             <Link to="/" className="mk-brand" aria-label={`${SITE.name} home`}>
-              <span className="mk-brand-mark" aria-hidden="true">SB</span>
-              {SITE.name}
+              <Logo size={30} />
             </Link>
             <Link to="/help" className="ob-help">Help</Link>
           </div>
@@ -237,13 +238,14 @@ export function OtpInput({ value, onChange, length = 6, invalid }) {
 
 /* ---------- navigation ---------- */
 
-export function StepNav({ onBack, backTo, nextLabel = 'Continue', disabled, busy, onNext, type = 'button' }) {
+export function StepNav({ onBack, backTo, nextLabel, disabled, busy, onNext, type = 'button' }) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const goBack = onBack || (backTo ? () => navigate(backTo) : () => navigate(-1))
   return (
     <div className="ob-nav">
       <button type="button" className="ob-back" onClick={goBack}>
-        <Icon name="chevronLeft" size={16} /> Back
+        <Icon name="chevronLeft" size={16} /> {t('common.back')}
       </button>
       <span className="grow" />
       <button
@@ -253,7 +255,7 @@ export function StepNav({ onBack, backTo, nextLabel = 'Continue', disabled, busy
         disabled={disabled || busy}
         style={{ minWidth: 150, opacity: disabled || busy ? 0.6 : 1 }}
       >
-        {busy ? 'Please wait…' : nextLabel}
+        {busy ? t('common.pleaseWait') : (nextLabel || t('common.continue'))}
         {!busy && <Icon name="arrowRight" size={17} />}
       </button>
     </div>

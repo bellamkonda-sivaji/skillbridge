@@ -1,0 +1,443 @@
+/* ==========================================================================
+   Back office. Built on the same tokens as the worker and employer apps —
+   no new palette, no new type scale. `wk-*` supplies the shell, cards and
+   badges; everything here is the pieces only the back office needs.
+   ========================================================================== */
+
+.ad-head { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+.ad-head .grow { flex: 1; min-width: 220px; }
+.ad-head-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.ad-back { display: inline-flex; align-items: center; gap: 5px; margin-bottom: 8px; }
+
+.ad-card-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+
+/* ---------- stat tiles ---------- */
+.ad-stat-grid {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  margin-bottom: 18px;
+}
+.ad-stat {
+  background: #fff; border: 1px solid var(--line); border-radius: 14px;
+  padding: 15px 16px; display: block; text-decoration: none;
+}
+.ad-stat.linked { transition: border-color .15s, box-shadow .15s; }
+.ad-stat.linked:hover { border-color: var(--blue-100); box-shadow: var(--shadow); }
+.ad-stat-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 11px; }
+.ad-stat-ic {
+  width: 32px; height: 32px; border-radius: 10px;
+  display: grid; place-items: center; background: var(--blue-50); color: var(--blue);
+}
+.ad-stat-ic.green { background: #ecfdf5; color: #047857; }
+.ad-stat-ic.amber { background: #fffbeb; color: #b45309; }
+.ad-stat-ic.rose  { background: #fef2f2; color: #b91c1c; }
+.ad-stat-ic.violet{ background: #f5f3ff; color: #6d28d9; }
+.ad-stat-ic.slate { background: var(--soft); color: var(--body); }
+.ad-stat-v { font-size: 26px; font-weight: 800; color: var(--ink); line-height: 1.1; font-variant-numeric: tabular-nums; }
+.ad-stat-l { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+.ad-stat-s { font-size: 12px; color: var(--body); margin-top: 6px; }
+
+/* ---------- funnel ---------- */
+.ad-funnel { display: grid; gap: 9px; }
+.ad-funnel-row { display: flex; align-items: center; gap: 11px; font-size: 13px; }
+.ad-funnel-row .lbl { width: 108px; flex-shrink: 0; color: var(--muted); }
+.ad-funnel-row .track { flex: 1; height: 22px; border-radius: 7px; background: var(--soft); overflow: hidden; min-width: 60px; }
+.ad-funnel-row .fill {
+  display: block; height: 100%; border-radius: 7px;
+  background: linear-gradient(90deg, var(--blue), #60a5fa);
+}
+.ad-funnel-row .val { width: 54px; text-align: right; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+.ad-funnel-row .pct { width: 46px; text-align: right; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* ---------- trend chart ---------- */
+.ad-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin-bottom: 12px; }
+.ad-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.ad-legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.ad-chart { display: flex; align-items: flex-end; gap: 2px; height: 140px; }
+.ad-chart-col { flex: 1; min-width: 3px; height: 100%; display: flex; align-items: flex-end; }
+.ad-chart-col .bars { display: flex; align-items: flex-end; gap: 1px; width: 100%; height: 100%; }
+.ad-chart-col .bars span { flex: 1; border-radius: 2px 2px 0 0; min-height: 2px; opacity: .85; }
+.ad-chart-col:hover .bars span { opacity: 1; }
+.ad-chart-axis { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+
+/* ---------- tables ---------- */
+.ad-tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; padding: 0 4px; }
+.ad-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13.5px; min-width: 760px; }
+.ad-table th {
+  text-align: left; font-size: 11.5px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--muted); padding: 10px 12px;
+  border-bottom: 1px solid var(--line); white-space: nowrap; background: #fff;
+  position: sticky; top: 0; z-index: 1;
+}
+.ad-table td { padding: 12px; border-bottom: 1px solid var(--line); color: var(--body); vertical-align: middle; }
+.ad-table tr:last-child td { border-bottom: 0; }
+.ad-table tbody tr:hover { background: var(--soft); }
+.ad-table .nm { font-weight: 700; color: var(--ink); }
+.ad-table .sb { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.ad-table .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ad-table .acts { display: flex; gap: 6px; white-space: nowrap; }
+.ad-empty-cell { text-align: center; color: var(--muted); padding: 34px 12px !important; }
+.ad-skel { display: block; height: 13px; border-radius: 5px; background: var(--soft); animation: adpulse 1.2s ease-in-out infinite; }
+@keyframes adpulse { 50% { opacity: .5; } }
+
+/* A count that means "needs attention" reads red once it is non-zero. */
+.ad-warn { color: #b91c1c; font-weight: 700; }
+.ad-ok { color: #047857; font-weight: 700; }
+.ad-zero { color: var(--muted); }
+
+/* ---------- pager ---------- */
+.ad-pager { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 14px; }
+.ad-pager .grow { flex: 1; }
+.ad-pager-info { font-size: 12.5px; color: var(--muted); }
+
+/* ---------- filters ---------- */
+.ad-filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.ad-search {
+  display: inline-flex; align-items: center; gap: 8px; flex: 1; min-width: 200px; max-width: 340px;
+  border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: 0 10px; color: var(--muted);
+}
+.ad-search:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-50); }
+.ad-search input { flex: 1; min-width: 0; border: 0; outline: 0; font: inherit; font-size: 13.5px; padding: 9px 0; color: var(--ink); background: transparent; }
+.ad-search button { border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 3px; border-radius: 5px; }
+.ad-search button:hover { color: var(--ink); }
+.ad-select {
+  border: 1px solid var(--line); border-radius: 10px; background: #fff;
+  padding: 9px 11px; font: inherit; font-size: 13.5px; color: var(--ink); cursor: pointer;
+}
+.ad-select:focus { outline: 0; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-50); }
+
+/* ---------- messages ---------- */
+.ad-error {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  border: 1px solid #fecaca; background: #fef2f2; color: #991b1b;
+  border-radius: 12px; padding: 11px 14px; font-size: 13.5px;
+}
+.ad-error .grow { flex: 1; }
+.ad-empty { text-align: center; padding: 40px 18px; }
+.ad-empty .ic {
+  width: 46px; height: 46px; border-radius: 14px; margin: 0 auto 12px;
+  display: grid; place-items: center; background: var(--soft); color: var(--muted);
+}
+.ad-empty .t { font-size: 15px; font-weight: 700; color: var(--ink); }
+.ad-empty .d { font-size: 13.5px; color: var(--muted); margin-top: 5px; max-width: 380px; margin-inline: auto; }
+
+/* ---------- tracking timeline ---------- */
+.ad-timeline { display: grid; gap: 0; }
+.ad-tl { display: flex; gap: 13px; }
+.ad-tl .rail { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.ad-tl .dot {
+  width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  background: #fff; border: 2px solid var(--line); color: var(--muted); flex-shrink: 0;
+}
+.ad-tl .line { width: 2px; flex: 1; background: var(--line); min-height: 18px; }
+.ad-tl:last-child .line { display: none; }
+.ad-tl .bd { padding-bottom: 20px; flex: 1; min-width: 0; }
+.ad-tl:last-child .bd { padding-bottom: 4px; }
+.ad-tl .t { font-size: 14px; font-weight: 700; color: var(--ink); }
+.ad-tl .d { font-size: 13px; color: var(--body); margin-top: 3px; line-height: 1.5; }
+.ad-tl .m { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; gap: 8px; flex-wrap: wrap; }
+.ad-tl.accepted .dot { border-color: #10b981; background: #ecfdf5; color: #047857; }
+.ad-tl.rejected .dot { border-color: #fca5a5; background: #fef2f2; color: #b91c1c; }
+.ad-tl.interview .dot { border-color: #93c5fd; background: var(--blue-50); color: var(--blue-dark); }
+.ad-tl.offered .dot { border-color: #c4b5fd; background: #f5f3ff; color: #6d28d9; }
+.ad-tl.shortlisted .dot { border-color: #6ee7b7; background: #ecfdf5; color: #047857; }
+.ad-tl.pending .dot { border-color: #fcd34d; background: #fffbeb; color: #b45309; }
+
+/* ---------- modal ---------- */
+.ad-scrim { position: fixed; inset: 0; background: rgba(15, 23, 42, .45); z-index: 80; }
+.ad-modal {
+  position: fixed; z-index: 81; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 64px); overflow: auto;
+  background: #fff; border-radius: 16px; box-shadow: var(--shadow-lg);
+}
+/* Wide enough for a nine-column drill-down to fit without scrolling sideways, and still
+   inside the viewport on a laptop. */
+.ad-modal.wide { width: min(1120px, calc(100vw - 32px)); }
+.ad-modal-head { display: flex; align-items: center; gap: 12px; padding: 18px 20px 0; }
+.ad-modal-body { padding: 16px 20px 20px; }
+.ad-x { border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 5px; border-radius: 8px; }
+.ad-x:hover { background: var(--soft); color: var(--ink); }
+
+/* ---------- misc ---------- */
+.ad-phone { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.ad-phone a { color: var(--blue); font-variant-numeric: tabular-nums; }
+.ad-phone button { border: 0; background: transparent; color: var(--muted); cursor: pointer; padding: 2px; border-radius: 4px; }
+.ad-phone button:hover { color: var(--ink); background: var(--soft); }
+
+.ad-kv { display: grid; gap: 9px; }
+.ad-kv .r { display: flex; gap: 14px; font-size: 13.5px; }
+.ad-kv .k { color: var(--muted); width: 165px; flex-shrink: 0; }
+.ad-kv .v { color: var(--ink); font-weight: 500; flex: 1; min-width: 0; }
+@media (max-width: 560px) { .ad-kv .r { flex-direction: column; gap: 2px; } .ad-kv .k { width: auto; } }
+
+.ad-two { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; align-items: start; }
+.ad-side { display: grid; gap: 14px; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); align-items: start; }
+/* Two columns only when there is genuinely room for a data table beside a
+   sidebar. Below this the sidebar has to steal width the table needs, and
+   the page ends up scrolling sideways instead. */
+@media (max-width: 1250px) { .ad-two, .ad-side { grid-template-columns: 1fr; } }
+
+.ad-role-pill { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+
+/* The role chip in the top bar, so it is always obvious which hat you wear. */
+.ad-whoami {
+  display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px;
+  border-radius: 99px; background: var(--blue-50); border: 1px solid var(--blue-100);
+  color: var(--blue-dark); font-size: 12px; font-weight: 700; white-space: nowrap;
+}
+@media (max-width: 720px) { .ad-whoami .txt { display: none; } }
+
+/* ---------- daily report ---------- */
+.ad-task { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.ad-task + .ad-task { margin-top: 10px; }
+.ad-task-head {
+  display: flex; align-items: center; gap: 11px; padding: 12px 15px;
+  background: var(--soft); cursor: pointer; width: 100%; border: 0; font: inherit; text-align: left;
+}
+.ad-task-head .t { font-size: 14px; font-weight: 700; color: var(--ink); flex: 1; }
+.ad-task-head .n { font-variant-numeric: tabular-nums; font-weight: 800; color: var(--ink); }
+.ad-task-body { padding: 4px 0; }
+.ad-task-item {
+  display: flex; align-items: center; gap: 11px; padding: 10px 15px; font-size: 13.5px;
+  border-top: 1px solid var(--line); text-decoration: none; color: inherit;
+}
+.ad-task-item:hover { background: var(--blue-50); }
+.ad-task-item .p { font-weight: 600; color: var(--ink); }
+.ad-task-item .s { color: var(--muted); font-size: 12.5px; }
+.ad-task-item .grow { flex: 1; min-width: 0; }
+
+/* ---------- auth screens ---------- */
+.ad-auth { min-height: 100vh; display: grid; place-items: center; background: var(--soft); padding: 28px 16px; }
+.ad-auth-card {
+  width: min(430px, 100%); background: #fff; border: 1px solid var(--line);
+  border-radius: 18px; padding: 30px 28px; box-shadow: var(--shadow);
+}
+.ad-auth-card h1 { font-size: 23px; font-weight: 800; color: var(--ink); }
+.ad-auth-card .sub { font-size: 14px; color: var(--muted); margin-top: 6px; margin-bottom: 22px; }
+.ad-auth-mark {
+  width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center;
+  background: var(--blue); color: #fff; font-weight: 800; font-size: 16px; margin-bottom: 16px;
+}
+.ad-field { display: grid; gap: 6px; margin-bottom: 14px; }
+.ad-field > span { font-size: 13px; font-weight: 600; color: var(--ink); }
+.ad-input {
+  width: 100%; border: 1px solid var(--line); border-radius: 10px;
+  padding: 11px 12px; font: inherit; font-size: 14px; color: var(--ink); background: #fff;
+}
+.ad-input:focus { outline: 0; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-50); }
+.ad-note { font-size: 12.5px; color: var(--muted); margin-top: 14px; line-height: 1.6; }
+
+/* Role picker on the register screen */
+.ad-roles { display: grid; gap: 9px; }
+.ad-role {
+  display: flex; gap: 11px; align-items: flex-start; text-align: left; width: 100%;
+  border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+  background: #fff; cursor: pointer; font: inherit;
+}
+.ad-role:hover { border-color: var(--blue-100); }
+.ad-role[aria-pressed='true'] { border-color: var(--blue); background: var(--blue-50); }
+.ad-role .mark {
+  width: 17px; height: 17px; border-radius: 50%; border: 2px solid var(--line);
+  flex-shrink: 0; margin-top: 2px;
+}
+.ad-role[aria-pressed='true'] .mark { border-color: var(--blue); border-width: 5px; }
+.ad-role .t { font-size: 14px; font-weight: 700; color: var(--ink); }
+.ad-role .d { font-size: 12.5px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+
+/* ==========================================================================
+   Analytics
+   ========================================================================== */
+
+.ad-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; border-bottom: 1px solid var(--line); }
+.ad-tab {
+  border: 0; background: transparent; font: inherit; font-size: 13.5px; font-weight: 600;
+  color: var(--muted); padding: 10px 14px; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.ad-tab:hover { color: var(--ink); }
+.ad-tab[aria-selected='true'] { color: var(--blue-dark); border-bottom-color: var(--blue); }
+
+/* change-vs-previous chip */
+.ad-delta { font-size: 11.5px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.ad-delta.up { color: #047857; }
+.ad-delta.down { color: #b91c1c; }
+
+/* toggleable legend */
+.ad-legend-btn {
+  display: inline-flex; align-items: center; gap: 6px; border: 0; background: transparent;
+  font: inherit; font-size: 12.5px; color: var(--body); cursor: pointer; padding: 3px 6px; border-radius: 7px;
+}
+.ad-legend-btn:hover { background: var(--soft); }
+.ad-legend-btn i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.ad-legend-btn.off { color: var(--muted); opacity: .5; }
+.ad-legend-btn.off i { background: var(--line) !important; }
+
+/* svg chart */
+.ad-svgwrap { position: relative; }
+.ad-svg { width: 100%; height: auto; display: block; overflow: visible; }
+.ad-grid { stroke: var(--line); stroke-width: 1; }
+.ad-axis { font-size: 20px; fill: var(--muted); }
+.ad-cursor { stroke: var(--blue); stroke-width: 1; stroke-dasharray: 3 3; opacity: .6; }
+.ad-chart-empty { padding: 34px 12px; text-align: center; color: var(--muted); font-size: 13.5px; }
+
+.ad-tip {
+  position: absolute; top: 4px; transform: translateX(-50%); pointer-events: none; z-index: 5;
+  background: #0f172a; color: #fff; border-radius: 10px; padding: 9px 11px;
+  font-size: 12px; min-width: 150px; box-shadow: var(--shadow-lg);
+}
+.ad-tip .dt { font-weight: 700; margin-bottom: 6px; }
+.ad-tip .rw { display: flex; align-items: center; gap: 7px; padding: 2px 0; }
+.ad-tip .rw i { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.ad-tip .rw .l { flex: 1; opacity: .8; }
+.ad-tip .rw .v { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* ranked horizontal bars */
+.ad-ranked { display: grid; gap: 8px; }
+.ad-ranked-row {
+  display: flex; align-items: center; gap: 11px; font-size: 13px; width: 100%;
+  border: 0; background: transparent; font-family: inherit; text-align: left; padding: 0;
+}
+.ad-ranked-row.clickable { cursor: pointer; border-radius: 7px; padding: 2px 4px; margin: -2px -4px; }
+.ad-ranked-row.clickable:hover { background: var(--soft); }
+.ad-ranked-row .lbl {
+  width: 150px; flex-shrink: 0; color: var(--ink); font-weight: 500;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ad-ranked-row .track { flex: 1; height: 20px; border-radius: 6px; background: var(--soft); overflow: hidden; min-width: 50px; }
+.ad-ranked-row .fill { display: block; height: 100%; border-radius: 6px; }
+.ad-ranked-row .val { width: 62px; text-align: right; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) { .ad-ranked-row .lbl { width: 96px; } }
+
+.ad-spark { width: 100%; height: 48px; display: block; }
+
+.ad-sharebar { display: flex; height: 16px; border-radius: 8px; overflow: hidden; background: var(--soft); }
+.ad-sharebar span { display: block; height: 100%; }
+
+.ad-three { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); align-items: start; }
+
+/* --------------------------------------------------------------------------
+   Grid children default to `min-width: auto`, which means a wide child — a
+   table with a min-width, a long unbroken string — forces its track open and
+   pushes the whole page into horizontal scroll. `min-width: 0` lets the track
+   win and the child's own overflow-x handle the rest.
+   -------------------------------------------------------------------------- */
+.ad-side > *, .ad-two > *, .ad-three > *, .ad-stat-grid > * { min-width: 0; }
+/* The columns often hold their own grid of cards, so the rule has to reach the
+   card itself — otherwise the card is the one that refuses to shrink. */
+.ad-side > * > *, .ad-two > * > *, .ad-three > * > * { min-width: 0; }
+.ad-tablewrap { min-width: 0; max-width: 100%; }
+
+/* An email or a URL is one unbreakable word, so it sets the minimum width of
+   its column and pushes the page sideways. Let those values wrap mid-word —
+   a wrapped address reads fine; a horizontally scrolling page does not. */
+.ad-kv .v, .emp-kv-grid .v, .ad-sum .v { min-width: 0; overflow-wrap: anywhere; }
+.ad-kv .k { min-width: 0; }
+
+/* A table in a sidebar column has nothing like 760px to play with, so it opts
+   out of the min-width and simply scrolls inside its own wrapper. */
+.ad-table.compact { min-width: 0; }
+
+/* --------------------------------------------------------------------------
+   The back office is table-heavy — eleven columns of counts, then an action
+   button. `.wk-wrap`'s 1060px cap is right for the worker app's reading column
+   but here it squeezes job titles onto four lines and pushes the buttons out of
+   sight. The back office gets the full window instead.
+   -------------------------------------------------------------------------- */
+.ad .wk-wrap { max-width: none; }
+
+/* With the room to breathe, stop the first columns wrapping to a sliver. */
+.ad-table td:first-child { min-width: 180px; }
+.ad-table .acts { justify-content: flex-end; }
+
+/* --------------------------------------------------------------------------
+   Eleven columns will not fit a laptop no matter how wide the wrapper gets, so
+   the last column — the one holding the action — is pinned to the right edge
+   and stays put while the rest scrolls under it. A button you cannot see is a
+   button that does not exist.
+   -------------------------------------------------------------------------- */
+/* Only tables whose last column is the action column, which DataTable detects from its
+   empty header. Pinning a data column would park it on top of the one before it. */
+.ad-table.pin-last th:last-child,
+.ad-table.pin-last td:last-child {
+  position: sticky; right: 0; z-index: 2;
+  background: #fff;
+  box-shadow: -8px 0 12px -8px rgba(15, 23, 42, .16);
+}
+.ad-table.pin-last th:last-child { z-index: 3; }
+.ad-table.pin-last tbody tr:hover td:last-child { background: var(--soft); }
+
+/* No shadow once everything already fits — it would read as a stray border. */
+.ad-tablewrap:not(.is-scrolling) .ad-table.pin-last th:last-child,
+.ad-tablewrap:not(.is-scrolling) .ad-table.pin-last td:last-child { box-shadow: none; }
+
+/* ==========================================================================
+   Phone-first operations: the call list and the enquiry inbox.
+   These are read at speed by somebody with a handset to their ear, so rows are
+   tall, reasons are sentences, and the number is the biggest thing on the row.
+   ========================================================================== */
+
+.cq-chip {
+  border: 1px solid var(--line); background: #fff; border-radius: 99px;
+  padding: 7px 14px; font: inherit; font-size: 13px; color: var(--body); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.cq-chip b { font-variant-numeric: tabular-nums; color: var(--ink); }
+.cq-chip:hover { border-color: var(--blue-100); }
+.cq-chip.on { border-color: var(--blue); background: var(--blue-50); color: var(--blue-dark); }
+.cq-chip.on b { color: var(--blue-dark); }
+
+.cq-list { display: grid; gap: 10px; }
+
+.cq-row {
+  display: flex; gap: 13px; align-items: flex-start;
+  background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 15px 16px;
+}
+/* A red edge on the ones that have waited longest — scannable without reading. */
+.cq-row.high { border-left: 4px solid #dc2626; }
+.cq-row.medium { border-left: 4px solid #f59e0b; }
+
+.cq-ic {
+  width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+  display: grid; place-items: center; background: var(--soft); color: var(--body);
+}
+.cq-ic.rejected { background: #fef2f2; color: #b91c1c; }
+.cq-ic.pending { background: #fffbeb; color: #b45309; }
+.cq-ic.interview { background: var(--blue-50); color: var(--blue-dark); }
+.cq-ic.accepted { background: #ecfdf5; color: #047857; }
+
+.cq-body { flex: 1; min-width: 0; }
+.cq-top { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.cq-top .who { font-size: 15.5px; font-weight: 700; color: var(--ink); }
+.cq-why { font-size: 14px; color: var(--body); margin-top: 4px; line-height: 1.5; }
+.cq-meta { font-size: 12.5px; color: var(--muted); margin-top: 5px; display: flex; gap: 6px; flex-wrap: wrap; }
+.cq-next { font-size: 13.5px; font-weight: 600; color: var(--blue-dark); margin-top: 7px; }
+
+.cq-acts { display: flex; flex-direction: column; gap: 7px; align-items: stretch; flex-shrink: 0; }
+
+/* The dial button. Green, large, and showing the actual number so it can be
+   read out to a colleague or typed into a desk phone. */
+.mk .cq-call, .cq-call {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: #059669; color: #fff; border-radius: 11px; text-decoration: none;
+  padding: 11px 16px; font-size: 14.5px; font-weight: 700;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.mk .cq-call:hover, .cq-call:hover { background: #047857; color: #fff; }
+
+@media (max-width: 720px) {
+  .cq-row { flex-wrap: wrap; }
+  .cq-acts { flex-direction: row; flex-wrap: wrap; width: 100%; }
+  .cq-call { flex: 1; }
+}
+
+/* Outcome picker in the log-a-call dialog — taps, not a dropdown. */
+.cq-outcomes { display: flex; flex-wrap: wrap; gap: 7px; }
+.cq-outcome {
+  border: 1px solid var(--line); background: #fff; border-radius: 10px;
+  padding: 9px 13px; font: inherit; font-size: 13.5px; color: var(--body); cursor: pointer;
+}
+.cq-outcome:hover { border-color: var(--blue-100); }
+.cq-outcome.on { border-color: var(--blue); background: var(--blue-50); color: var(--blue-dark); font-weight: 600; }
+
+/* The sign-in lockup sits above the heading, centred. */
+.ad-auth-logo { margin: 0 auto 18px; display: flex; }

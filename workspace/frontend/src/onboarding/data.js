@@ -1,3 +1,5 @@
+import { READY_LANGUAGES } from '../i18n'
+
 /**
  * Choices offered during signup and worker onboarding.
  * Values are the exact strings the API expects; labels are what the user sees.
@@ -8,17 +10,28 @@
  * are on the roadmap — we still store the preference so the person keeps their
  * choice when the translation ships, but we say so rather than silently
  * showing English.
+ *
+ * The flag is derived from `READY_LANGUAGES` in `i18n.js` so that shipping a
+ * translation flips this list automatically instead of needing a second edit.
  */
-export const LANGUAGES = [
-  { code: 'en', native: 'English', label: 'English', flag: '🇬🇧', ready: true },
+const LANGUAGE_LIST = [
+  { code: 'en', native: 'English', label: 'English', flag: '🇬🇧' },
   { code: 'te', native: 'తెలుగు', label: 'Telugu', flag: '🇮🇳' },
-  { code: 'hi', native: 'हिन्दी', label: 'Hindi', flag: '🇮🇳', ready: true },
+  { code: 'hi', native: 'हिन्दी', label: 'Hindi', flag: '🇮🇳' },
   { code: 'kn', native: 'ಕನ್ನಡ', label: 'Kannada', flag: '🇮🇳' },
   { code: 'ta', native: 'தமிழ்', label: 'Tamil', flag: '🇮🇳' },
   { code: 'ml', native: 'മലയാളം', label: 'Malayalam', flag: '🇮🇳' },
   { code: 'mr', native: 'मराठी', label: 'Marathi', flag: '🇮🇳' },
   { code: 'bn', native: 'বাংলা', label: 'Bengali', flag: '🇮🇳' },
 ]
+
+export const LANGUAGES = LANGUAGE_LIST.map((l) => ({
+  ...l,
+  ready: READY_LANGUAGES.includes(l.code),
+}))
+
+/** The languages a switcher should offer — the translated ones only. */
+export const READY_LANGUAGE_OPTIONS = LANGUAGES.filter((l) => l.ready)
 
 export const ACCOUNT_TYPES = [
   {

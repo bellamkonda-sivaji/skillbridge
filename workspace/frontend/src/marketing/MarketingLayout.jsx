@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { LANGUAGE_OPTIONS as LANGUAGES } from '../i18n'
 import { useAuth } from '../context/AuthContext'
 import Icon from './icons'
 import { SITE, NAV_LINKS, FOOTER_NAV } from './content'
 import './marketing.css'
+import Logo from './Logo'
 
 /**
  * Languages the platform can actually render today. Telugu, Kannada, Tamil,
  * Malayalam and Marathi are planned — adding one means a new block in i18n.js
  * plus a translation of content.js, and it appears here automatically.
  */
-const LANGUAGES = [
-  { code: 'en', label: 'English' },
-  { code: 'hi', label: 'हिन्दी' },
-]
+
 
 const SOCIALS = [
   { icon: 'facebook', label: 'Facebook' },
@@ -23,11 +22,12 @@ const SOCIALS = [
   { icon: 'instagram', label: 'Instagram' },
 ]
 
-function Brand({ className = 'mk-brand' }) {
+/** `onDark` switches the wordmark to white; the footer sits on navy, where the blue half of
+    the name all but disappears. */
+function Brand({ className = 'mk-brand', onDark = false }) {
   return (
     <Link to="/" className={className} aria-label={`${SITE.name} home`}>
-      <span className="mk-brand-mark" aria-hidden="true">SB</span>
-      {SITE.name}
+      <Logo size={30} className={onDark ? 'on-dark' : ''} />
     </Link>
   )
 }
@@ -128,7 +128,7 @@ function Footer() {
       <div className="mk-container">
         <div className="mk-footer-top">
           <div>
-            <Brand className="mk-brand" />
+            <Brand className="mk-brand" onDark />
             <p className="mk-footer-tag">{SITE.tagline}</p>
             <p className="mk-footer-tag" style={{ marginTop: 8 }}>{SITE.promise}</p>
           </div>

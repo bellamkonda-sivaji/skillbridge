@@ -35,4 +35,9 @@ public class ApiException extends RuntimeException {
     public static ApiException tooManyRequests(String message) {
         return new ApiException(429, message);
     }
+
+    /** A feature the operator has not configured. Not the caller's fault, so not a 4xx. */
+    public static ApiException serviceUnavailable(String message) {
+        return new ApiException(503, message);
+    }
 }

@@ -8,7 +8,7 @@ import { PRICING } from '../content'
 
 const PRICING_FAQS = [
   {
-    q: 'Will SkillBridge always be free for workers?',
+    q: 'Will JobOn always be free for workers?',
     a: 'Yes. Workers never pay to create a profile, apply to jobs, be hired, or receive their wages. We do not take a cut of a worker’s pay, and no fee is ever deducted from a payslip.',
   },
   {
@@ -82,7 +82,7 @@ export default function Pricing() {
           {[
             { icon: 'shield', tone: 'green', title: 'Verification', text: 'Identity and business checks on both sides of every hire.' },
             { icon: 'lock', tone: 'amber', title: 'Wage protection', text: 'Funds committed before work starts, released when it is confirmed.' },
-            { icon: 'chat', tone: 'sky', title: 'Chat & interviews', text: 'Message candidates and schedule interviews at no cost.' },
+            { icon: 'chat', tone: 'sky', title: 'Talking to workers', text: 'Message or ring the people who applied, at no cost.' },
             { icon: 'doc', tone: 'violet', title: 'Records & payslips', text: 'Attendance, payment history and payslips for monthly staff.' },
             { icon: 'star', tone: 'rose', title: 'Two-way ratings', text: 'Reputation that follows both workers and employers.' },
             { icon: 'bell', tone: 'teal', title: 'Support', text: 'Help in your language, and a grievance process with real timelines.' },

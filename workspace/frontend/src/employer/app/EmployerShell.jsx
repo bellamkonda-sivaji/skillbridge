@@ -7,6 +7,7 @@ import api from '../../api'
 import { useStomp } from '../../hooks/useStomp'
 import '../../worker/worker.css'
 import '../employer.css'
+import Logo from '../../marketing/Logo'
 
 const NAV = [
   { to: '/employer', end: true, icon: 'grid', label: 'Dashboard' },
@@ -14,10 +15,11 @@ const NAV = [
   { to: '/employer/jobs', icon: 'briefcase', label: 'My Jobs' },
   { to: '/employer/applications', icon: 'doc', label: 'Applications' },
   { to: '/employer/find-workers', icon: 'search', label: 'Find Workers' },
-  { to: '/employer/interviews', icon: 'calendar', label: 'Interviews' },
+  { to: '/employer/interviews', icon: 'calendar', label: 'Calls & visits' },
   { to: '/employer/offers', icon: 'doc', label: 'Offers' },
   { to: '/employer/attendance', icon: 'checkCircle', label: 'Attendance' },
   { to: '/employer/payments', icon: 'wallet', label: 'Payments' },
+  { to: '/employer/billing', icon: 'rupee', label: 'Billing' },
   { to: '/employer/reviews', icon: 'star', label: 'Reviews' },
   { to: '/employer/profile', icon: 'store', label: 'Business Profile' },
   { to: '/employer/settings', icon: 'target', label: 'Settings' },
@@ -57,8 +59,7 @@ export default function EmployerShell() {
           </button>
 
           <Link to="/employer" className="mk-brand" style={{ marginRight: 0 }}>
-            <span className="mk-brand-mark" aria-hidden="true">SB</span>
-            {SITE.name}
+            <Logo size={30} />
           </Link>
 
           {business && (

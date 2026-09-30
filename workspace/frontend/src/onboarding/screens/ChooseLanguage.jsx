@@ -11,7 +11,7 @@ export default function ChooseLanguage() {
   useDocumentTitle('Choose your language')
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { draft, setDraft } = useOnboarding()
   const [picked, setPicked] = useState(draft.locale || 'en')
 
@@ -30,11 +30,11 @@ export default function ChooseLanguage() {
       <ObCard>
         <ObHead
           icon={<Icon name="globe" size={30} />}
-          title="Choose your language"
-          sub="You can change this anytime in settings."
+          title={t('ob.lang.title')}
+          sub={t('ob.lang.sub')}
         />
 
-        <div className="ob-options" role="listbox" aria-label="Languages">
+        <div className="ob-options" role="listbox" aria-label={t('ob.lang.listLabel')}>
           {LANGUAGES.map((l) => (
             <OptionRow
               key={l.code}
@@ -43,7 +43,7 @@ export default function ChooseLanguage() {
               flag={l.flag}
               native={l.native}
               latin={l.label === l.native ? null : l.label}
-              badge={l.ready ? null : 'Coming soon'}
+              badge={l.ready ? null : t('common.comingSoon')}
             />
           ))}
         </div>
@@ -54,13 +54,10 @@ export default function ChooseLanguage() {
           style={{ marginTop: 22 }}
           onClick={submit}
         >
-          Continue <Icon name="arrowRight" size={17} />
+          {t('common.continue')} <Icon name="arrowRight" size={17} />
         </button>
 
-        <p className="ob-foot-note">
-          Languages marked “Coming soon” are on the way — we’ll remember your choice and
-          switch you over the moment they land.
-        </p>
+        <p className="ob-foot-note">{t('ob.lang.note')}</p>
       </ObCard>
     </ObShell>
   )

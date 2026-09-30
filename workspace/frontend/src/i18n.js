@@ -1,11 +1,13 @@
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
+import * as common from './locales/common'
+import * as flow from './locales/flow'
 
 const resources = {
   en: {
     translation: {
-      brand: 'SkillBridge',
-      tagline: 'Local hiring, smarter',
+      brand: 'JobOn',
+      tagline: 'Local Jobs · Local Workers · Growing Together',
       nav: {
         jobs: 'Find Jobs',
         workers: 'Find Workers',
@@ -30,11 +32,11 @@ const resources = {
         register: 'Create Account',
         or: 'or',
         haveAccount: 'Already have an account?',
-        noAccount: 'New to SkillBridge?'
+        noAccount: 'New to JobOn?'
       },
       home: {
         heroTitle: 'Find the right worker. Or the right job.',
-        heroSub: 'SkillBridge connects local businesses with skilled and unskilled workers in real time — powered by AI matching, verified profiles and instant chat.',
+        heroSub: 'JobOn connects local businesses with skilled and unskilled workers in real time — powered by AI matching, verified profiles and instant chat.',
         ctaWorker: 'I need work',
         ctaEmployer: 'I need to hire',
         statsWorkers: 'Skilled workers',
@@ -241,8 +243,8 @@ const resources = {
   },
   sw: {
     translation: {
-      brand: 'SkillBridge',
-      tagline: 'Kuajiri kwa ndani, kwa busara',
+      brand: 'JobOn',
+      tagline: 'Kazi za hapa · Wafanyakazi wa hapa · Tukue pamoja',
       nav: {
         jobs: 'Tafuta Kazi',
         workers: 'Tafuta Wafanyakazi',
@@ -267,11 +269,11 @@ const resources = {
         register: 'Fungua Akaunti',
         or: 'au',
         haveAccount: 'Una akaunti tayari?',
-        noAccount: 'Mpya kwenye SkillBridge?'
+        noAccount: 'Mpya kwenye JobOn?'
       },
       home: {
         heroTitle: 'Pata mfanyakazi sahihi. Au kazi sahihi.',
-        heroSub: 'SkillBridge inaunganisha biashara za ndani na wafanyakazi wenye ujuzi kwa wakati halisi — ikiendeshwa na upatanishi wa AI, wasifu uliothibitishwa na mazungumzo ya haraka.',
+        heroSub: 'JobOn inaunganisha biashara za ndani na wafanyakazi wenye ujuzi kwa wakati halisi — ikiendeshwa na upatanishi wa AI, wasifu uliothibitishwa na mazungumzo ya haraka.',
         ctaWorker: 'Nahitaji kazi',
         ctaEmployer: 'Nahitaji kuajiri',
         featuresTitle: 'Kila unachohitaji kuajiri na kuajiriwa',
@@ -380,8 +382,8 @@ const resources = {
   },
   hi: {
     translation: {
-      brand: 'SkillBridge',
-      tagline: 'स्थानीय भर्ती, अधिक स्मार्ट',
+      brand: 'JobOn',
+      tagline: 'स्थानीय काम · स्थानीय कामगार · साथ बढ़ें',
       nav: {
         jobs: 'नौकरी खोजें',
         workers: 'कर्मचारी खोजें',
@@ -406,11 +408,11 @@ const resources = {
         register: 'खाता बनाएं',
         or: 'या',
         haveAccount: 'पहले से खाता है?',
-        noAccount: 'SkillBridge पर नए हैं?'
+        noAccount: 'JobOn पर नए हैं?'
       },
       home: {
         heroTitle: 'सही कर्मचारी खोजें। या सही नौकरी।',
-        heroSub: 'SkillBridge स्थानीय व्यवसायों को कुशल और अकुशल कर्मचारियों से वास्तविक समय में जोड़ता है — AI मिलान, सत्यापित प्रोफ़ाइल और तुरंत चैट के साथ।',
+        heroSub: 'JobOn स्थानीय व्यवसायों को कुशल और अकुशल कर्मचारियों से वास्तविक समय में जोड़ता है — AI मिलान, सत्यापित प्रोफ़ाइल और तुरंत चैट के साथ।',
         ctaWorker: 'मुझे काम चाहिए',
         ctaEmployer: 'मुझे काम पर रखना है',
         featuresTitle: 'काम पर रखने और काम पाने के लिए सब कुछ',
@@ -519,10 +521,56 @@ const resources = {
   }
 }
 
+/**
+ * The signup, onboarding and worker strings live in `./locales`, so they can be
+ * reviewed per language without wading through the older resources above.
+ * Merging happens here rather than in the files themselves, which keeps each
+ * locale file a plain data module.
+ */
+function merge(target, source) {
+  for (const [k, v] of Object.entries(source || {})) {
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      target[k] = merge(target[k] && typeof target[k] === 'object' ? target[k] : {}, v)
+    } else {
+      target[k] = v
+    }
+  }
+  return target
+}
+
+for (const [code, packs] of Object.entries({
+  en: [common.en, flow.en],
+  te: [common.te, flow.te],
+  hi: [common.hi, flow.hi],
+})) {
+  resources[code] = resources[code] || { translation: {} }
+  for (const pack of packs) merge(resources[code].translation, pack)
+}
+
+/**
+ * Languages the app is genuinely translated into. `onboarding/data.js` reads
+ * this to decide which options are offered without a "Coming soon" badge, so
+ * the two can never drift apart.
+ */
+export const READY_LANGUAGES = ['en', 'te', 'hi']
+
+/**
+ * What every language switcher in the app offers. Labels are in the language
+ * itself, because someone looking for Telugu is looking for "తెలుగు".
+ * Keep this the single source — the switchers used to each carry their own
+ * copy, which is how Telugu went missing from some of them.
+ */
+export const LANGUAGE_OPTIONS = [
+  { code: 'en', label: 'English' },
+  { code: 'te', label: 'తెలుగు' },
+  { code: 'hi', label: 'हिन्दी' },
+]
+
 i18n.use(initReactI18next).init({
   resources,
   lng: localStorage.getItem('sb_lang') || 'en',
   fallbackLng: 'en',
+  supportedLngs: Object.keys(resources),
   interpolation: { escapeValue: false }
 })
 

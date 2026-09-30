@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Icon from '../../marketing/icons'
 import { useDocumentTitle } from '../../marketing/components'
 import api, { errMsg } from '../../api'
@@ -13,6 +14,7 @@ const mmss = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s %
 export default function VerifyOtp() {
   useDocumentTitle('Verify your mobile number')
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const location = useLocation()
   const { applySession, user } = useAuth()
   const { draft } = useOnboarding()
@@ -43,7 +45,7 @@ export default function VerifyOtp() {
       if (res.data?.token && res.data?.account) applySession(res.data.token, res.data.account, accountType)
       navigate(accountType === 'EMPLOYER' ? '/employer/onboarding' : '/join/about-you', { replace: true })
     } catch (err) {
-      setError(errMsg(err, 'That code is not right. Please check and try again.'))
+      setError(errMsg(err, t('ob.otp.errWrong')))
       setCode('')
       submitted.current = false
     } finally {
@@ -68,25 +70,25 @@ export default function VerifyOtp() {
       setCode('')
       submitted.current = false
     } catch (err) {
-      setError(errMsg(err, 'Could not send the code. Please try again shortly.'))
+      setError(errMsg(err, t('ob.otp.errSend')))
     }
   }
 
   return (
     <ObShell>
       <ObCard>
-        <Stepper steps={['Account', 'Verify', 'Profile']} current={1} />
+        <Stepper steps={[t('ob.steps.account'), t('ob.steps.verify'), t('ob.steps.profile')]} current={1} />
 
         <ObHead
           icon={<Icon name="chat" size={30} />}
-          title="Verify your mobile number"
-          sub={`We have sent a 6-digit OTP to ${pretty(phone)}`}
+          title={t('ob.otp.title')}
+          sub={t('ob.otp.sub', { phone: pretty(phone) })}
         />
 
         <Alert>{error}</Alert>
         {devCode && (
           <Alert kind="info">
-            <strong>Demo mode:</strong> no SMS provider is connected yet, so your code is{' '}
+            <strong>{t('ob.otp.demo')}</strong> {t('ob.otp.demoText')}{' '}
             <strong style={{ letterSpacing: 2 }}>{devCode}</strong>.
           </Alert>
         )}
@@ -95,9 +97,9 @@ export default function VerifyOtp() {
 
         <div className="ob-resend">
           {seconds > 0 ? (
-            <>Resend OTP in {mmss(seconds)}</>
+            <>{t('ob.otp.resendIn', { time: mmss(seconds) })}</>
           ) : (
-            <button type="button" onClick={resend}>Resend OTP</button>
+            <button type="button" onClick={resend}>{t('ob.otp.resend')}</button>
           )}
         </div>
 
@@ -108,17 +110,17 @@ export default function VerifyOtp() {
           disabled={code.length !== 6 || busy}
           onClick={() => verify(code)}
         >
-          {busy ? 'Verifying…' : 'Verify & Continue'}
+          {busy ? t('ob.otp.submitting') : t('ob.otp.submit')}
         </button>
 
         <div className="ob-nav" style={{ marginTop: 14 }}>
           <button type="button" className="ob-back" onClick={() => navigate('/join/create')}>
-            <Icon name="chevronLeft" size={16} /> Back
+            <Icon name="chevronLeft" size={16} /> {t('common.back')}
           </button>
         </div>
 
         <div className="ob-safe">
-          <Icon name="shield" size={17} /> Your information is safe with us.
+          <Icon name="shield" size={17} /> {t('common.safe')}
         </div>
       </ObCard>
     </ObShell>

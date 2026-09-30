@@ -9,4 +9,7 @@ public interface AdminAccountRepository extends JpaRepository<AdminAccount, Long
     Optional<AdminAccount> findByEmail(String email);
     Optional<AdminAccount> findByPhone(String phone);
     boolean existsByEmail(String email);
+    boolean existsByPhone(String phone);
+    java.util.List<com.skillbridge.model.AdminAccount> findAllByOrderByCreatedAtAsc();
+    java.util.List<com.skillbridge.model.AdminAccount> findByAdminRole(com.skillbridge.model.AdminRole role);
 }

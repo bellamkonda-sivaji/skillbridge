@@ -9,7 +9,7 @@ export const PITCH = {
     { icon: 'calendar', text: 'Attendance & payroll support' },
     { icon: 'trending', text: 'Grow your business with ease' },
   ],
-  trust: { count: '10,000+', label: 'Businesses trust SkillBridge' },
+  trust: { count: '10,000+', label: 'Businesses trust JobOn' },
 }
 
 export const EMPLOYER_KINDS = [

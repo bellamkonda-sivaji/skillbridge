@@ -57,7 +57,7 @@ export function AccountType() {
   return (
     <EmpWizard
       step={0}
-      title="Get Started with SkillBridge"
+      title="Get Started with JobOn"
       sub="Choose the option that best describes you."
     >
       <Alert>{error}</Alert>

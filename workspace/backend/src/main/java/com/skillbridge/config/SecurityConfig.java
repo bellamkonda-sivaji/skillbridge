@@ -47,9 +47,17 @@ public class SecurityConfig {
                         .requestMatchers("/api/worker/auth/**", "/api/employer/auth/**",
                                 "/api/admin/auth/**").permitAll()
                         .requestMatchers("/ws/**", "/h2-console/**", "/api/health").permitAll()
+                        // The gateway has no session: the signature over the raw body is the
+                        // whole of the security, and it is checked inside the handler.
+                        .requestMatchers(HttpMethod.POST, "/api/payments/razorpay/webhook").permitAll()
                         // --- open: the public job / worker / employer listings ---
                         .requestMatchers(HttpMethod.GET, "/api/jobs", "/api/jobs/*",
-                                "/api/workers", "/api/employers/*", "/api/config/pricing").permitAll()
+                                "/api/workers", "/api/employers/*", "/api/config/pricing",
+                                "/api/config/payments", "/api/config/vocabulary").permitAll()
+                        // The inbound lead hook is called by a telephony/WhatsApp webhook that
+                        // has no login: a shared secret header is the whole of the security,
+                        // and it is checked inside the handler.
+                        .requestMatchers(HttpMethod.POST, "/api/leads/inbound").permitAll()
                         // --- role walls, enforced by the framework rather than by hand ---
                         .requestMatchers("/api/worker/**").hasRole("WORKER")
                         .requestMatchers("/api/employer/**").hasRole("EMPLOYER")

@@ -6,6 +6,7 @@ import {
 } from '../components'
 import { STEPS, TESTIMONIALS, FAQS } from '../content'
 import { Accordion } from '../components'
+import HowItWorksFilm from '../HowItWorksFilm'
 
 const FLOWS = [
   {
@@ -14,15 +15,15 @@ const FLOWS = [
     title: 'Short-term & shift work',
     lead: 'For when you need people today, tomorrow or for the weekend.',
     chain: ['Post', 'Match', 'Confirm', 'Work', 'Attendance', 'Payment', 'Rating'],
-    text: 'No interview round unless you want one. We find available, nearby workers fast, confirm them, record attendance on the day and release the wage when the shift is done.',
+    text: 'No interview needed — a phone call if you want one. We find available, nearby workers fast, confirm them, record attendance on the day and release the wage when the shift is done.',
   },
   {
     icon: 'briefcase',
     tone: 'violet',
     title: 'Long-term employment',
     lead: 'For permanent roles where the fit matters more than the speed.',
-    chain: ['Post', 'Apply', 'Shortlist', 'Interview', 'Offer', 'Joining', 'Payroll'],
-    text: 'A full hiring flow with shortlisting, interviews, document verification and a joining date — then monthly attendance, payroll and payslips once the person starts.',
+    chain: ['Post', 'Apply', 'Shortlist', 'Talk', 'Offer', 'Joining', 'Payroll'],
+    text: 'A full hiring flow with shortlisting, a call or a visit, document verification and a joining date — then monthly attendance, payroll and payslips once the person starts.',
   },
 ]
 
@@ -50,7 +51,7 @@ export default function HowItWorks() {
     <>
       <PageHead
         eyebrow="How it works"
-        title="How SkillBridge works"
+        title="How JobOn works"
         sub="Simple. Transparent. Built for local work."
       >
         <div className="mk-cta-row center" style={{ marginTop: 28 }}>
@@ -72,6 +73,7 @@ export default function HowItWorks() {
       </PageHead>
 
       <Section style={{ paddingTop: 8 }}>
+        <HowItWorksFilm />
         <Steps steps={isWorker ? STEPS.worker : STEPS.employer} />
         <div className="mk-cta-row center mk-mt-40">
           <Btn to={isWorker ? '/worker/login' : '/employer/login'} size="lg">
@@ -85,7 +87,7 @@ export default function HowItWorks() {
         <SectionHead
           eyebrow="Two ways to hire"
           title="A day's work and a career need different journeys"
-          sub="SkillBridge runs both, so a business can staff a busy Saturday and fill a permanent vacancy in the same place."
+          sub="JobOn runs both, so a business can staff a busy Saturday and fill a permanent vacancy in the same place."
         />
         <div className="mk-grid mk-grid-2">
           {FLOWS.map((f) => (

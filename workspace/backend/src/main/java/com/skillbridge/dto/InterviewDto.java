@@ -24,7 +24,9 @@ public record InterviewDto(
         LocalDateTime createdAt,
         String businessName,
         LocalDateTime endsAt,
-        boolean isUpcoming
+        boolean isUpcoming,
+        /** "Phone call", "Come to the shop" ... - the word the UI shows for {@code mode}. */
+        String modeLabel
 ) {
     /** The business name falls back to the employer account name when there is no profile. */
     public static InterviewDto from(Interview i) {
@@ -38,11 +40,13 @@ public record InterviewDto(
                 i.getJob() != null ? i.getJob().getId() : null,
                 i.getJob() != null ? i.getJob().getTitle() : null,
                 i.getConversation() != null ? i.getConversation().getId() : null,
-                i.getScheduledAt(), i.getDurationMinutes(), i.getMode(), i.getLocation(), i.getNotes(),
+                i.getScheduledAt(), i.getDurationMinutes(),
+                i.getMode() == null ? null : i.getMode().canonical(), i.getLocation(), i.getNotes(),
                 i.getStatus(), i.getCreatedAt(),
                 businessName,
                 endsAt(i),
-                upcoming(i));
+                upcoming(i),
+                InterviewMode.labelOf(i.getMode()));
     }
 
     public static LocalDateTime endsAt(Interview i) {

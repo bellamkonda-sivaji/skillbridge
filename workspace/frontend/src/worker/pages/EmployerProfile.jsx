@@ -74,7 +74,7 @@ export default function EmployerProfile() {
           <div style={{ marginTop: 18 }}>
             <h2 className="wk-h2">About Us</h2>
             <p style={{ fontSize: 14.5, color: 'var(--body)', marginTop: 8 }}>
-              {emp.description || `${emp.businessName} is a local business hiring through SkillBridge.`}
+              {emp.description || `${emp.businessName} is a local business hiring through JobOn.`}
             </p>
 
             <div className="wk-kvlist">

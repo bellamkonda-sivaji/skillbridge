@@ -50,7 +50,7 @@ export default function Safety() {
             <div className="mk-eyebrow">What "verified" means</div>
             <h2 className="mk-h2 mk-mt-8">We show you what was actually checked</h2>
             <p className="mk-lead">
-              A single “Verified” tick hides more than it tells. SkillBridge shows the specific
+              A single “Verified” tick hides more than it tells. JobOn shows the specific
               checks that have been completed on a profile, so you can judge for yourself.
             </p>
             <p className="mk-sub">
@@ -109,7 +109,7 @@ export default function Safety() {
             <h3 className="mk-h3">Staying safe as a worker</h3>
             <div className="mk-checks" style={{ marginTop: 16 }}>
               {[
-                'Never pay anyone for a job — no genuine employer on SkillBridge asks for money.',
+                'Never pay anyone for a job — no genuine employer on JobOn asks for money.',
                 'Keep conversations in the app, so there is a record if something goes wrong.',
                 'Check the verification badges and ratings before you agree to a shift.',
                 'Confirm the wage, hours and address in writing before you travel.',

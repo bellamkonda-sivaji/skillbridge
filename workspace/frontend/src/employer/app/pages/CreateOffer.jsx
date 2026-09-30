@@ -360,7 +360,7 @@ export default function CreateOffer() {
 
         {amountChanged && (
           <p className="wk-sub">
-            You changed the pay. The final cost will be recalculated by SkillBridge when the offer is sent.
+            You changed the pay. The final cost will be recalculated by JobOn when the offer is sent.
           </p>
         )}
       </div>

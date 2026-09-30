@@ -4,6 +4,7 @@ import com.skillbridge.dto.*;
 import com.skillbridge.model.WorkerAccount;
 import com.skillbridge.security.AuthenticationUtils;
 import com.skillbridge.service.ApplicationService;
+import com.skillbridge.service.AttendanceService;
 import com.skillbridge.service.EmploymentService;
 import com.skillbridge.service.InterviewService;
 import com.skillbridge.service.JobService;
@@ -30,11 +31,13 @@ public class WorkerController {
     private final InterviewService interviewService;
     private final MatchingService matchingService;
     private final EmploymentService employmentService;
+    private final AttendanceService attendanceService;
 
     public WorkerController(WorkerService workerService, ApplicationService applicationService,
                             UserService userService, JobService jobService,
                             InterviewService interviewService, MatchingService matchingService,
-                            EmploymentService employmentService) {
+                            EmploymentService employmentService,
+                            AttendanceService attendanceService) {
         this.workerService = workerService;
         this.applicationService = applicationService;
         this.userService = userService;
@@ -42,6 +45,7 @@ public class WorkerController {
         this.interviewService = interviewService;
         this.matchingService = matchingService;
         this.employmentService = employmentService;
+        this.attendanceService = attendanceService;
     }
 
     // ---------------------------------------------------------------- dashboard & search
@@ -207,6 +211,30 @@ public class WorkerController {
     public AttendanceDto checkOut(@RequestBody(required = false) AttendanceRequest request) {
         return employmentService.checkOut(AuthenticationUtils.currentWorker(),
                 request != null ? request.employmentId() : null);
+    }
+
+    /** One card per active employment: one button each, and the label IS the instruction. */
+    @GetMapping("/attendance/today")
+    public List<AttendanceDtos.TodayDto> attendanceToday() {
+        return attendanceService.today(AuthenticationUtils.currentWorker());
+    }
+
+    // ---- "Something is wrong": the worker's own correction requests
+
+    @PostMapping("/attendance/requests")
+    public AttendanceDtos.AttendanceRequestDto raiseAttendanceRequest(
+            @RequestBody AttendanceDtos.CreateRequestBody body) {
+        return attendanceService.createRequest(AuthenticationUtils.currentWorker(), body);
+    }
+
+    @GetMapping("/attendance/requests")
+    public List<AttendanceDtos.AttendanceRequestDto> myAttendanceRequests() {
+        return attendanceService.requestsForWorker(AuthenticationUtils.currentWorker());
+    }
+
+    @PostMapping("/attendance/requests/{id}/cancel")
+    public AttendanceDtos.AttendanceRequestDto cancelAttendanceRequest(@PathVariable Long id) {
+        return attendanceService.cancelRequest(AuthenticationUtils.currentWorker(), id);
     }
 
     @GetMapping("/attendance")

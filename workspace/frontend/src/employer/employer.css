@@ -1,6 +1,6 @@
 /* ==========================================================================
    Employer login + onboarding.
-   Uses the same design tokens as the worker side — one SkillBridge theme, not
+   Uses the same design tokens as the worker side — one JobOn theme, not
    two. These classes only add layouts the worker flow does not have (the split
    login, plan cards, upload boxes).
    ========================================================================== */
@@ -627,3 +627,208 @@
 /* Ratings summary sits beside the reviews on desktop, stacks on a phone. */
 .emp-rating-grid { display: grid; gap: 22px; grid-template-columns: minmax(180px, 220px) 1fr; align-items: start; }
 @media (max-width: 720px) { .emp-rating-grid { grid-template-columns: 1fr; } }
+
+
+/* The employer's applicant and offer tables carry as many columns as the back
+   office's, so they get more room than the worker app's reading column allows.
+   Kept short of full width because this app also holds the posting wizard. */
+.emp .wk-wrap { max-width: 1320px; }
+.emp-table td:first-child { min-width: 170px; }
+
+/* Same treatment for the employer's wide applicant and offer tables. */
+.emp-table th:last-child,
+.emp-table td:last-child {
+  position: sticky; right: 0; z-index: 2;
+  background: #fff;
+  box-shadow: -8px 0 12px -8px rgba(15, 23, 42, .16);
+}
+.emp-table th:last-child { z-index: 3; }
+.emp-table tbody tr:hover td:last-child { background: var(--soft); }
+.emp-tablewrap:not(.is-scrolling) .emp-table th:last-child,
+.emp-tablewrap:not(.is-scrolling) .emp-table td:last-child { box-shadow: none; }
+
+/* ==========================================================================
+   Pricing — the commission split, the price editor and the demand advice.
+
+   These carry more visual weight than the rest of the employer UI on purpose.
+   The split is the number an employer disputes later if they did not see it,
+   and the advice is the one card we actually want acted on.
+   ========================================================================== */
+
+.emp-price-split {
+  border: 1px solid var(--line, #e5e7eb);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.emp-price-split .row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  font-size: 14.5px;
+  border-bottom: 1px solid var(--line, #eef0f3);
+}
+
+.emp-price-split .row:last-child { border-bottom: 0; }
+.emp-price-split .row .k { color: var(--body, #4b5563); min-width: 0; }
+.emp-price-split .row .v { font-weight: 700; color: var(--ink, #111827); white-space: nowrap; }
+.emp-price-split .row .v .u { font-weight: 500; color: var(--body, #6b7280); font-size: 12.5px; }
+.emp-price-split .row.muted { background: #fafafa; }
+.emp-price-split .row.muted .v { color: #b45309; font-weight: 600; }
+
+/* The worker's number is the one that must be unmissable. */
+.emp-price-split .row.total { background: #f0fdf4; }
+.emp-price-split .row.total .k { font-weight: 600; color: #166534; }
+.emp-price-split .row.total .v { color: #15803d; font-size: 18px; }
+
+/* ---------------------------------------------------------------- the stepper */
+
+.emp-price-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* 52px so it is hittable with a thumb on a cheap phone, which is the whole device here. */
+.emp-price-stepper .stepbtn {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  border: 1px solid var(--line, #d1d5db);
+  background: #fff;
+  color: var(--ink, #111827);
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emp-price-stepper .stepbtn:hover { background: #f9fafb; }
+.emp-price-stepper .stepbtn:active { transform: scale(0.96); }
+
+.emp-price-stepper .amount {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  border: 1px solid var(--line, #d1d5db);
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: #fff;
+}
+
+.emp-price-stepper .amount .cur { font-size: 20px; font-weight: 700; color: var(--ink, #111827); }
+
+.emp-price-stepper .amount input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  font: inherit;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ink, #111827);
+  background: transparent;
+  padding: 4px 0;
+}
+
+/* The spinners are redundant next to the big buttons and make the field feel fiddly. */
+.emp-price-stepper .amount input::-webkit-outer-spin-button,
+.emp-price-stepper .amount input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.emp-price-stepper .amount input[type='number'] { -moz-appearance: textfield; }
+
+.emp-price-stepper .amount .unit {
+  font-size: 12.5px;
+  color: var(--body, #6b7280);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- the advice card */
+
+.emp-advice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border: 1px solid var(--line, #e5e7eb);
+  border-left-width: 4px;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  background: #fff;
+}
+
+.emp-advice .ic {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emp-advice .bd { min-width: 0; flex: 1 1 auto; }
+.emp-advice .hd { font-weight: 700; font-size: 15px; color: var(--ink, #111827); }
+.emp-advice .dt { font-size: 13.5px; color: var(--body, #4b5563); margin-top: 4px; }
+
+.emp-advice .facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: var(--body, #6b7280);
+}
+
+.emp-advice.bad  { border-left-color: #dc2626; background: #fef2f2; }
+.emp-advice.bad .ic  { background: #fee2e2; color: #b91c1c; }
+.emp-advice.warn { border-left-color: #d97706; background: #fffbeb; }
+.emp-advice.warn .ic { background: #fef3c7; color: #b45309; }
+.emp-advice.good { border-left-color: #16a34a; background: #f0fdf4; }
+.emp-advice.good .ic { background: #dcfce7; color: #15803d; }
+.emp-advice.info { border-left-color: #94a3b8; background: #f8fafc; }
+.emp-advice.info .ic { background: #e2e8f0; color: #475569; }
+
+/* The whole card is the call to action on a phone, so the button spans it. */
+@media (max-width: 520px) {
+  .emp-advice { flex-direction: column; gap: 10px; }
+  .emp-advice .mk-btn { width: 100%; justify-content: center; }
+  .emp-price-stepper .amount input { font-size: 21px; }
+}
+
+.emp-price-reason {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line, #d1d5db);
+  border-radius: 10px;
+  padding: 11px 12px;
+  font: inherit;
+  font-size: 14.5px;
+  color: var(--ink, #111827);
+  background: #fff;
+}
+
+.emp-price-reason:focus { outline: 2px solid var(--blue, #2563eb); outline-offset: 1px; }
+.emp-price-note { margin-top: 10px; }
+
+/* On a stacked dashboard card the job's name leads and the verdict rides beside it. */
+.emp-advice .hd .tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  vertical-align: middle;
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+}

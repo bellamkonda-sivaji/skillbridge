@@ -137,7 +137,7 @@ export default function Contact() {
           {[
             { icon: 'user', tone: '', t: 'I need work', d: 'Create a free worker profile and get matched to jobs near you.', to: '/worker/login', cta: 'Log in as a worker' },
             { icon: 'briefcase', tone: 'violet', t: 'I want to hire', d: 'Post a requirement and reach verified workers nearby.', to: '/employer/login', cta: 'Log in as an employer' },
-            { icon: 'users', tone: 'teal', t: 'Partnership or press', d: 'Working with local bodies, training partners or media.', to: '/about', cta: 'About SkillBridge' },
+            { icon: 'users', tone: 'teal', t: 'Partnership or press', d: 'Working with local bodies, training partners or media.', to: '/about', cta: 'About JobOn' },
           ].map((c) => (
             <Card key={c.t} hover>
               <IconBox name={c.icon} tone={c.tone} />

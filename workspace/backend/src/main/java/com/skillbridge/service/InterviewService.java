@@ -265,7 +265,7 @@ public class InterviewService {
                 interview.getJob() != null ? interview.getJob().getTitle() : null,
                 businessName(interview.getEmployer()),
                 interview.getEmployer().getId(),
-                interview.getMode(),
+                interview.getMode() == null ? null : interview.getMode().canonical(),
                 interview.getScheduledAt(),
                 InterviewDto.endsAt(interview),
                 interview.getDurationMinutes(),
@@ -279,7 +279,8 @@ public class InterviewService {
                 interview.getLatitude(),
                 interview.getLongitude(),
                 interview.getNotes(),
-                PREPARATION_TIPS);
+                PREPARATION_TIPS,
+                InterviewMode.labelOf(interview.getMode()));
     }
 
     /** The worker asks for another slot: the interview drops back to PENDING and the employer hears about it. */

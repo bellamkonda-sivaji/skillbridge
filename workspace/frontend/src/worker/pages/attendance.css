@@ -1,0 +1,229 @@
+/* ==========================================================================
+   Attendance. The worker side is a button; the employer side is a day at a
+   glance. Nothing here should look like a timesheet.
+   ========================================================================== */
+
+.at-cards { display: grid; gap: 14px; }
+
+.at-card {
+  background: #fff; border: 1px solid var(--line); border-radius: 18px;
+  padding: 18px; box-shadow: var(--shadow);
+}
+.at-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 16px; }
+.at-head .grow { flex: 1; min-width: 0; }
+.at-head .job { font-size: 18px; font-weight: 800; color: var(--ink); line-height: 1.25; }
+.at-head .shop { font-size: 14.5px; color: var(--body); margin-top: 2px; }
+.at-head .shift {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--muted); margin-top: 7px;
+}
+
+/* The shift, the place, the phone number. One quiet line above the action. */
+.at-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px;
+  padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--line);
+}
+.at-meta .bit {
+  display: inline-flex; align-items: center; gap: 6px; min-width: 0;
+  font-size: 13.5px; color: var(--body);
+}
+.at-meta .bit svg { flex-shrink: 0; color: var(--muted); }
+/* The address is the only part that can run long, so it is the only part that truncates. */
+.at-meta .bit[title] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.at-meta .call {
+  text-decoration: none; font-weight: 600; color: var(--blue-dark);
+  background: var(--blue-50); border-radius: 999px; padding: 5px 12px; margin-left: auto;
+}
+.at-meta .call svg { color: currentColor; }
+.at-meta .call:hover { background: var(--blue-100); }
+
+/* The action. Still the biggest thing on the card and still colour-coded, but a button
+   rather than a banner - a full-width slab of green reads as a page header, not a control,
+   and on a desktop it stretched to a metre of colour. */
+.at-action { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+.at-punch {
+  flex: 0 0 auto; border: 0; cursor: pointer; font: inherit; color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  border-radius: 14px; padding: 0 26px; min-height: 60px; min-width: 210px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .14);
+  transition: transform .1s, filter .12s;
+}
+.at-punch:active:not(:disabled) { transform: scale(.975); }
+.at-punch:disabled { filter: grayscale(.4) opacity(.7); cursor: default; }
+.at-punch .lbl { font-size: 19px; font-weight: 800; }
+.at-punch.start { background: linear-gradient(135deg, #059669, #10b981); }
+.at-punch.stop  { background: linear-gradient(135deg, #b91c1c, #dc2626); }
+
+/* The instruction moves out of the button so the button is just its own label. */
+.at-hint { font-size: 14px; color: var(--muted); flex: 1; min-width: 120px; }
+
+/* While they are working */
+.at-live {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+  background: var(--blue-50); border: 1px solid var(--blue-100);
+  border-radius: 14px; padding: 14px 16px;
+}
+.at-live .dot {
+  width: 11px; height: 11px; border-radius: 50%; background: #10b981; flex-shrink: 0;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, .2);
+  animation: atpulse 1.6s ease-in-out infinite;
+}
+@keyframes atpulse { 50% { opacity: .45; } }
+.at-live .k { font-size: 13px; color: var(--muted); }
+.at-live .v { font-size: 19px; font-weight: 800; color: var(--ink); margin-top: 2px; }
+
+.at-done {
+  display: flex; align-items: center; gap: 14px;
+  background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 16px; padding: 20px;
+}
+.at-done .ic { color: #047857; flex-shrink: 0; }
+.at-done .t { font-size: 17px; font-weight: 700; color: #065f46; }
+.at-done .d { font-size: 14px; color: var(--body); margin-top: 3px; }
+.at-done.bad { background: #fef2f2; border-color: #fecaca; }
+.at-done.bad .ic { color: #b91c1c; }
+.at-done.bad .t { color: #991b1b; }
+
+/* Does today count toward pay? */
+/* A status pill hugs its words. Stretched across the card it reads as a banner and competes
+   with the button next to it. */
+.at-approval {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 14px; border-radius: 999px; padding: 7px 14px;
+  font-size: 13.5px; font-weight: 600;
+}
+.at-approval.accepted { background: #ecfdf5; color: #047857; }
+.at-approval.pending  { background: #fffbeb; color: #b45309; }
+.at-approval.rejected { background: #fef2f2; color: #b91c1c; }
+
+/* A quiet way out, not a second button competing with the punch. */
+.at-wrong {
+  margin-top: 14px; border: 0; background: none; padding: 4px 0; cursor: pointer; font: inherit;
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 13.5px; color: var(--muted); text-decoration: underline;
+  text-underline-offset: 3px; text-decoration-color: var(--line);
+}
+.at-wrong:hover { color: var(--blue-dark); text-decoration-color: currentColor; }
+
+/* Reasons as taps, never a text box first. */
+.at-reasons { display: grid; gap: 9px; }
+.at-reason {
+  position: relative; display: flex; align-items: center; gap: 12px; text-align: left;
+  border: 2px solid var(--line); background: #fff; border-radius: 14px;
+  padding: 14px 15px; cursor: pointer; font: inherit; width: 100%;
+}
+.at-reason .ic {
+  width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+  display: grid; place-items: center; background: var(--soft); color: var(--body);
+}
+.at-reason .lbl { font-size: 15px; font-weight: 600; color: var(--ink); flex: 1; line-height: 1.35; }
+.at-reason .tick {
+  width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+  background: var(--blue); color: #fff; display: grid; place-items: center;
+}
+.at-reason.on { border-color: var(--blue); background: var(--blue-50); }
+.at-reason.on .ic { background: #fff; color: var(--blue-dark); }
+
+.at-req-list { display: grid; gap: 10px; margin-top: 12px; }
+.at-req {
+  display: flex; align-items: center; gap: 12px;
+  border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px;
+}
+.at-req .ic {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  display: grid; place-items: center; background: #fffbeb; color: #b45309;
+}
+.at-req .grow { flex: 1; min-width: 0; }
+.at-req .t { font-size: 14px; font-weight: 600; color: var(--ink); }
+.at-req .d { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+
+/* On a narrow screen the reason and the Cancel button fight for the same line and both
+   lose, so the button drops to its own row instead of squeezing the text. */
+@media (max-width: 560px) {
+  .at-req { flex-wrap: wrap; }
+  /* The icon stays beside the reason; only the button drops to its own line. */
+  .at-req .grow { flex: 1 1 auto; min-width: 0; }
+  .at-req .mk-btn { flex: 1 1 100%; margin-left: 46px; }
+}
+
+/* Easy mode grows the button, but it stays a button - it never becomes the whole card. */
+body.sb-simple .at-punch { min-height: 70px; min-width: 240px; }
+body.sb-simple .at-punch .lbl { font-size: 22px; }
+body.sb-simple .at-hint { font-size: 15.5px; }
+body.sb-simple .at-head .job { font-size: 20px; }
+body.sb-simple .at-live .v { font-size: 23px; }
+body.sb-simple .at-reason .lbl { font-size: 17px; }
+body.sb-simple .at-meta .bit { font-size: 14.5px; }
+
+/* On a phone the button spans the card, because a thumb has the whole width to aim at and
+   nothing else is competing for it. The hint drops beneath rather than beside. */
+@media (max-width: 560px) {
+  .at-action { gap: 10px; }
+  .at-punch { flex: 1 1 100%; min-width: 0; min-height: 64px; }
+  .at-hint { flex: 1 1 100%; text-align: center; }
+  .at-meta .call { margin-left: 0; }
+}
+
+/* ==========================================================================
+   Employer + admin: a day at a glance
+   ========================================================================== */
+
+.at-day-totals {
+  display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  margin-bottom: 16px;
+}
+.at-total {
+  border: 1px solid var(--line); border-radius: 14px; background: #fff; padding: 14px 16px;
+}
+.at-total .n { font-size: 24px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.at-total .l { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+.at-total.warn { border-color: #fde68a; background: #fffbeb; }
+.at-total.warn .n { color: #b45309; }
+
+/* One worker's day, as a row the shop owner can approve in one tap. */
+.at-row {
+  display: flex; align-items: center; gap: 13px; flex-wrap: wrap;
+  border: 1px solid var(--line); border-radius: 13px; background: #fff; padding: 13px 15px;
+}
+.at-row + .at-row { margin-top: 9px; }
+.at-row.pending { border-left: 4px solid #f59e0b; }
+.at-row .who { flex: 1; min-width: 150px; }
+.at-row .who .nm { font-size: 15px; font-weight: 700; color: var(--ink); }
+.at-row .who .sb { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.at-row .times {
+  font-size: 14px; color: var(--body); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.at-row .worked { font-size: 13px; color: var(--muted); }
+.at-row .acts { display: flex; gap: 7px; }
+
+.at-ok, .at-no {
+  border: 0; cursor: pointer; font: inherit; font-size: 14px; font-weight: 700;
+  border-radius: 11px; padding: 11px 18px; display: inline-flex; align-items: center; gap: 7px;
+}
+.at-ok { background: #059669; color: #fff; }
+.at-ok:hover { background: #047857; }
+.at-no { background: #fff; color: #b91c1c; border: 1px solid #fecaca; }
+.at-no:hover { background: #fef2f2; }
+
+/* The day strip an employer taps through instead of typing dates. */
+.at-strip { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 14px; }
+.at-day {
+  flex-shrink: 0; min-width: 62px; border: 1px solid var(--line); background: #fff;
+  border-radius: 13px; padding: 10px 8px; cursor: pointer; font: inherit; text-align: center;
+}
+.at-day .dw { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.at-day .dd { font-size: 19px; font-weight: 800; color: var(--ink); margin-top: 2px; }
+.at-day .pip { display: block; width: 7px; height: 7px; border-radius: 50%; margin: 6px auto 0; background: transparent; }
+.at-day .pip.has { background: #10b981; }
+.at-day .pip.warn { background: #f59e0b; }
+.at-day.on { border-color: var(--blue); background: var(--blue-50); }
+.at-day.on .dd { color: var(--blue-dark); }
+
+/* The status pill and the correction link share the last line of the card. */
+.at-foot {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.at-foot .at-wrong { margin-top: 0; }
+@media (max-width: 560px) {
+  .at-foot { gap: 10px; }
+}

@@ -20,5 +20,7 @@ public record InterviewResultDto(
         InterviewMode interviewMode,
         ApplicationStatus status,
         InterviewResult result,
-        String feedback
+        String feedback,
+        /** The word the UI shows for {@code interviewMode}. */
+        String modeLabel
 ) {}

@@ -17,10 +17,16 @@
   gap: 8px;
 }
 .wk-top .mk-brand { min-width: 0; }
-/* On a phone the brand wordmark yields to the controls. */
+/* On a phone the brand wordmark yields to the controls.
+   The language picker is NOT one of the things that yields: the phone is the
+   device this is used on, and for a Telugu speaker choosing their language is
+   the single most useful control on the screen. It shrinks instead. */
 @media (max-width: 520px) {
   .wk-top .mk-brand { font-size: 0; gap: 0; }
-  .wk-top .mk-lang { display: none; }
+  .wk-top .mk-lang {
+    max-width: 104px; padding: 6px 6px 6px 9px; font-size: 13px;
+    text-overflow: ellipsis;
+  }
 }
 @media (min-width: 720px) { .wk-top { padding: 0 16px; gap: 12px; } }
 .wk-top .spacer { flex: 1; }

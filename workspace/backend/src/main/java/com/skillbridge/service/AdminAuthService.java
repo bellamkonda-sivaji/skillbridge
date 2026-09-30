@@ -40,6 +40,8 @@ public class AdminAuthService {
         if (!account.isEnabled()) {
             throw ApiException.forbidden("Your account has been disabled.");
         }
+        account.setLastLoginAt(java.time.LocalDateTime.now());
+        accountRepository.save(account);
         return new AuthResponse(jwtUtil.generateToken(account), AccountDto.from(account));
     }
 

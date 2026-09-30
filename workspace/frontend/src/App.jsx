@@ -28,7 +28,7 @@ import { FindJobs as PublicJobs, FindWorkers as PublicWorkers } from './marketin
 import NotFound from './marketing/pages/NotFound'
 
 // ---- auth (separate per account type) ----
-import { WorkerLogin, AdminLogin, ChooseLogin } from './auth/Login'
+import { WorkerLogin, ChooseLogin } from './auth/Login'
 
 // ---- employer login + onboarding ----
 import EmployerLoginScreen from './employer/screens/Login'
@@ -41,6 +41,30 @@ import {
 
 // ---- employer application ----
 import EmployerShell from './employer/app/EmployerShell'
+
+// ---- back office ----
+import AdminShell from './admin/AdminShell'
+import AdminLogin from './admin/screens/Login'
+import AdminRegister from './admin/screens/Register'
+import AdminOverview from './admin/pages/Overview'
+import AdminJobs from './admin/pages/Jobs'
+import AdminJobDetail from './admin/pages/JobDetail'
+import AdminApplications from './admin/pages/Applications'
+import AdminApplicationHistory from './admin/pages/ApplicationHistory'
+import AdminSkills from './admin/pages/Skills'
+import AdminCompanies, { CompanyDetail as AdminCompanyDetail } from './admin/pages/Companies'
+import AdminInterviews from './admin/pages/Interviews'
+import AdminPayments from './admin/pages/Payments'
+import AdminDailyReport from './admin/pages/DailyReport'
+import AdminTeam from './admin/pages/Team'
+import AdminAudit from './admin/pages/Audit'
+import AdminVerifications from './admin/pages/Verifications'
+import AdminAnalytics from './admin/pages/Analytics'
+import AdminFinance from './admin/pages/Finance'
+import AdminCallQueue from './admin/pages/CallQueue'
+import AdminLeads from './admin/pages/Leads'
+import AdminAttendance from './admin/pages/Attendance'
+import { RequirePermission } from './admin/components'
 import EmployerHome from './employer/app/pages/Dashboard'
 import PostJob from './employer/app/pages/PostJob'
 import MyJobs from './employer/app/pages/MyJobs'
@@ -54,6 +78,8 @@ import BusinessProfileTab from './pages/employer/BusinessProfileTab'
 import Applicants from './employer/app/pages/Applicants'
 import RecommendedWorkers from './employer/app/pages/RecommendedWorkers'
 import EmpWorkerProfile from './employer/app/pages/WorkerProfile'
+import EmployerBilling, { FundJob } from './employer/app/pages/Billing'
+import EmployerAttendance from './employer/app/pages/Attendance'
 import Shortlist from './employer/app/pages/Shortlist'
 import CompareWorkers from './employer/app/pages/Compare'
 import ApplicationDecision from './employer/app/pages/ApplicationDecision'
@@ -84,10 +110,13 @@ import NearbyMap from './worker/pages/NearbyMap'
 import JobDetails from './worker/pages/JobDetails'
 import EmployerProfile from './worker/pages/EmployerProfile'
 import SavedJobs from './worker/pages/SavedJobs'
+import WorkerEarnings from './worker/pages/Earnings'
+import WorkerAttendance from './worker/pages/Attendance'
+import PayoutMethods from './worker/pages/PayoutMethods'
 import MyApplications from './worker/pages/MyApplications'
 import ApplicationDetails from './worker/pages/ApplicationDetails'
 import JobOffer from './worker/pages/JobOffer'
-import { Earnings, Reviews, Settings } from './worker/pages/Secondary'
+import { Reviews, Settings } from './worker/pages/Secondary'
 import { InterviewInvitations, InterviewDetails } from './worker/pages/Interviews'
 import {
   MyWork, JoiningInstructions, TodayShift, AttendanceHistory,
@@ -200,7 +229,6 @@ export default function App() {
       <Route path="/employer/onboarding/location" element={<Protected type="EMPLOYER"><BusinessLocation /></Protected>} />
       <Route path="/employer/onboarding/verification" element={<Protected type="EMPLOYER"><EmpVerification /></Protected>} />
       <Route path="/employer/onboarding/plan" element={<Protected type="EMPLOYER"><ChoosePlan /></Protected>} />
-      <Route path="/admin/login" element={<AdminLogin />} />
 
       {/* ---------- signup + worker onboarding ---------- */}
       <Route element={<JoinLayout />}>
@@ -231,9 +259,12 @@ export default function App() {
         <Route path="interviews/:id" element={<InterviewDetails />} />
         <Route path="work/:id/joining" element={<JoiningInstructions />} />
         <Route path="work/:id/attendance" element={<AttendanceHistory />} />
+        <Route path="attendance" element={<WorkerAttendance />} />
+        <Route path="attendance/history" element={<AttendanceHistory />} />
         <Route path="shift/today" element={<TodayShift />} />
         <Route path="messages" element={<Chat />} />
-        <Route path="earnings" element={<Earnings />} />
+        <Route path="earnings" element={<WorkerEarnings />} />
+        <Route path="payout-methods" element={<PayoutMethods />} />
         <Route path="reviews" element={<Reviews />} />
         <Route path="profile" element={<WorkerProfilePage />} />
         <Route path="settings" element={<Settings />} />
@@ -256,21 +287,49 @@ export default function App() {
         <Route path="interviews/schedule" element={<ScheduleInterview />} />
         <Route path="applications/:applicationId/offer" element={<CreateOffer />} />
         <Route path="offers" element={<OfferTracking />} />
+        <Route path="billing" element={<EmployerBilling />} />
+        <Route path="jobs/:jobId/fund" element={<FundJob />} />
         <Route path="offers/:offerId/joining" element={<JoiningConfirmation />} />
         <Route path="applications" element={<EmpApplications />} />
         <Route path="find-workers" element={<EmpFindWorkers />} />
-        <Route path="attendance" element={<EmpAttendance />} />
+        <Route path="attendance" element={<EmployerAttendance />} />
         <Route path="payments" element={<EmpPayments />} />
         <Route path="reviews" element={<EmpReviews />} />
         <Route path="profile" element={<div className="wk-card pad-lg"><BusinessProfileTab /></div>} />
         <Route path="settings" element={<EmpSettings />} />
       </Route>
 
-      {/* ---------- admin application ---------- */}
+      {/* ---------- back office ---------- */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin/register" element={<AdminRegister />} />
+
+      <Route path="/admin" element={<Protected type="ADMIN"><AdminShell /></Protected>}>
+        <Route index element={<AdminOverview />} />
+        <Route path="call-list" element={<AdminCallQueue />} />
+        <Route path="enquiries" element={<AdminLeads />} />
+        <Route path="attendance" element={<AdminAttendance />} />
+        <Route path="jobs" element={<AdminJobs />} />
+        <Route path="jobs/:jobId" element={<AdminJobDetail />} />
+        <Route path="applications" element={<AdminApplications />} />
+        <Route path="applications/:applicationId" element={<AdminApplicationHistory />} />
+        <Route path="companies" element={<AdminCompanies />} />
+        <Route path="companies/:employerId" element={<AdminCompanyDetail />} />
+        <Route path="skills" element={<AdminSkills />} />
+        <Route path="analytics" element={<RequirePermission permission="VIEW_REPORTS"><AdminAnalytics /></RequirePermission>} />
+        <Route path="finance" element={<RequirePermission permission="VIEW_PAYMENTS"><AdminFinance /></RequirePermission>} />
+        <Route path="interviews" element={<AdminInterviews />} />
+        <Route path="payments" element={<RequirePermission permission="VIEW_PAYMENTS"><AdminPayments /></RequirePermission>} />
+        <Route path="verifications" element={<AdminVerifications />} />
+        <Route path="reports" element={<AdminDailyReport />} />
+        <Route path="team" element={<RequirePermission superOnly><AdminTeam /></RequirePermission>} />
+        <Route path="audit" element={<AdminAudit />} />
+      </Route>
+
+      {/* the original admin screens stay reachable while the new ones settle in */}
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<Protected><DashboardRouter /></Protected>} />
         <Route path="/chat" element={<Protected><Chat /></Protected>} />
-        <Route path="/admin" element={<Protected type="ADMIN"><AdminDashboard /></Protected>} />
+        <Route path="/admin-classic" element={<Protected type="ADMIN"><AdminDashboard /></Protected>} />
       </Route>
     </Routes>
   )

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import Icon from '../../marketing/icons'
@@ -34,6 +35,7 @@ function Recenter({ position }) {
 export default function LocationAvailability() {
   useDocumentTitle('Location & availability')
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { refresh } = useAuth()
   const { draft, setDraft, reset } = useOnboarding()
 
@@ -60,14 +62,14 @@ export default function LocationAvailability() {
 
   const useMyLocation = () => {
     if (!navigator.geolocation) {
-      setFailure('Your browser cannot share a location. Tap the map to place your pin instead.')
+      setFailure(t('ob.location.errNoGeo'))
       return
     }
     setLocating(true)
     navigator.geolocation.getCurrentPosition(
       (pos) => { place(pos.coords.latitude, pos.coords.longitude); setLocating(false) },
       () => {
-        setFailure('We could not get your location. Tap the map to place your pin instead.')
+        setFailure(t('ob.location.errGeo'))
         setLocating(false)
       },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -77,8 +79,8 @@ export default function LocationAvailability() {
   const submit = async () => {
     setFailure('')
     const e = {}
-    if (!form.city.trim()) e.city = 'Please enter your city'
-    if (!form.latitude || !form.longitude) e.map = 'Place your pin on the map so we can show jobs near you'
+    if (!form.city.trim()) e.city = t('ob.location.errCity')
+    if (!form.latitude || !form.longitude) e.map = t('ob.location.errPin')
     setErrors(e)
     if (Object.keys(e).length) return
 
@@ -97,7 +99,7 @@ export default function LocationAvailability() {
       reset() // onboarding finished — clear the saved draft
       navigate('/dashboard', { replace: true })
     } catch (err) {
-      setFailure(errMsg(err, 'Could not save your location. Please try again.'))
+      setFailure(errMsg(err, t('ob.location.errSave')))
     } finally {
       setBusy(false)
     }
@@ -106,17 +108,17 @@ export default function LocationAvailability() {
   return (
     <ObShell>
       <ObCard wide>
-        <Stepper steps={['Account', 'Profile', 'Complete']} current={1} />
-        <ObHead title="Where are you located?" sub="This helps us show jobs near you." />
+        <Stepper steps={[t('ob.steps.account'), t('ob.steps.profile'), t('ob.steps.complete')]} current={1} />
+        <ObHead title={t('ob.location.title')} sub={t('ob.location.sub')} />
 
         <Alert>{failure}</Alert>
 
         <div className="ob-two">
-          <Field label="City" htmlFor="lo-city" error={errors.city}>
+          <Field label={t('ob.location.city')} htmlFor="lo-city" error={errors.city}>
             <input
               id="lo-city"
               className="ob-input"
-              placeholder="Tirupati"
+              placeholder={t('ob.location.cityPlaceholder')}
               autoComplete="address-level2"
               aria-invalid={errors.city ? 'true' : undefined}
               value={form.city}
@@ -126,18 +128,18 @@ export default function LocationAvailability() {
               }}
             />
           </Field>
-          <Field label="Neighborhood / Area" htmlFor="lo-area">
+          <Field label={t('ob.location.area')} htmlFor="lo-area">
             <input
               id="lo-area"
               className="ob-input"
-              placeholder="Karakambadi"
+              placeholder={t('ob.location.areaPlaceholder')}
               value={form.area}
               onChange={(e) => setForm((f) => ({ ...f, area: e.target.value }))}
             />
           </Field>
         </div>
 
-        <Field label="Set your location on map" error={errors.map} hint="Tap anywhere on the map to move your pin.">
+        <Field label={t('ob.location.map')} error={errors.map} hint={t('ob.location.mapHint')}>
           <div className="ob-map-wrap">
             <button
               type="button"
@@ -146,7 +148,7 @@ export default function LocationAvailability() {
               disabled={locating}
             >
               <Icon name="pin" size={14} />
-              {locating ? 'Locating…' : 'Use my current location'}
+              {locating ? t('ob.location.locating') : t('ob.location.locate')}
             </button>
             <MapContainer
               center={position || DEFAULT_MAP_CENTER}
@@ -165,12 +167,12 @@ export default function LocationAvailability() {
           </div>
         </Field>
 
-        <h2 style={{ fontSize: 15, fontWeight: 700, margin: '22px 0 12px' }}>Preferred work radius</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 700, margin: '22px 0 12px' }}>{t('ob.location.radius')}</h2>
         <div className="ob-pills compact">
           {RADIUS_OPTIONS.map((r) => (
             <Pill
               key={r.label}
-              label={r.label}
+              label={r.value === null ? t('opt.radius.ANY') : t('opt.radius.km', { count: r.value })}
               selected={form.preferredRadiusKm === r.value}
               onClick={() => setForm((f) => ({ ...f, preferredRadiusKm: r.value }))}
             />
@@ -178,7 +180,7 @@ export default function LocationAvailability() {
         </div>
 
         <div style={{ marginTop: 22 }}>
-          <Field label="Availability" htmlFor="lo-avail">
+          <Field label={t('ob.location.availability')} htmlFor="lo-avail">
             <select
               id="lo-avail"
               className="ob-select"
@@ -186,7 +188,7 @@ export default function LocationAvailability() {
               onChange={(e) => setForm((f) => ({ ...f, availability: e.target.value }))}
             >
               {AVAILABILITY_OPTIONS.map((a) => (
-                <option key={a.value} value={a.value}>{a.label}</option>
+                <option key={a.value} value={a.value}>{t(`opt.availability.${a.value}`)}</option>
               ))}
             </select>
           </Field>
@@ -196,7 +198,7 @@ export default function LocationAvailability() {
           backTo="/join/skills"
           onNext={submit}
           busy={busy}
-          nextLabel="Finish & see jobs"
+          nextLabel={t('ob.location.finish')}
         />
       </ObCard>
     </ObShell>

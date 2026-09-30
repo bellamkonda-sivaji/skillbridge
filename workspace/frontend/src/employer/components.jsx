@@ -7,6 +7,7 @@ import { Stepper } from '../onboarding/components'
 import { PITCH, PASSWORD_RULES, UPLOAD_LIMITS, WIZARD_STEPS } from './data'
 import '../onboarding/onboarding.css'
 import './employer.css'
+import Logo from '../marketing/Logo'
 
 /* ---------- split-screen shell (login + password recovery) ---------- */
 
@@ -16,8 +17,7 @@ export function EmpSplit({ children, topRight, showPitch = true }) {
       <div className="emp-split">
         <header className="emp-topbar">
           <Link to="/" className="mk-brand">
-            <span className="mk-brand-mark" aria-hidden="true">SB</span>
-            {SITE.name}
+            <Logo size={30} />
           </Link>
           <span className="spacer" />
           {topRight}
@@ -80,8 +80,7 @@ export function EmpWizard({ step, title, sub, children, wide }) {
       <div className="emp-wizard">
         <header className="emp-topbar">
           <Link to="/" className="mk-brand">
-            <span className="mk-brand-mark" aria-hidden="true">SB</span>
-            {SITE.name}
+            <Logo size={30} />
           </Link>
           <span className="spacer" />
           <Link to="/help" className="ob-help">Help</Link>

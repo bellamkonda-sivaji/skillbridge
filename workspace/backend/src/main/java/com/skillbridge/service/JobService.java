@@ -1,5 +1,8 @@
 package com.skillbridge.service;
 
+import com.skillbridge.dto.JobPricingDto;
+import com.skillbridge.dto.JobDemandDto;
+import com.skillbridge.dto.PriceChangeRequest;
 import com.skillbridge.dto.JobBenefitDto;
 import com.skillbridge.dto.JobDto;
 import com.skillbridge.dto.JobRequest;
@@ -33,11 +36,18 @@ public class JobService {
     private final SkillLexicon lexicon;
     private final MatchingService matchingService;
     private final ScheduleCalculator scheduleCalculator;
+    private final PricingService pricingService;
+    private final JobPriceChangeRepository priceChangeRepository;
+    private final JobDemandService demandService;
 
     public JobService(JobPostRepository jobRepository, WorkerProfileRepository workerProfileRepository,
                       EmployerProfileRepository employerProfileRepository, MatchRepository matchRepository,
                       GeoService geoService, SkillLexicon lexicon, MatchingService matchingService,
-                      ScheduleCalculator scheduleCalculator) {
+                      ScheduleCalculator scheduleCalculator, PricingService pricingService,
+                      JobPriceChangeRepository priceChangeRepository, JobDemandService demandService) {
+        this.pricingService = pricingService;
+        this.priceChangeRepository = priceChangeRepository;
+        this.demandService = demandService;
         this.jobRepository = jobRepository;
         this.workerProfileRepository = workerProfileRepository;
         this.employerProfileRepository = employerProfileRepository;
@@ -115,6 +125,8 @@ public class JobService {
         if (!draft) {
             scheduleCalculator.validate(scheduleInput(job));
         }
+        reprice(job);
+        job.setOriginalSalary(job.getSalary());
         job = jobRepository.save(job);
 
         if (job.getStatus() == JobStatus.OPEN) {
@@ -135,6 +147,7 @@ public class JobService {
         if (request.employmentType() != null) job.setEmploymentType(request.employmentType());
         if (request.salary() > 0) job.setSalary(request.salary());
         if (request.salaryUnit() != null) job.setSalaryUnit(request.salaryUnit());
+        reprice(job);
         if (request.city() != null && !request.city().isBlank()) job.setCity(request.city());
         if (request.area() != null) job.setArea(request.area());
         if (request.latitude() != 0) job.setLatitude(request.latitude());
@@ -202,7 +215,7 @@ public class JobService {
     /** Jobs are funded through SkillBridge - CASH survives only for rows written before this rule. */
     private void applyPaymentMode(JobPost job, JobRequest request) {
         if (request.paymentMode() == PaymentMode.CASH) {
-            throw ApiException.badRequest("Jobs are funded through SkillBridge");
+            throw ApiException.badRequest("Jobs are funded through JobOn");
         }
         job.setPaymentMode(PaymentMode.SKILLBRIDGE);
     }
@@ -494,5 +507,146 @@ public class JobService {
             throw ApiException.forbidden("This is not your job");
         }
         return job;
+    }
+
+    // ================================================================= pricing
+
+    /**
+     * Recomputes the commission split from whatever the salary currently is.
+     *
+     * The employer's number is left exactly as they typed it - we never quietly raise the
+     * posted price to cover our own fee. The commission comes out of it, and the worker-facing
+     * figure is what is left.
+     */
+    public void reprice(JobPost job) {
+        double salary = job.getSalary();
+        job.applyPricing(
+                pricingService.feePercent(salary),
+                pricingService.fee(salary),
+                pricingService.takeHome(salary));
+        if (job.getOriginalSalary() <= 0) {
+            job.setOriginalSalary(salary);
+        }
+    }
+
+    public JobPricingDto pricingOf(JobPost job) {
+        if (job.getWorkerSalary() <= 0 && job.getSalary() > 0) {
+            reprice(job);
+        }
+        return new JobPricingDto(
+                job.getSalary(),
+                job.getPlatformFee(),
+                job.getFeePercent(),
+                job.getWorkerSalary(),
+                job.getSalaryUnit(),
+                pricingService.slabLabel(job.getSalary()),
+                job.getOriginalSalary() > 0 && job.getOriginalSalary() != job.getSalary()
+                        ? job.getOriginalSalary() : null,
+                job.getPriceChangeCount());
+    }
+
+    /** A quote for a price the employer has typed but not yet committed to. */
+    public JobPricingDto quote(double salary, SalaryUnit unit) {
+        return new JobPricingDto(
+                salary,
+                pricingService.fee(salary),
+                pricingService.feePercent(salary),
+                pricingService.takeHome(salary),
+                unit,
+                pricingService.slabLabel(salary),
+                null,
+                0);
+    }
+
+    /**
+     * Changes what a live job pays, and records why.
+     *
+     * Allowed on OPEN and DRAFT jobs. It is deliberately NOT allowed once a job is closed or
+     * filled: the people already hired agreed to a number, and moving it afterwards would
+     * rewrite a deal that has already been struck.
+     */
+    @Transactional
+    public JobPricingDto changePrice(EmployerAccount employer, Long jobId, PriceChangeRequest request) {
+        JobPost job = requireEmployerJob(employer, jobId);
+        if (job.getStatus() != JobStatus.OPEN && job.getStatus() != JobStatus.DRAFT) {
+            throw ApiException.badRequest("You can only change the pay while the job is still open.");
+        }
+        if (request == null || request.salary() <= 0) {
+            throw ApiException.badRequest("Enter the new pay amount.");
+        }
+        double oldSalary = job.getSalary();
+        double oldWorker = job.getWorkerSalary();
+        if (Math.abs(request.salary() - oldSalary) < 0.01) {
+            return pricingOf(job);
+        }
+
+        job.setSalary(request.salary());
+        reprice(job);
+        job.setPriceChangedAt(LocalDateTime.now());
+        job.setPriceChangeCount(job.getPriceChangeCount() + 1);
+        // A new price is a new offer to the market, so the advice starts from a clean slate.
+        job.setDemandAlertedAt(null);
+        job.setSuggestedSalary(null);
+        jobRepository.save(job);
+
+        priceChangeRepository.save(JobPriceChange.builder()
+                .jobId(job.getId())
+                .oldSalary(oldSalary)
+                .newSalary(job.getSalary())
+                .salaryUnit(job.getSalaryUnit())
+                .oldWorkerSalary(oldWorker)
+                .newWorkerSalary(job.getWorkerSalary())
+                .suggestedSalary(job.getSuggestedSalary())
+                .reason(request.reason())
+                .changedBy("EMPLOYER")
+                .changedById(employer.getId())
+                .applicantsAtChange(job.getApplicantsCount())
+                .build());
+
+        // A raise is worth telling the people it reaches, so re-run the match pass.
+        if (job.getStatus() == JobStatus.OPEN && job.getSalary() > oldSalary) {
+            matchingService.generateMatchesForJob(job);
+        }
+        return pricingOf(job);
+    }
+
+    public List<JobPriceChange> priceHistory(EmployerAccount employer, Long jobId) {
+        requireEmployerJob(employer, jobId);
+        return priceChangeRepository.findByJobIdOrderByChangedAtDesc(jobId);
+    }
+
+    // ================================================================= demand advice
+
+    public JobDemandDto demandFor(EmployerAccount employer, Long jobId) {
+        return demandService.assess(requireEmployerJob(employer, jobId));
+    }
+
+    /** Every open job of this employer that currently needs their attention. */
+    public List<JobDemandDto> demandAlerts(EmployerAccount employer) {
+        List<JobDemandDto> out = new ArrayList<>();
+        for (JobPost job : jobRepository.findByEmployerAndStatusOrderByPostedAtDesc(employer, JobStatus.OPEN)) {
+            JobDemandDto read = demandService.assess(job);
+            if (read.verdict() == DemandVerdict.SLOW || read.verdict() == DemandVerdict.STALLED) {
+                out.add(read);
+            }
+        }
+        return out;
+    }
+
+    public JobPricingDto jobPricing(EmployerAccount employer, Long jobId) {
+        return pricingOf(requireEmployerJob(employer, jobId));
+    }
+
+    /** The commission table as plain rows, for showing the employer the rule itself. */
+    public List<java.util.Map<String, Object>> slabTable() {
+        List<java.util.Map<String, Object>> rows = new ArrayList<>();
+        double[] probes = {100, 800, 2500, 7000, 25000};
+        for (double probe : probes) {
+            java.util.Map<String, Object> row = new java.util.LinkedHashMap<>();
+            row.put("label", pricingService.slabLabel(probe));
+            row.put("percent", pricingService.feePercent(probe));
+            rows.add(row);
+        }
+        return rows;
     }
 }

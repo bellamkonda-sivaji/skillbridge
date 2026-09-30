@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import Icon from '../../../marketing/icons'
 import { Avatar, useDocumentTitle } from '../../../marketing/components'
 import { Tile, Loading, Empty, ErrorNote, StatusBadge } from '../../../worker/components'
-import { getDashboard, timeAgo, km, APPLICANT_STATUS_LABEL, APPLICANT_STATUS_TONE } from '../api'
+import { getDashboard, getDemandAlerts, timeAgo, km, APPLICANT_STATUS_LABEL, APPLICANT_STATUS_TONE } from '../api'
+import { DemandAdvice } from '../pricing'
 
 const greeting = () => {
   const h = new Date().getHours()
@@ -15,6 +16,7 @@ const greeting = () => {
 export default function EmployerDashboard() {
   useDocumentTitle('Employer dashboard')
   const [data, setData] = useState(null)
+  const [alerts, setAlerts] = useState([])
   const [error, setError] = useState('')
 
   const load = () => {
@@ -22,6 +24,12 @@ export default function EmployerDashboard() {
     getDashboard().then(setData).catch(() => setError('We could not load your dashboard just now.'))
   }
   useEffect(load, [])
+
+  // The jobs that are not going to fill by themselves. These come first, above the counters:
+  // a dashboard that leads with totals hides the one thing the employer needs to act on.
+  useEffect(() => {
+    getDemandAlerts().then((d) => setAlerts(Array.isArray(d) ? d : [])).catch(() => setAlerts([]))
+  }, [])
 
   const firstName = (data?.greetingName || '').split(' ')[0] || 'there'
 
@@ -39,6 +47,16 @@ export default function EmployerDashboard() {
           </Link>
         </div>
       </div>
+
+      {alerts.length > 0 && (
+        <div style={{ marginTop: 14 }}>
+          {alerts.slice(0, 3).map((a) => (
+            <Link key={a.jobId} to={`/employer/jobs/${a.jobId}`} style={{ textDecoration: 'none', display: 'block' }}>
+              <DemandAdvice demand={a} compact />
+            </Link>
+          ))}
+        </div>
+      )}
 
       <div className="wk-tiles" style={{ marginTop: 14 }}>
         <Tile tone="blue" icon="briefcase" value={data?.activeJobs ?? '—'} label="Active Jobs" />

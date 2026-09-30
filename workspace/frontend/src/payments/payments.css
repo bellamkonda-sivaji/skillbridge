@@ -1,0 +1,96 @@
+/* ==========================================================================
+   Money screens. Same tokens as the rest of the app — no new palette.
+   ========================================================================== */
+
+/* The balance card a worker lands on. Available vs pending is the whole point:
+   people need to know what they can actually take out today. */
+.pm-balance {
+  border-radius: 16px; padding: 22px 24px; color: #fff;
+  background: linear-gradient(125deg, #1d4ed8, #2563eb 55%, #3b82f6);
+}
+.pm-balance .lbl { font-size: 13px; opacity: .85; }
+.pm-balance .amt { font-size: 38px; font-weight: 800; line-height: 1.05; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.pm-balance .split { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 18px; }
+.pm-balance .split > div { min-width: 120px; }
+.pm-balance .split .k { font-size: 12px; opacity: .8; }
+.pm-balance .split .v { font-size: 17px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.pm-balance .acts { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 20px; }
+.pm-balance .mk-btn-primary { background: #fff; color: var(--blue-dark); border-color: #fff; }
+.pm-balance .mk-btn-outline { background: transparent; color: #fff; border-color: rgba(255,255,255,.45); }
+.pm-balance .mk-btn-outline:hover { background: rgba(255,255,255,.12); }
+
+/* escrow progress: funded → reserved → released */
+.pm-escrow-bar { display: flex; height: 22px; border-radius: 8px; overflow: hidden; background: var(--soft); }
+.pm-escrow-bar span { display: block; height: 100%; }
+.pm-escrow-bar .reserved { background: #f59e0b; }
+.pm-escrow-bar .released { background: #10b981; }
+.pm-escrow-bar .refunded { background: #94a3b8; }
+.pm-escrow-bar .free { background: var(--blue-100); }
+.pm-escrow-key { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+.pm-escrow-key span { display: inline-flex; align-items: center; gap: 6px; }
+.pm-escrow-key i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+
+/* a payout destination */
+.pm-dest {
+  display: flex; gap: 13px; align-items: flex-start;
+  border: 1px solid var(--line); border-radius: 12px; padding: 14px 15px; background: #fff;
+}
+.pm-dest.is-default { border-color: var(--blue); background: var(--blue-50); }
+.pm-dest .ic {
+  width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
+  display: grid; place-items: center; background: var(--soft); color: var(--body);
+}
+.pm-dest .bd { flex: 1; min-width: 0; }
+.pm-dest .t { font-size: 14px; font-weight: 700; color: var(--ink); }
+.pm-dest .d { font-size: 12.5px; color: var(--muted); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.pm-dest .acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+
+/* the amount entry on a withdraw / fund form */
+.pm-amount { position: relative; }
+.pm-amount input {
+  width: 100%; border: 1px solid var(--line); border-radius: 12px; background: #fff;
+  padding: 16px 16px 16px 40px; font: inherit; font-size: 27px; font-weight: 700;
+  color: var(--ink); font-variant-numeric: tabular-nums;
+}
+.pm-amount input:focus { outline: 0; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-50); }
+.pm-amount .cur {
+  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+  font-size: 24px; font-weight: 700; color: var(--muted); pointer-events: none;
+}
+.pm-quick { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 10px; }
+.pm-quick button {
+  border: 1px solid var(--line); background: #fff; border-radius: 99px;
+  padding: 6px 13px; font: inherit; font-size: 12.5px; color: var(--body); cursor: pointer;
+}
+.pm-quick button:hover { border-color: var(--blue); color: var(--blue-dark); }
+
+/* the fee breakdown shown before money moves */
+.pm-breakdown { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.pm-breakdown .r {
+  display: flex; justify-content: space-between; gap: 12px;
+  padding: 11px 15px; font-size: 13.5px; color: var(--body); border-bottom: 1px solid var(--line);
+}
+.pm-breakdown .r:last-child { border-bottom: 0; }
+.pm-breakdown .r.total { font-size: 15.5px; font-weight: 800; color: var(--ink); background: var(--soft); }
+.pm-breakdown .r .v { font-variant-numeric: tabular-nums; }
+
+/* gateway-not-configured notice */
+.pm-note {
+  display: flex; gap: 11px; align-items: flex-start;
+  border: 1px solid #fde68a; background: #fffbeb; border-radius: 12px; padding: 13px 15px;
+}
+.pm-note .ic {
+  width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+  background: #fff; color: #b45309; display: grid; place-items: center; border: 1px solid #fde68a;
+}
+.pm-note .t { font-size: 13.5px; font-weight: 700; color: #92400e; }
+.pm-note .d { font-size: 13px; color: var(--body); margin-top: 3px; line-height: 1.5; }
+
+/* ledger entry pairs in the back office */
+.pm-entries { display: grid; gap: 4px; }
+.pm-entry { display: flex; gap: 10px; font-size: 12.5px; align-items: center; }
+.pm-entry .side { width: 56px; flex-shrink: 0; font-weight: 700; font-size: 11px; letter-spacing: .04em; }
+.pm-entry .side.debit { color: #b91c1c; }
+.pm-entry .side.credit { color: #047857; }
+.pm-entry .acct { flex: 1; color: var(--ink); }
+.pm-entry .amt { font-variant-numeric: tabular-nums; font-weight: 600; }

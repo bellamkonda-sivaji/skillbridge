@@ -258,4 +258,61 @@ public class JobPost {
             }
         }
     }
+
+    // ------------------------------------------------------------------ pricing
+
+    /**
+     * The commission percentage frozen at the moment the price was set. Frozen, not looked up
+     * live, so a later change to the slab table cannot silently rewrite what a worker was
+     * already shown and promised.
+     */
+    @Column(name = "fee_percent")
+    private double feePercent;
+
+    /** The commission in rupees on {@link #salary}. */
+    @Column(name = "platform_fee")
+    private double platformFee;
+
+    /** What the worker actually takes home - salary minus the commission. */
+    @Column(name = "worker_salary")
+    private double workerSalary;
+
+    /** The price the job first went live at, kept so we can show "raised from ...". */
+    @Column(name = "original_salary")
+    private double originalSalary;
+
+    @Column(name = "price_changed_at")
+    private LocalDateTime priceChangedAt;
+
+    @Builder.Default
+    @Column(name = "price_change_count")
+    private int priceChangeCount = 0;
+
+    // ------------------------------------------------------------------ demand intelligence
+
+    /** The most recent read on whether this job is attracting workers. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "demand_verdict")
+    private DemandVerdict demandVerdict;
+
+    /** The price we last advised, so we never nag twice with the same number. */
+    @Column(name = "suggested_salary")
+    private Double suggestedSalary;
+
+    @Column(name = "demand_checked_at")
+    private LocalDateTime demandCheckedAt;
+
+    @Column(name = "demand_alerted_at")
+    private LocalDateTime demandAlertedAt;
+
+    /** Set once the job first receives an application, so the clock stops. */
+    @Column(name = "first_applicant_at")
+    private LocalDateTime firstApplicantAt;
+
+    /** Recomputes the fee split from the current salary. The one way pricing is set. */
+    public void applyPricing(double percent, double fee, double takeHome) {
+        this.feePercent = percent;
+        this.platformFee = fee;
+        this.workerSalary = takeHome;
+    }
 }

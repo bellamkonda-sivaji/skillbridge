@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SkillBridge — public marketing site
+   JobOn — public marketing site
    Scoped under .mk so it never collides with the logged-in app styles.
    Mobile-first: base rules target phones, media queries add up from there.
    ========================================================================== */
@@ -7,6 +7,11 @@
 .mk {
   --blue: #2563eb;
   --blue-dark: #1d4ed8;
+  /* JobOn's second brand colour — the "On" in the wordmark and the worker in
+     the mark. Used as an accent; the blue stays the primary. */
+  --brand-orange: #f59105;
+  --brand-orange-dark: #d97706;
+  --brand-green: #22c55e;
   --blue-700: #1e40af;
   --blue-50: #eff6ff;
   --blue-100: #dbeafe;
@@ -769,4 +774,239 @@
     transition-duration: 0.01ms !important;
   }
   .mk-btn:hover, .mk-card.hover:hover { transform: none; }
+}
+
+/* ==========================================================================
+   JobOn brand mark
+   ========================================================================== */
+.jo-logo { display: inline-flex; align-items: center; gap: 8px; line-height: 1; }
+.jo-mark { display: block; object-fit: contain; flex-shrink: 0; }
+.jo-word {
+  font-weight: 800; letter-spacing: -0.02em; white-space: nowrap;
+  font-size: 1.28em;
+}
+/* The two halves of the name carry the two brand colours, as in the logo. */
+.jo-word .a { color: var(--blue-dark); }
+.jo-word .b { color: var(--brand-orange); position: relative; }
+
+/* The sparks off the "n". Positioned and sized in `em` so they follow the type at every
+   size, and they inherit `currentColor` so they go white on a dark bar with everything else.
+   `overflow: visible` keeps a tight header from clipping them.
+
+   The padding is what reserves their space: the sparks are absolutely positioned and so take
+   no room of their own, which left whatever sits beside the logo - the account pill in the
+   admin bar - crowding right up against them. */
+.jo-word { overflow: visible; padding-right: 0.62em; }
+.jo-spark {
+  position: absolute;
+  left: 100%;
+  bottom: 0.42em;
+  width: 0.46em;
+  height: 0.46em;
+  margin-left: 0.04em;
+  color: var(--brand-orange);
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* On a dark or coloured bar the wordmark goes solid white. */
+.jo-logo.on-dark .jo-word .a,
+.jo-logo.on-dark .jo-word .b { color: #fff; }
+.jo-logo.on-dark .jo-spark { color: #fff; }
+
+/* The full lockup: mark, wordmark, strapline. For the landing hero, the
+   sign-in screens and the footer — anywhere with room to say what we do. */
+.jo-lockup { display: inline-flex; flex-direction: column; align-items: center; gap: 10px; }
+.jo-tagline {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 600; color: var(--blue-dark); letter-spacing: .01em;
+  text-align: center; line-height: 1.4;
+}
+/* The rules either side of the strapline, as in the artwork. */
+.jo-tagline::before, .jo-tagline::after {
+  content: ''; height: 1px; width: 26px; background: var(--blue-100); flex-shrink: 0;
+}
+@media (max-width: 480px) {
+  .jo-tagline { font-size: 12px; }
+  .jo-tagline::before, .jo-tagline::after { width: 14px; }
+}
+
+/* ==========================================================================
+   The animated explainer on the public site.
+   Motion is the message here: someone who cannot read the caption should still
+   follow the story from the phone screen alone.
+   ========================================================================== */
+
+.film { padding: 64px 0; background: linear-gradient(180deg, #fff, var(--blue-50)); }
+.film-head { text-align: center; max-width: 620px; margin: 0 auto 36px; }
+.film-head .mk-lede { margin-top: 10px; }
+
+.film-switch {
+  display: inline-flex; gap: 6px; margin-top: 22px; padding: 5px;
+  background: #fff; border: 1px solid var(--line); border-radius: 99px;
+}
+.film-tab {
+  display: inline-flex; align-items: center; gap: 8px; border: 0; cursor: pointer;
+  background: transparent; font: inherit; font-size: 14.5px; font-weight: 600;
+  color: var(--muted); padding: 10px 18px; border-radius: 99px;
+}
+.film-tab.on { background: var(--blue); color: #fff; }
+
+.film-stage {
+  display: grid; gap: 40px; align-items: center; max-width: 960px; margin: 0 auto;
+  grid-template-columns: 280px 1fr;
+}
+@media (max-width: 800px) { .film-stage { grid-template-columns: 1fr; justify-items: center; gap: 28px; } }
+
+/* ---------- the phone ---------- */
+.film-phone {
+  width: 260px; height: 520px; border-radius: 38px; padding: 12px;
+  background: linear-gradient(160deg, #1e293b, #0f172a);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, .28); position: relative; flex-shrink: 0;
+}
+.film-notch {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  width: 86px; height: 20px; border-radius: 0 0 14px 14px; background: #0f172a; z-index: 2;
+}
+.film-screen {
+  width: 100%; height: 100%; border-radius: 28px; background: #f8fafc;
+  overflow: hidden; display: grid; place-items: center; padding: 28px 18px;
+}
+@media (max-width: 800px) { .film-phone { width: 220px; height: 440px; } }
+
+/* ---------- what is on the screen ---------- */
+.sc { display: grid; gap: 14px; justify-items: center; width: 100%; }
+.sc.grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.sc.rows { gap: 12px; }
+
+.sc-avatar {
+  width: 72px; height: 72px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--blue-50); color: var(--blue-dark);
+}
+.sc-avatar.blue { background: var(--blue); color: #fff; }
+.sc-avatar.orange { background: #ffedd5; color: #c2410c; }
+
+.sc-line { height: 11px; border-radius: 99px; background: #e2e8f0; }
+.sc-line.w40 { width: 40%; } .sc-line.w50 { width: 50%; }
+.sc-line.w60 { width: 60%; } .sc-line.w70 { width: 70%; } .sc-line.w80 { width: 80%; }
+
+.sc-tile {
+  aspect-ratio: 1; border-radius: 14px; display: grid; place-items: center;
+  background: #fff; border: 1px solid var(--line); color: var(--blue-dark);
+}
+.sc-card {
+  width: 100%; background: #fff; border: 1px solid var(--line); border-radius: 14px;
+  padding: 16px; text-align: center;
+}
+.sc-pay { font-size: 30px; font-weight: 800; color: var(--ink); }
+.sc-pay.small { font-size: 24px; }
+.sc-sub { font-size: 13px; color: var(--muted); font-weight: 600; }
+.sc-amount { font-size: 38px; font-weight: 800; color: #047857; }
+
+.sc-btn {
+  display: inline-flex; align-items: center; gap: 7px; border-radius: 12px;
+  padding: 12px 22px; font-size: 15px; font-weight: 700; color: #fff; background: var(--blue);
+}
+.sc-btn.green { background: #059669; }
+.sc-btn.blue { background: var(--blue); }
+.sc-btn.big { padding: 15px 30px; font-size: 17px; }
+
+.sc-pill {
+  display: inline-flex; align-items: center; gap: 6px; border-radius: 99px;
+  padding: 6px 14px; font-size: 13px; font-weight: 700;
+}
+.sc-pill.green { background: #d1fae5; color: #047857; }
+.sc-pill.amber { background: #fef3c7; color: #b45309; }
+
+.sc-punch {
+  width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center;
+  background: #ecfdf5; color: #047857; border: 3px solid #a7f3d0;
+}
+.sc-coin {
+  width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center;
+  background: #fef3c7; color: #b45309;
+}
+
+.sc-row {
+  display: flex; align-items: center; gap: 9px; width: 100%;
+  background: #fff; border: 1px solid var(--line); border-radius: 11px; padding: 10px 12px;
+}
+.sc-dot { width: 26px; height: 26px; border-radius: 50%; background: #e2e8f0; flex-shrink: 0; }
+.sc-dot.green { background: #a7f3d0; }
+.sc-row .sc-line { flex: 1; }
+.sc-mini { font-size: 12px; font-weight: 700; color: var(--muted); }
+.sc-mini.green { color: #047857; }
+
+/* the finger tap on the apply button */
+.sc-tap {
+  position: absolute; width: 44px; height: 44px; border-radius: 50%;
+  border: 3px solid var(--blue); opacity: 0; animation: sc-tap 1.6s ease-out .8s infinite;
+}
+@keyframes sc-tap {
+  0% { transform: scale(.4); opacity: .9; }
+  70% { transform: scale(1.5); opacity: 0; }
+  100% { opacity: 0; }
+}
+
+/* the ringing phone */
+.sc-ring { position: absolute; display: grid; place-items: center; }
+.sc-ring span {
+  position: absolute; width: 90px; height: 90px; border-radius: 50%;
+  border: 2px solid var(--blue); opacity: 0; animation: sc-ring 2.4s ease-out infinite;
+}
+.sc-ring span:nth-child(2) { animation-delay: .5s; }
+.sc-ring span:nth-child(3) { animation-delay: 1s; }
+@keyframes sc-ring {
+  0% { transform: scale(.7); opacity: .7; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+/* entrances, staggered so the eye follows one thing at a time */
+.pop { animation: sc-pop .5s cubic-bezier(.2, .9, .3, 1.2) both; }
+.slide { animation: sc-slide .5s ease both; }
+.rise { animation: sc-rise .6s cubic-bezier(.2, .9, .3, 1.2) both; }
+.d1 { animation-delay: .16s; } .d2 { animation-delay: .32s; }
+.d3 { animation-delay: .48s; } .d4 { animation-delay: .64s; } .d5 { animation-delay: .8s; }
+@keyframes sc-pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes sc-slide { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes sc-rise { from { transform: translateY(22px) scale(.8); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ---------- the caption beside the phone ---------- */
+.film-caption { max-width: 420px; }
+@media (max-width: 800px) { .film-caption { text-align: center; } }
+.film-step { font-size: 12.5px; font-weight: 700; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+.film-ic {
+  width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center;
+  background: var(--blue-50); color: var(--blue-dark); margin: 12px 0 14px;
+}
+@media (max-width: 800px) { .film-ic { margin-inline: auto; } }
+.film-ic.employer { background: #ffedd5; color: #c2410c; }
+.film-t { font-size: 25px; font-weight: 800; color: var(--ink); animation: sc-slide .45s ease both; }
+.film-d { font-size: 16px; color: var(--body); margin-top: 9px; line-height: 1.6; animation: sc-slide .45s ease .08s both; }
+
+.film-dots { display: flex; gap: 7px; margin-top: 22px; }
+@media (max-width: 800px) { .film-dots { justify-content: center; } }
+.film-dot {
+  flex: 1; max-width: 54px; height: 5px; border: 0; padding: 0; cursor: pointer;
+  border-radius: 99px; background: var(--blue-100); overflow: hidden;
+}
+.film-dot.done { background: var(--blue); }
+.film-dot .bar { display: block; height: 100%; width: 0; background: var(--blue); }
+.film-dot.on .bar { animation-name: film-fill; animation-timing-function: linear; animation-fill-mode: forwards; }
+@keyframes film-fill { to { width: 100%; } }
+
+.film-controls { display: flex; gap: 10px; align-items: center; margin-top: 22px; flex-wrap: wrap; }
+@media (max-width: 800px) { .film-controls { justify-content: center; } }
+.film-play {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+  border: 1px solid var(--line); background: #fff; border-radius: 10px;
+  padding: 10px 16px; font: inherit; font-size: 14px; font-weight: 600; color: var(--body);
+}
+.film-play:hover { border-color: var(--blue-100); color: var(--blue-dark); }
+
+/* Somebody who has asked their phone to stop animating gets the story still. */
+@media (prefers-reduced-motion: reduce) {
+  .pop, .slide, .rise, .film-t, .film-d { animation: none !important; }
+  .sc-tap, .sc-ring span { animation: none !important; opacity: .35; }
+  .film-dot .bar { animation: none !important; }
 }

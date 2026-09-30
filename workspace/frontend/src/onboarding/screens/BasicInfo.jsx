@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Icon from '../../marketing/icons'
 import { useDocumentTitle } from '../../marketing/components'
 import api, { errMsg } from '../../api'
@@ -16,10 +17,10 @@ const MAX_PHOTO_PX = 256
 function resizePhoto(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onerror = () => reject(new Error('Could not read that file'))
+    reader.onerror = () => reject(new Error('errFile'))
     reader.onload = () => {
       const img = new Image()
-      img.onerror = () => reject(new Error('That does not look like an image'))
+      img.onerror = () => reject(new Error('errImage'))
       img.onload = () => {
         const side = Math.min(img.width, img.height)
         const canvas = document.createElement('canvas')
@@ -42,6 +43,7 @@ function resizePhoto(file) {
 export default function BasicInfo() {
   useDocumentTitle('Tell us about yourself')
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { user, refresh } = useAuth()
   const { draft, setDraft } = useOnboarding()
   const fileRef = useRef(null)
@@ -68,17 +70,17 @@ export default function BasicInfo() {
     try {
       set('photoUrl', await resizePhoto(file))
     } catch (err) {
-      setFailure(err.message)
+      setFailure(t(`ob.basic.${err.message}`, { defaultValue: t('ob.basic.errFile') }))
     }
   }
 
   const validate = () => {
     const e = {}
-    if (form.name.trim().length < 2) e.name = 'Please enter your full name'
+    if (form.name.trim().length < 2) e.name = t('ob.create.errName')
     if (form.dateOfBirth) {
       const age = (Date.now() - new Date(form.dateOfBirth).getTime()) / 31557600000
-      if (age < 18) e.dateOfBirth = 'You must be at least 18 to work through SkillBridge'
-      if (age > 100) e.dateOfBirth = 'Please check that date'
+      if (age < 18) e.dateOfBirth = t('ob.basic.errAge')
+      if (age > 100) e.dateOfBirth = t('ob.basic.errDate')
     }
     setErrors(e)
     return Object.keys(e).length === 0
@@ -99,7 +101,7 @@ export default function BasicInfo() {
       await refresh().catch(() => {})
       navigate('/join/preferences')
     } catch (err) {
-      setFailure(errMsg(err, 'Could not save your details. Please try again.'))
+      setFailure(errMsg(err, t('ob.basic.errSave')))
     } finally {
       setBusy(false)
     }
@@ -108,10 +110,10 @@ export default function BasicInfo() {
   return (
     <ObShell>
       <ObCard>
-        <Stepper steps={['Account', 'Profile', 'Complete']} current={1} />
+        <Stepper steps={[t('ob.steps.account'), t('ob.steps.profile'), t('ob.steps.complete')]} current={1} />
         <ObHead
-          title="Tell us about yourself"
-          sub="This helps us find the best job opportunities for you."
+          title={t('ob.basic.title')}
+          sub={t('ob.basic.sub')}
         />
 
         <Alert>{failure}</Alert>
@@ -119,12 +121,12 @@ export default function BasicInfo() {
         <div className="ob-photo">
           <span className="ob-photo-preview">
             {form.photoUrl
-              ? <img src={form.photoUrl} alt="Your profile" />
+              ? <img src={form.photoUrl} alt={t('ob.basic.photoAlt')} />
               : <Icon name="user" size={30} />}
           </span>
           <button type="button" className="ob-upload" onClick={() => fileRef.current?.click()}>
             <Icon name="phone" size={18} />
-            {form.photoUrl ? 'Change Photo' : 'Upload Photo'}
+            {form.photoUrl ? t('ob.basic.changePhoto') : t('ob.basic.uploadPhoto')}
           </button>
           <input
             ref={fileRef}
@@ -135,7 +137,7 @@ export default function BasicInfo() {
           />
         </div>
 
-        <Field label="Full Name" htmlFor="bi-name" error={errors.name}>
+        <Field label={t('ob.basic.name')} htmlFor="bi-name" error={errors.name}>
           <input
             id="bi-name"
             className="ob-input"
@@ -146,7 +148,7 @@ export default function BasicInfo() {
           />
         </Field>
 
-        <Field label="Date of Birth" htmlFor="bi-dob" error={errors.dateOfBirth}>
+        <Field label={t('ob.basic.dob')} htmlFor="bi-dob" error={errors.dateOfBirth}>
           <input
             id="bi-dob"
             className="ob-input"
@@ -158,19 +160,19 @@ export default function BasicInfo() {
           />
         </Field>
 
-        <Field label="Gender" htmlFor="bi-gender">
+        <Field label={t('ob.basic.gender')} htmlFor="bi-gender">
           <select
             id="bi-gender"
             className="ob-select"
             value={form.gender}
             onChange={(e) => set('gender', e.target.value)}
           >
-            <option value="">Select</option>
-            {GENDERS.map((g) => <option key={g.value} value={g.value}>{g.label}</option>)}
+            <option value="">{t('ob.basic.select')}</option>
+            {GENDERS.map((g) => <option key={g.value} value={g.value}>{t(`opt.gender.${g.value}`)}</option>)}
           </select>
         </Field>
 
-        <Field label="Alternate Number (Optional)" htmlFor="bi-alt">
+        <Field label={t('ob.basic.altPhone')} htmlFor="bi-alt">
           <PhoneField
             id="bi-alt"
             value={form.alternatePhone}

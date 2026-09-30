@@ -42,9 +42,15 @@ public class ScheduleCalculator {
     private static final DateTimeFormatter DAY_MONTH_YEAR =
             DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
 
-    /** Platform fee on worker earnings, configured in application.yml; 0 disables the fee. */
+    /**
+     * Legacy flat fee. When left at 0 - the normal case - the slab table decides instead.
+     * PricingService is stateless, so it is held directly rather than injected: the tests
+     * build this calculator with {@code new} and must keep working.
+     */
     @Value("${skillbridge.pricing.platform-fee-percent:0}")
     private double platformFeePercent;
+
+    private final PricingService pricing = new PricingService();
 
     /** Tests construct the calculator with new and set the fee directly. */
     public void setPlatformFeePercent(double platformFeePercent) {
@@ -473,12 +479,19 @@ public class ScheduleCalculator {
             earnings = round2(earnings);
         }
 
-        // The platform fee comes from configuration; with no percentage the total is just earnings.
+        // The employer's figure is the price they typed: they pay exactly what they posted.
+        // The commission comes OUT of it, so what we quote back as worker earnings is the
+        // take-home - the same number the worker will see on the job card.
         Double platformFee = null;
         Double employerTotal = earnings;
-        if (earnings != null && platformFeePercent > 0) {
-            platformFee = Math.round(earnings * platformFeePercent) / 100.0;
-            employerTotal = earnings + platformFee;
+        Double workerTakeHome = earnings;
+        if (earnings != null && earnings > 0) {
+            platformFee = platformFeePercent > 0
+                    ? Math.round(earnings * platformFeePercent) / 100.0
+                    : pricing.fee(earnings);
+            if (platformFee != null && platformFee > 0) {
+                workerTakeHome = round2(earnings - platformFee);
+            }
         }
 
         PayrollCycle cycle = in.payrollCycle() != null ? in.payrollCycle() : model.defaultPayrollCycle();
@@ -494,7 +507,7 @@ public class ScheduleCalculator {
                 ongoing,
                 model.allowedSalaryUnits(pattern),
                 model.recommendedSalaryUnit(pattern),
-                earnings,
+                workerTakeHome,
                 basisLabel,
                 platformFee,
                 employerTotal,

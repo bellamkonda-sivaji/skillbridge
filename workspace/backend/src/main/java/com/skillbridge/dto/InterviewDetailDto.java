@@ -27,6 +27,8 @@ public record InterviewDetailDto(
         Double latitude,
         Double longitude,
         String notes,
-        List<String> preparationTips
+        List<String> preparationTips,
+        /** The word the UI shows for {@code mode}, e.g. "Come to the shop". */
+        String modeLabel
 ) {
 }

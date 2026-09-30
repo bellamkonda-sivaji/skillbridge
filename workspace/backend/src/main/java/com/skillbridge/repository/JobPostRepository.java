@@ -31,4 +31,14 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JpaSpec
     @Query("select distinct j from JobPost j join j.requiredSkills s " +
            "where lower(s) like lower(concat('%', :skill, '%'))")
     List<JobPost> findByRequiredSkillContaining(@Param("skill") String skill);
+
+    /** Comparable local postings, for reading what this kind of work actually pays nearby. */
+    @Query("select j from JobPost j where j.id <> :excludeId and j.salary > 0 " +
+           "and lower(j.city) = lower(:city) and j.workerCategory = :category " +
+           "and j.salaryUnit = :unit and j.postedAt > :since")
+    List<JobPost> findComparables(@Param("excludeId") Long excludeId,
+                                  @Param("city") String city,
+                                  @Param("category") com.skillbridge.model.WorkerCategory category,
+                                  @Param("unit") com.skillbridge.model.SalaryUnit unit,
+                                  @Param("since") java.time.LocalDateTime since);
 }

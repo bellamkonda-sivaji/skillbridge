@@ -4,6 +4,7 @@ import com.skillbridge.dto.*;
 import com.skillbridge.exception.ApiException;
 import com.skillbridge.model.*;
 import com.skillbridge.repository.*;
+import com.skillbridge.service.payment.EscrowService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class ApplicationService {
     private final JobCardAssembler assembler;
     private final NotificationService notificationService;
     private final WalletService walletService;
+    private final EscrowService escrowService;
     private final MatchingService matchingService;
     private final AccountDirectory accountDirectory;
     private final EmploymentService employmentService;
@@ -40,6 +42,7 @@ public class ApplicationService {
                               JobPostRepository jobRepository, WorkerProfileRepository workerProfileRepository,
                               MatchRepository matchRepository, JobCardAssembler assembler,
                               NotificationService notificationService, WalletService walletService,
+                              EscrowService escrowService,
                               MatchingService matchingService, AccountDirectory accountDirectory,
                               EmploymentService employmentService) {
         this.applicationRepository = applicationRepository;
@@ -50,6 +53,7 @@ public class ApplicationService {
         this.assembler = assembler;
         this.notificationService = notificationService;
         this.walletService = walletService;
+        this.escrowService = escrowService;
         this.matchingService = matchingService;
         this.accountDirectory = accountDirectory;
         this.employmentService = employmentService;
@@ -139,7 +143,13 @@ public class ApplicationService {
         offerRepository.save(offer);
         transition(offer.getApplication(), ApplicationStatus.ACCEPTED);
         // Same transaction: accepting an offer is what brings the employment record into being.
-        employmentService.createFromAcceptedOffer(offer);
+        Employment employment = employmentService.createFromAcceptedOffer(offer);
+        // ...and what ring-fences the money. Idempotent per employment, so the double-accept
+        // that the isOpen() check above already rejects could not reserve twice even if it
+        // slipped through. If neither the job's escrow nor the employer's wallet covers it,
+        // this throws 400 telling the employer to fund the job - and the whole acceptance
+        // rolls back, rather than leaving an employment with no money behind it.
+        escrowService.reserve(employment, "WORKER", worker.getId());
         notificationService.notify(offer.getApplication().getJob().getEmployer(), "Offer accepted",
                 worker.getName() + " accepted your offer for \""
                         + offer.getApplication().getJob().getTitle() + "\"",
@@ -276,9 +286,12 @@ public class ApplicationService {
 
         if (next == ApplicationStatus.ACCEPTED && !application.isPaymentSettled()) {
             JobPost job = application.getJob();
-            double amount = offerRepository.findByApplicationId(application.getId())
-                    .map(JobOffer::getSalary).orElse(job.getSalary());
-            walletService.payForJob(job.getEmployer(), application.getWorker(), job, amount);
+            // BEHAVIOUR CHANGE: this used to call walletService.payForJob and move the whole
+            // wage from the employer to the worker on the spot. Under escrow, accepting is a
+            // RESERVATION, not a payment - and it is made in acceptOffer(), where the
+            // employment row that the reservation is keyed on already exists. The flag below
+            // keeps its old meaning of "the money side of this acceptance has been handled
+            // once", which is what stops the seat count decrementing twice.
             application.setPaymentSettled(true);
 
             job.setWorkersNeeded(Math.max(0, job.getWorkersNeeded() - 1));

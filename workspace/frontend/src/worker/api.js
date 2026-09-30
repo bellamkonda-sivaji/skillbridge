@@ -38,6 +38,17 @@ export const money = (n) => '₹' + Number(n || 0).toLocaleString('en-IN')
 
 export const pay = (salary, unit) => money(salary) + (UNIT[unit] || '')
 
+/**
+ * What the worker actually takes home on a job.
+ *
+ * The employer posts a price and the platform fee comes out of it, so every worker-facing
+ * screen must show the take-home and nothing else. Job cards already arrive with the net
+ * figure in `salary`; the fuller job record carries it separately as `workerSalary`. Reading
+ * both here means no screen can accidentally show a worker a number they will not be paid.
+ */
+export const workerPay = (job) =>
+  Number(job?.workerSalary) > 0 ? Number(job.workerSalary) : Number(job?.salary) || 0
+
 export const payRange = (job) =>
   job?.salaryMax && job.salaryMax !== job.salary
     ? `${money(job.salary)} - ${money(job.salaryMax)}${UNIT[job.salaryUnit] || ''}`

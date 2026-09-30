@@ -40,6 +40,19 @@ public class AdminAccount implements Account {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    /** Which back-office role this login carries. "role" is reserved on H2. */
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "admin_role", nullable = false)
+    private AdminRole adminRole = AdminRole.ADMIN;
+
+    /** The SUPER_ADMIN who created this login. null for the bootstrap / seeded accounts. */
+    @Column(name = "created_by_id")
+    private Long createdById;
+
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
     @Override
     public AccountType accountType() {
         return AccountType.ADMIN;

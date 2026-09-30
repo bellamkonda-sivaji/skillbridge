@@ -35,7 +35,7 @@ const CONFIG = {
   },
   ADMIN: {
     title: 'Operations login',
-    sub: 'SkillBridge staff only.',
+    sub: 'JobOn staff only.',
     icon: 'shield',
     home: '/admin',
     signup: null,
@@ -137,7 +137,7 @@ export function ChooseLogin() {
   return (
     <ObShell>
       <ObCard>
-        <ObHead title="Log in to SkillBridge" sub="Which kind of account do you have?" />
+        <ObHead title="Log in to JobOn" sub="Which kind of account do you have?" />
         <div style={{ display: 'grid', gap: 12 }}>
           <Link to="/worker/login" className="ob-choice">
             <span className="ob-choice-art" aria-hidden="true"><Icon name="user" size={26} /></span>

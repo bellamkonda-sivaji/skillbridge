@@ -6,9 +6,15 @@ import com.skillbridge.model.ApplicationStatus;
 import com.skillbridge.model.JobStatus;
 import com.skillbridge.security.AuthenticationUtils;
 import com.skillbridge.service.ApplicationService;
+import com.skillbridge.service.AttendanceService;
 import com.skillbridge.service.EmployerService;
 import com.skillbridge.service.EmploymentService;
 import com.skillbridge.service.InterviewService;
+import com.skillbridge.dto.JobPricingDto;
+import com.skillbridge.dto.JobDemandDto;
+import com.skillbridge.dto.PriceChangeRequest;
+import com.skillbridge.model.JobPriceChange;
+import com.skillbridge.model.SalaryUnit;
 import com.skillbridge.service.JobService;
 import com.skillbridge.service.OfferService;
 import com.skillbridge.service.UserService;
@@ -33,12 +39,15 @@ public class EmployerController {
     private final EmployerService employerService;
     private final EmploymentService employmentService;
     private final OfferService offerService;
+    private final AttendanceService attendanceService;
 
     public EmployerController(JobService jobService, ApplicationService applicationService,
                               UserService userService, InterviewService interviewService,
                               EmployerService employerService, EmploymentService employmentService,
-                              OfferService offerService) {
+                              OfferService offerService,
+                              AttendanceService attendanceService) {
         this.offerService = offerService;
+        this.attendanceService = attendanceService;
         this.jobService = jobService;
         this.applicationService = applicationService;
         this.userService = userService;
@@ -61,13 +70,78 @@ public class EmployerController {
         return employmentService.listForEmployer(AuthenticationUtils.currentEmployer(), scope);
     }
 
+    /**
+     * Every filter is optional, and {@code employmentId} is kept so the old call still works.
+     * {@code status} takes either an attendance status (CHECKED_OUT) or an approval one (PENDING).
+     */
     @GetMapping("/attendance")
     public List<AttendanceDto> attendance(
-            @RequestParam(required = false) Long employmentId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) Long jobId,
+            @RequestParam(required = false) Long workerId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) Long employmentId) {
+        return attendanceService.forEmployer(AuthenticationUtils.currentEmployer(),
+                date, from, to, jobId, workerId, status, q, employmentId);
+    }
+
+    /** Today at a glance: five totals and the workers grouped under their job. */
+    @GetMapping("/attendance/day")
+    public AttendanceDtos.EmployerDayDto attendanceDay(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return attendanceService.day(AuthenticationUtils.currentEmployer(), date);
+    }
+
+    @GetMapping("/attendance/calendar")
+    public List<AttendanceDtos.CalendarDayDto> attendanceCalendar(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        return employmentService.attendanceForEmployer(AuthenticationUtils.currentEmployer(),
-                employmentId, from, to);
+        return attendanceService.calendar(AuthenticationUtils.currentEmployer(), from, to);
+    }
+
+    @PostMapping("/attendance/{id}/approve")
+    public AttendanceDto approveAttendance(@PathVariable Long id,
+                                           @RequestBody(required = false) AttendanceDtos.DecisionBody body) {
+        return attendanceService.approveDay(AuthenticationUtils.currentEmployer(), id,
+                body == null ? null : body.note());
+    }
+
+    @PostMapping("/attendance/{id}/reject")
+    public AttendanceDto rejectAttendance(@PathVariable Long id,
+                                          @RequestBody(required = false) AttendanceDtos.DecisionBody body) {
+        return attendanceService.rejectDay(AuthenticationUtils.currentEmployer(), id,
+                body == null ? null : body.note());
+    }
+
+    @PostMapping("/attendance/approve-all")
+    public AttendanceDtos.ApproveAllResultDto approveAllAttendance(
+            @RequestBody AttendanceDtos.ApproveAllBody body) {
+        return attendanceService.approveAll(AuthenticationUtils.currentEmployer(),
+                body == null ? null : body.ids());
+    }
+
+    @GetMapping("/attendance/requests")
+    public List<AttendanceDtos.AttendanceRequestDto> attendanceRequests(
+            @RequestParam(required = false) String status) {
+        return attendanceService.requestsForEmployer(AuthenticationUtils.currentEmployer(), status);
+    }
+
+    /** The employer may adjust the times before saying yes. */
+    @PostMapping("/attendance/requests/{id}/approve")
+    public AttendanceDtos.AttendanceRequestDto approveAttendanceRequest(
+            @PathVariable Long id, @RequestBody(required = false) AttendanceDtos.DecisionBody body) {
+        return attendanceService.employerDecideRequest(
+                AuthenticationUtils.currentEmployer(), id, true, body);
+    }
+
+    @PostMapping("/attendance/requests/{id}/reject")
+    public AttendanceDtos.AttendanceRequestDto rejectAttendanceRequest(
+            @PathVariable Long id, @RequestBody(required = false) AttendanceDtos.DecisionBody body) {
+        return attendanceService.employerDecideRequest(
+                AuthenticationUtils.currentEmployer(), id, false, body);
     }
 
     @GetMapping("/employments/{id}/payroll")
@@ -118,6 +192,51 @@ public class EmployerController {
     public JobDto setStatus(@PathVariable Long jobId, @RequestBody StatusRequest request) {
         return jobService.setJobStatus(AuthenticationUtils.currentEmployer(), jobId,
                 parse(JobStatus.class, request.status()));
+    }
+
+    // ---------------------------------------------------------------- pricing
+
+    /** The commission split on a price the employer is still typing, before they commit. */
+    @GetMapping("/pricing/quote")
+    public JobPricingDto quote(@RequestParam double salary,
+                               @RequestParam(required = false) String unit) {
+        return jobService.quote(salary, unit == null ? null : parse(SalaryUnit.class, unit));
+    }
+
+    /** The whole commission table, so the employer can check any figure themselves. */
+    @GetMapping("/pricing/slabs")
+    public List<Map<String, Object>> slabs() {
+        return jobService.slabTable();
+    }
+
+    @GetMapping("/jobs/{jobId}/pricing")
+    public JobPricingDto jobPricing(@PathVariable Long jobId) {
+        return jobService.jobPricing(AuthenticationUtils.currentEmployer(), jobId);
+    }
+
+    /** Raise or lower what a live job pays. */
+    @PatchMapping("/jobs/{jobId}/price")
+    public JobPricingDto changePrice(@PathVariable Long jobId, @RequestBody PriceChangeRequest request) {
+        return jobService.changePrice(AuthenticationUtils.currentEmployer(), jobId, request);
+    }
+
+    @GetMapping("/jobs/{jobId}/price-history")
+    public List<JobPriceChange> priceHistory(@PathVariable Long jobId) {
+        return jobService.priceHistory(AuthenticationUtils.currentEmployer(), jobId);
+    }
+
+    // ---------------------------------------------------------------- demand advice
+
+    /** How this job is doing at attracting workers, and what price would fix it. */
+    @GetMapping("/jobs/{jobId}/demand")
+    public JobDemandDto demand(@PathVariable Long jobId) {
+        return jobService.demandFor(AuthenticationUtils.currentEmployer(), jobId);
+    }
+
+    /** Every open job that needs the employer's attention right now. */
+    @GetMapping("/demand-alerts")
+    public List<JobDemandDto> demandAlerts() {
+        return jobService.demandAlerts(AuthenticationUtils.currentEmployer());
     }
 
     @DeleteMapping("/jobs/{jobId}")

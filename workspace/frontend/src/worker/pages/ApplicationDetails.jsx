@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import Icon from '../../marketing/icons'
 import { useDocumentTitle } from '../../marketing/components'
 import {
-  getApplication, withdrawApplication, pay, distance, formatDate, EMPLOYMENT_LABEL,
+  getApplication, withdrawApplication, pay, workerPay, distance, formatDate, EMPLOYMENT_LABEL,
 } from '../api'
 import {
   JobArt, StatusBadge, SegTabs, Loading, ErrorNote, Empty,
@@ -65,7 +65,7 @@ export default function ApplicationDetails() {
             </Link>
             <div className="biz">{job.businessName}</div>
             <div className="chips">
-              {job.salary != null && <span className="wk-pay">{pay(job.salary, job.salaryUnit)}</span>}
+              {job.salary != null && <span className="wk-pay">{pay(workerPay(job), job.salaryUnit)}</span>}
               {(job.employmentType || job.workType) && (
                 <span className="wk-chip">
                   {EMPLOYMENT_LABEL[job.employmentType || job.workType] || job.workType}
@@ -106,7 +106,7 @@ export default function ApplicationDetails() {
         ) : (
           <div style={{ marginTop: 18 }}>
             <div className="wk-facts">
-              <Fact icon="rupee" k="Salary" v={pay(job.salary, job.salaryUnit)} />
+              <Fact icon="rupee" k="You get" v={pay(workerPay(job), job.salaryUnit)} />
               <Fact icon="clock" k="Type" v={EMPLOYMENT_LABEL[job.employmentType || job.workType] || '—'} />
               <Fact icon="pin" k="Distance" v={distance(job.distanceKm) || 'Not set'} />
               <Fact icon="briefcase" k="Location" v={job.city || '—'} />

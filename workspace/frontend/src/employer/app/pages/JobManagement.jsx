@@ -8,6 +8,7 @@ import {
   JOB_STATUS_LABEL, JOB_STATUS_TONE, EMPLOYMENT_LABEL,
 } from '../api'
 import { DAYS } from '../engagement'
+import { PriceSplit, EditPrice, DemandAdvice, useJobDemand, useJobPricing } from '../pricing'
 
 export default function JobManagement() {
   const { jobId } = useParams()
@@ -17,6 +18,9 @@ export default function JobManagement() {
   const [tab, setTab] = useState('overview')
   const [showFull, setShowFull] = useState(false)
   const [applicants, setApplicants] = useState(null)
+  const [pricing, setPricing] = useJobPricing(jobId)
+  const [demand, setDemand] = useJobDemand(jobId)
+  const [editingPrice, setEditingPrice] = useState(null)   // null, or the price to start from
   useDocumentTitle(job?.title || 'Job')
 
   const load = () => {
@@ -104,6 +108,12 @@ export default function JobManagement() {
 
         {tab === 'overview' && (
           <div style={{ marginTop: 18 }}>
+            {/* The advice sits above the counters: if nobody is applying, that is the news. */}
+            <DemandAdvice
+              demand={demand}
+              onRaise={(amount) => { setEditingPrice(amount); setTab('overview') }}
+            />
+
             <div className="wk-tiles">
               <Tile tone="blue" icon="doc" value={job.applicationsCount ?? 0} label="Applications" />
               <Tile tone="green" icon="eye" value={formatCount(job.jobViews)} label="Job Views" />
@@ -116,6 +126,14 @@ export default function JobManagement() {
               <KV k="Job Title" v={job.title} />
               <KV k="Employment Type" v={EMPLOYMENT_LABEL[job.employmentType] || '—'} />
               <KV k="Salary" v={job.salary > 0 ? pay(job.salary, job.salaryUnit) : '—'} />
+              {pricing?.workerSalary > 0 && (
+                <KV k="Worker gets" v={<>
+                  <strong>{pay(pricing.workerSalary, job.salaryUnit)}</strong>
+                  <div className="wk-sub" style={{ marginTop: 2 }}>
+                    after the {pricing.feePercent}% JobOn fee
+                  </div>
+                </>} />
+              )}
               <KV k="Openings" v={job.workersNeeded ?? '—'} />
               <KV k="Working Days" v={days.length ? days.join(', ') : '—'} />
               {(job.shifts || []).length > 0 && (
@@ -127,6 +145,35 @@ export default function JobManagement() {
               <KV k="Posted On" v={formatDate(job.postedAt) || '—'} />
               <KV k="Application Deadline" v={job.applicationDeadline ? formatDate(job.applicationDeadline) : 'No deadline'} />
             </div>
+
+            {pricing?.postedSalary > 0 && (
+              <>
+                <h2 className="wk-h2" style={{ marginTop: 24, marginBottom: 12 }}>Pay</h2>
+                <PriceSplit pricing={pricing} />
+                {editingPrice === null ? (
+                  (job.status === 'OPEN' || job.status === 'DRAFT') && (
+                    <button className="mk-btn mk-btn-outline mk-btn-sm" style={{ marginTop: 12 }}
+                      onClick={() => setEditingPrice(pricing.postedSalary)}>
+                      Change the pay
+                    </button>
+                  )
+                ) : (
+                  <EditPrice
+                    job={job}
+                    pricing={pricing}
+                    suggested={editingPrice !== pricing.postedSalary ? editingPrice : null}
+                    onCancel={() => setEditingPrice(null)}
+                    onSaved={(next) => {
+                      setPricing(next)
+                      setJob((j) => ({ ...j, salary: next.postedSalary }))
+                      setEditingPrice(null)
+                      setDemand(null)
+                      load()
+                    }}
+                  />
+                )}
+              </>
+            )}
 
             {description && (
               <>
@@ -204,7 +251,7 @@ export default function JobManagement() {
             <div className="emp-kv-grid">
               <KV k="Auto-close when filled" v={job.autoCloseWhenFilled ? 'Yes' : 'No'} />
               <KV k="Interview type" v={job.interviewType || 'NONE'} />
-              <KV k="Payment" v={job.paymentMode === 'CASH' ? 'Cash / Direct' : 'Through SkillBridge'} />
+              <KV k="Payment" v={job.paymentMode === 'CASH' ? 'Cash / Direct' : 'Through JobOn'} />
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 18 }}>
               <Link className="mk-btn mk-btn-outline mk-btn-sm" to={`/employer/post-job?edit=${job.id}`}>

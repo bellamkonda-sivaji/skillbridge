@@ -252,7 +252,27 @@ public class EmploymentService {
         attendance.setStatus(AttendanceStatus.CHECKED_OUT);
         attendance.setMinutesWorked(
                 (int) Math.max(0, Duration.between(attendance.getCheckInAt(), now).toMinutes()));
+
+        // The one rule: a day on a one-off job waits for the shop owner, a day on a job measured
+        // in weeks or months counts the moment the worker taps "finished".
+        EngagementModel model = employment.getJob().getEngagementModel();
+        AttendanceApproval approval = AttendanceRules.onPunchOut(model);
+        attendance.setApprovalStatus(approval);
+        if (approval == AttendanceApproval.AUTO_APPROVED) {
+            attendance.setApprovedByType(AttendanceActor.SYSTEM);
+            attendance.setApprovedByName("JobOn");
+            attendance.setApprovedAt(now);
+        }
         attendanceRepository.save(attendance);
+
+        if (approval == AttendanceApproval.PENDING) {
+            notificationService.notify(employment.getEmployer(), "Please confirm a day's work",
+                    worker.getName() + " finished "
+                            + AttendanceRules.workedLabel(attendance.getMinutesWorked())
+                            + " on \"" + employment.getJob().getTitle() + "\" on "
+                            + attendance.getWorkDate() + ". Tap to confirm.",
+                    NotificationType.SYSTEM, "/employer/attendance");
+        }
         return AttendanceDto.from(attendance);
     }
 
@@ -320,7 +340,10 @@ public class EmploymentService {
         int payableDays = 0;
         int payableMinutes = 0;
         for (Attendance a : rows) {
-            if (a.getStatus() != AttendanceStatus.CHECKED_OUT) {
+            // Payroll follows approval, not merely punching out: an unconfirmed or rejected day
+            // on a one-off job is not payable, and a month-long job's day is AUTO_APPROVED so it
+            // behaves exactly as it did before this rule existed.
+            if (!AttendanceRules.counts(a)) {
                 continue;
             }
             payableDays++;

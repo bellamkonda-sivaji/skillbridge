@@ -1,0 +1,4 @@
+# Local secrets — never commit. Gateway keys are read from the environment.
+.env
+.env.local
+**/.env.local

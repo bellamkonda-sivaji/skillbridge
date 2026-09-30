@@ -24,7 +24,7 @@ export default function Stories() {
       <PageHead
         eyebrow="Success stories"
         title="Real stories. Real impact."
-        sub="People and businesses growing together with SkillBridge."
+        sub="People and businesses growing together with JobOn."
       />
 
       {/* ---------- Featured story ---------- */}

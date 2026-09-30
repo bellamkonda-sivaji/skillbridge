@@ -149,10 +149,10 @@ export const whatHappensNext = (model) => {
   switch (model?.value) {
     case 'ONE_DAY':
       return ['Post your job', 'Choose a worker', 'Worker accepts',
-        'Worker comes to work', 'Payment through SkillBridge']
+        'Worker comes to work', 'Payment through JobOn']
     case 'FEW_DAYS':
       return ['Post your job', 'Choose a worker', 'Confirm the job', 'Worker accepts',
-        'Work begins', 'Payment through SkillBridge']
+        'Work begins', 'Payment through JobOn']
     case 'FEW_WEEKS':
       return ['Post your job', 'Review workers', 'Talk or interview if you want',
         'Send a simple job offer', 'Worker accepts', 'Work begins']
@@ -342,11 +342,56 @@ export function calculateEarnings(job, sched) {
  * What the employer pays. The fee percent comes from the backend
  * (GET /api/config/pricing) — never hard-code it, pricing can change.
  */
-export function calculateCost(workerPay, feePercent) {
-  const pay = Number(workerPay) || 0
-  if (feePercent === null || feePercent === undefined) return { workerPay: pay, fee: null, total: pay }
-  const fee = Math.round(pay * (Number(feePercent) / 100))
-  return { workerPay: pay, fee, total: pay + fee }
+/**
+ * The commission bands, mirrored from PricingService on the server for instant feedback in
+ * the wizard. The server is the authority — it recalculates on save — so if these ever drift
+ * the employer sees the server's figure on the job, not this one.
+ */
+export const FEE_SLABS = [
+  { upTo: 499.99, percent: 7, label: 'Under ₹500' },
+  { upTo: 1000, percent: 10, label: '₹500 – ₹1,000' },
+  { upTo: 4000, percent: 13, label: '₹1,000 – ₹4,000' },
+  { upTo: 10000, percent: 16, label: '₹4,000 – ₹10,000' },
+  { upTo: null, percent: 20, label: 'Above ₹10,000' },
+]
+
+export function feeSlabFor(amount) {
+  const n = Number(amount) || 0
+  if (n <= 0) return null
+  return FEE_SLABS.find((s) => s.upTo === null || n <= s.upTo) || FEE_SLABS[FEE_SLABS.length - 1]
+}
+
+export const feePercentFor = (amount) => feeSlabFor(amount)?.percent ?? 0
+
+/**
+ * Splits the price the employer posted.
+ *
+ * The employer pays exactly what they typed — we never inflate their number to cover our own
+ * fee. The commission comes out of it, and `workerPay` is what the worker is shown and paid.
+ * `override` lets a configured flat percentage win, matching the server.
+ */
+export function calculateCost(postedAmount, override) {
+  const total = Number(postedAmount) || 0
+  if (!total) return { total: 0, fee: 0, workerPay: 0, percent: 0, slab: null }
+  const slab = feeSlabFor(total)
+  const percent = override !== null && override !== undefined && Number(override) > 0
+    ? Number(override) : (slab?.percent ?? 0)
+  // Whole rupees, matching the server: these wages are handed over as cash.
+  const fee = Math.round(total * (percent / 100))
+  return { total, fee, workerPay: Math.round((total - fee) * 100) / 100, percent, slab }
+}
+
+/** The posted price needed for the worker to actually take home `target`. */
+export function grossForTakeHome(target) {
+  const want = Number(target) || 0
+  if (want <= 0) return 0
+  for (const slab of FEE_SLABS) {
+    let gross = Math.ceil(want / (1 - slab.percent / 100))
+    // Never advise a price that delivers less than the take-home we promised.
+    for (let i = 0; i < 4 && calculateCost(gross).workerPay < want; i += 1) gross += 1
+    if ((slab.upTo === null || gross <= slab.upTo) && feePercentFor(gross) === slab.percent) return gross
+  }
+  return Math.round(want / (1 - FEE_SLABS[FEE_SLABS.length - 1].percent / 100))
 }
 
 /** Plain-language validation — "Choose a work date", not "invalid configuration". */

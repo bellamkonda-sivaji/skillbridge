@@ -68,6 +68,28 @@ export const saveJoining = (offerId, body) =>
   api.post(`/employer/offers/${offerId}/joining`, body).then((r) => r.data)
 
 /* ---------- worker work history ---------- */
+// ---------------------------------------------------------------- pricing & demand advice
+
+/** The commission split on a price the employer is still typing. */
+export const quotePrice = (salary, unit) =>
+  api.get('/employer/pricing/quote', { params: { salary, unit } }).then((r) => r.data)
+
+export const getSlabs = () => api.get('/employer/pricing/slabs').then((r) => r.data)
+
+export const getJobPricing = (jobId) =>
+  api.get(`/employer/jobs/${jobId}/pricing`).then((r) => r.data)
+
+export const changeJobPrice = (jobId, salary, reason) =>
+  api.patch(`/employer/jobs/${jobId}/price`, { salary, reason }).then((r) => r.data)
+
+export const getPriceHistory = (jobId) =>
+  api.get(`/employer/jobs/${jobId}/price-history`).then((r) => r.data)
+
+export const getJobDemand = (jobId) =>
+  api.get(`/employer/jobs/${jobId}/demand`).then((r) => r.data)
+
+export const getDemandAlerts = () => api.get('/employer/demand-alerts').then((r) => r.data)
+
 export const getWorkHistory = (workerId) =>
   api.get(`/employer/workers/${workerId}/work-history`).then((r) => r.data)
 

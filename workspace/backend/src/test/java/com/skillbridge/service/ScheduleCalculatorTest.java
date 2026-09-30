@@ -120,9 +120,11 @@ class ScheduleCalculatorTest {
         assertEquals(27, dto.scheduledDays());
         assertEquals(8.5, dto.paidHoursPerDay());
         assertEquals(229.5, dto.expectedPaidHours());
-        assertEquals(18900.0, dto.estimatedWorkerEarnings());
-        assertNull(dto.platformFee());
+        // Rs 18,900 sits above the Rs 10,000 band, so the commission is 20% and comes out of
+        // the employer's figure - they pay what they posted, the worker takes home the rest.
         assertEquals(18900.0, dto.estimatedEmployerTotal());
+        assertEquals(3780.0, dto.platformFee());
+        assertEquals(15120.0, dto.estimatedWorkerEarnings());
         assertEquals("BEFORE_WORK", dto.fundingWhen());
     }
 
@@ -135,7 +137,10 @@ class ScheduleCalculatorTest {
         calculator.validate(in);
         ScheduleEstimateDto dto = calculator.estimate(in);
         assertEquals(5, dto.scheduledDays());
-        assertEquals(3500.0, dto.estimatedWorkerEarnings());
+        // Rs 3,500 is in the Rs 1,000 - 4,000 band: 13% out, Rs 3,045 to the worker.
+        assertEquals(3500.0, dto.estimatedEmployerTotal());
+        assertEquals(455.0, dto.platformFee());
+        assertEquals(3045.0, dto.estimatedWorkerEarnings());
     }
 
     @Test
@@ -145,20 +150,23 @@ class ScheduleCalculatorTest {
                 List.of(shift("09:00", "18:00", null, null)), ShiftArrangement.ALL_SHIFTS,
                 false, 700, SalaryUnit.DAILY);
 
+        // An explicitly configured flat percentage still wins over the slab table.
         calculator.setPlatformFeePercent(5);
         ScheduleEstimateDto withFee = calculator.estimate(in);
-        assertEquals(3500.0, withFee.estimatedWorkerEarnings());
+        assertEquals(3500.0, withFee.estimatedEmployerTotal());
         assertEquals(175.0, withFee.platformFee());
-        assertEquals(3675.0, withFee.estimatedEmployerTotal());
+        assertEquals(3325.0, withFee.estimatedWorkerEarnings());
 
+        // With no flat percentage configured the slab decides: 13% on Rs 3,500.
         calculator.setPlatformFeePercent(0);
-        ScheduleEstimateDto withoutFee = calculator.estimate(in);
-        assertNull(withoutFee.platformFee());
-        assertEquals(3500.0, withoutFee.estimatedEmployerTotal());
+        ScheduleEstimateDto slabbed = calculator.estimate(in);
+        assertEquals(455.0, slabbed.platformFee());
+        assertEquals(3500.0, slabbed.estimatedEmployerTotal());
+        assertEquals(3045.0, slabbed.estimatedWorkerEarnings());
     }
 
     @Test
-    void aOneDayJobPaysOneDayPlusTheFee() {
+    void aOneDayJobBillsOneDayAndTakesTheFeeOutOfIt() {
         calculator.setPlatformFeePercent(5);
         var in = input(EngagementModel.ONE_DAY, LocalDate.of(2026, 10, 15),
                 null, null, JobDuration.SPECIFIC, List.of(),
@@ -166,14 +174,14 @@ class ScheduleCalculatorTest {
                 false, 900, SalaryUnit.DAILY);
         calculator.validate(in);
         ScheduleEstimateDto dto = calculator.estimate(in);
-        assertEquals(900.0, dto.estimatedWorkerEarnings());
+        assertEquals(900.0, dto.estimatedEmployerTotal());
         assertEquals(45.0, dto.platformFee());
-        assertEquals(945.0, dto.estimatedEmployerTotal());
+        assertEquals(855.0, dto.estimatedWorkerEarnings());
         calculator.setPlatformFeePercent(0);
     }
 
     @Test
-    void aMonthlyJobBillsOneMonthPlusTheFee() {
+    void aMonthlyJobBillsOneMonthAndTakesTheFeeOutOfIt() {
         calculator.setPlatformFeePercent(5);
         var in = input(EngagementModel.MONTHS, null, LocalDate.of(2026, 10, 1), null,
                 JobDuration.ONGOING,
@@ -181,9 +189,9 @@ class ScheduleCalculatorTest {
                 ShiftArrangement.ALL_SHIFTS, false, 18000, SalaryUnit.MONTHLY);
         calculator.validate(in);
         ScheduleEstimateDto dto = calculator.estimate(in);
-        assertEquals(18000.0, dto.estimatedWorkerEarnings());
+        assertEquals(18000.0, dto.estimatedEmployerTotal());
         assertEquals(900.0, dto.platformFee());
-        assertEquals(18900.0, dto.estimatedEmployerTotal());
+        assertEquals(17100.0, dto.estimatedWorkerEarnings());
         calculator.setPlatformFeePercent(0);
     }
 
@@ -267,8 +275,10 @@ class ScheduleCalculatorTest {
 
     @Test
     void durationsDefaultTheirHiringMethodAndOfferType() {
-        assertEquals(EngagementModel.ONE_DAY.defaultHiringMethod(), HiringMethod.DIRECT);
-        assertEquals(EngagementModel.FEW_DAYS.defaultHiringMethod(), HiringMethod.DIRECT);
+        // Short work defaults to a phone call, not a silent direct hire: around Tirupati the
+        // shop owner rings the person and says come tomorrow.
+        assertEquals(EngagementModel.ONE_DAY.defaultHiringMethod(), HiringMethod.TALK_FIRST);
+        assertEquals(EngagementModel.FEW_DAYS.defaultHiringMethod(), HiringMethod.TALK_FIRST);
         assertEquals(EngagementModel.FEW_WEEKS.defaultHiringMethod(), HiringMethod.TALK_FIRST);
         assertEquals(EngagementModel.MONTHS.defaultHiringMethod(), HiringMethod.INTERVIEW);
         assertEquals(EngagementModel.PERMANENT.defaultHiringMethod(), HiringMethod.INTERVIEW);

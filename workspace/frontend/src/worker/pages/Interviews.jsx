@@ -200,7 +200,7 @@ export function InterviewDetails() {
     const end = iv.endsAt ? new Date(iv.endsAt) : new Date(start.getTime() + 30 * 60000)
     const stamp = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z'
     const ics = [
-      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SkillBridge//EN', 'BEGIN:VEVENT',
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//JobOn//EN', 'BEGIN:VEVENT',
       `UID:interview-${iv.id}@skillbridge`,
       `DTSTAMP:${stamp(new Date())}`,
       `DTSTART:${stamp(start)}`,
