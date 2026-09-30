@@ -22,3 +22,15 @@ export const rejectRequest = (id, reason) =>
 // ---- money
 export const billing = () => client.get('/employer/billing').then((r) => r.data)
 export const escrow = (jobId) => client.get(`/employer/jobs/${jobId}/escrow`).then((r) => r.data)
+
+/** Starts a gateway order so the employer can put money behind a job. */
+export const createEscrowOrder = (jobId, amount) =>
+  client.post(`/employer/jobs/${jobId}/escrow/order`, { amount }).then((r) => r.data)
+
+/** Confirms a gateway payment against the job. */
+export const verifyEscrow = (jobId, body) =>
+  client.post(`/employer/jobs/${jobId}/escrow/verify`, body).then((r) => r.data)
+
+/** Moves money from the wallet instead of the gateway - the test path. */
+export const fundFromWallet = (jobId, amount) =>
+  client.post(`/employer/jobs/${jobId}/escrow/fund-manual`, { amount }).then((r) => r.data)

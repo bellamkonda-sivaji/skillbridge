@@ -76,12 +76,21 @@ export default function Dashboard({ navigation }) {
 
         <ErrorNote onRetry={load}>{error}</ErrorNote>
 
-        <Button
-          title={t('dashboard.postJob')}
-          icon="add"
-          onPress={() => navigation.navigate('PostJob')}
-          style={{ marginBottom: space.lg }}
-        />
+        <Row style={{ marginBottom: space.lg }}>
+          <Button
+            title={t('dashboard.postJob')}
+            icon="add"
+            onPress={() => navigation.navigate('PostJob')}
+            style={{ flex: 2 }}
+          />
+          <Button
+            title={t('findWorkers.title')}
+            icon="search"
+            tone="outline"
+            onPress={() => navigation.navigate('FindWorkers')}
+            style={{ flex: 1 }}
+          />
+        </Row>
 
         {alerts.length > 0 ? (
           <>

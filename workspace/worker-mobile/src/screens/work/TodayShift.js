@@ -62,7 +62,15 @@ export default function TodayShift({ navigation }) {
 
   return (
     <SafeAreaView style={s.fill} edges={['top', 'left', 'right']}>
-      <AppBar title={t('myWork.todayShift')} onBack={navigation.canGoBack() ? navigation.goBack : undefined} />
+      <AppBar
+        title={t('myWork.todayShift')}
+        onBack={navigation.canGoBack() ? navigation.goBack : undefined}
+        right={(
+          <Text style={s.link} onPress={() => navigation.navigate('AttendanceHistory')}>
+            {t('attendanceHistory.title')}
+          </Text>
+        )}
+      />
       <View style={{ padding: space.lg }}>
         <ErrorNote onRetry={load}>{error}</ErrorNote>
 
@@ -184,6 +192,7 @@ function PunchCard({ row, busy, onPunch, t }) {
 
 const s = StyleSheet.create({
   fill: { flex: 1, backgroundColor: colors.bg },
+  link: { fontSize: 13.5, fontWeight: '700', color: colors.blue },
   job: { fontSize: 17, fontWeight: '800', color: colors.ink },
   meta: {
     flexDirection: 'row', alignItems: 'center', gap: space.md,

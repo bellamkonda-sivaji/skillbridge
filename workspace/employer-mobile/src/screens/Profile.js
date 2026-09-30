@@ -78,12 +78,21 @@ export default function Profile({ navigation }) {
           <ListRow icon="mail-outline" title={t('offers.tracking')}
             onPress={() => navigation.navigate('OfferTracking')} />
           <Divider />
+          <ListRow icon="notifications-outline" title={t('notifications.title')}
+            onPress={() => navigation.navigate('Notifications')} />
+          <Divider />
+          <ListRow icon="star-outline" title={t('empReviews.title')}
+            onPress={() => navigation.navigate('Reviews')} />
+          <Divider />
           <ListRow
             icon="language-outline"
             title={t('profile.languagePref')}
             sub={LANGUAGES.find((l) => l.code === i18n.language)?.native}
             onPress={cycleLanguage}
           />
+          <Divider />
+          <ListRow icon="settings-outline" title={t('settings.title')}
+            onPress={() => navigation.navigate('Settings')} />
         </Card>
 
         <Card style={{ marginTop: space.lg, paddingHorizontal: space.lg }} padded={false}>

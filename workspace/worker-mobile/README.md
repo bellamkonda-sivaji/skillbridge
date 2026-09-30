@@ -31,9 +31,14 @@ is ignored.
 | Profile setup | About you · What work you can do · Skills · Where you are |
 | Finding work | Home · Find work · Filters · Map (list on web) · Job details · Business profile · Saved |
 | Applying | My applications · Application progress · Take back an application |
+| Talks | Talks and visits · Talk details (with reschedule and "I cannot come") |
 | Offers | Offers · Offer details · Accepted · Before you go |
-| Working | My work · Today's work (punch in and out) · Job details |
-| Money & account | My money · Profile · Messages |
+| Working | My work · Today's work (punch in and out) · Job details · My days |
+| Corrections | Raise a correction on any day, and track what you have raised |
+| Money | My money · Where to send my money (bank or UPI) |
+| Account | Profile · Alerts · What people said · Settings |
+
+Every screen in the worker web app has an equivalent here.
 
 ## Two decisions worth knowing
 

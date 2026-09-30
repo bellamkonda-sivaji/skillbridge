@@ -31,11 +31,16 @@ import JobApplicants from '../screens/applicants/JobApplicants'
 import ApplicantProfile from '../screens/applicants/ApplicantProfile'
 import Recommended from '../screens/applicants/Recommended'
 import Compare from '../screens/applicants/Compare'
+import Shortlist from '../screens/applicants/Shortlist'
+import ApplicationDecision from '../screens/applicants/ApplicationDecision'
+import FindWorkers from '../screens/applicants/FindWorkers'
 
 import ScheduleInterview from '../screens/interviews/ScheduleInterview'
 import InterviewCalendar from '../screens/interviews/InterviewCalendar'
+import InterviewResults from '../screens/interviews/InterviewResults'
 
 import CreateOffer from '../screens/offers/CreateOffer'
+import OfferPreview from '../screens/offers/OfferPreview'
 import OfferSent from '../screens/offers/OfferSent'
 import OfferTracking from '../screens/offers/OfferTracking'
 import JoiningConfirmation from '../screens/offers/JoiningConfirmation'
@@ -43,7 +48,11 @@ import JoiningConfirmation from '../screens/offers/JoiningConfirmation'
 import MyTeam from '../screens/team/MyTeam'
 import Attendance from '../screens/team/Attendance'
 import Payroll from '../screens/team/Payroll'
+import FundJob from '../screens/team/FundJob'
 import Profile from '../screens/Profile'
+import Reviews from '../screens/Reviews'
+import Settings from '../screens/Settings'
+import Notifications from '../screens/Notifications'
 
 const Stack = createNativeStackNavigator()
 const Tab = createBottomTabNavigator()
@@ -60,12 +69,17 @@ const hidden = { headerShown: false }
 const hiringScreens = () => ([
   <Stack.Screen key="ApplicantProfile" name="ApplicantProfile" component={ApplicantProfile} />,
   <Stack.Screen key="Compare" name="Compare" component={Compare} />,
+  <Stack.Screen key="Shortlist" name="Shortlist" component={Shortlist} />,
+  <Stack.Screen key="ApplicationDecision" name="ApplicationDecision" component={ApplicationDecision} />,
   <Stack.Screen key="ScheduleInterview" name="ScheduleInterview" component={ScheduleInterview} />,
   <Stack.Screen key="InterviewCalendar" name="InterviewCalendar" component={InterviewCalendar} />,
+  <Stack.Screen key="InterviewResults" name="InterviewResults" component={InterviewResults} />,
   <Stack.Screen key="CreateOffer" name="CreateOffer" component={CreateOffer} />,
+  <Stack.Screen key="OfferPreview" name="OfferPreview" component={OfferPreview} />,
   <Stack.Screen key="OfferSent" name="OfferSent" component={OfferSent} />,
   <Stack.Screen key="OfferTracking" name="OfferTracking" component={OfferTracking} />,
   <Stack.Screen key="JoiningConfirmation" name="JoiningConfirmation" component={JoiningConfirmation} />,
+  <Stack.Screen key="FundJob" name="FundJob" component={FundJob} />,
 ])
 
 const HomeStack = () => (
@@ -76,6 +90,8 @@ const HomeStack = () => (
     <Stack.Screen name="JobManagement" component={JobManagement} />
     <Stack.Screen name="JobApplicants" component={JobApplicants} />
     <Stack.Screen name="Recommended" component={Recommended} />
+    <Stack.Screen name="FindWorkers" component={FindWorkers} />
+    <Stack.Screen name="Notifications" component={Notifications} />
     {hiringScreens()}
   </Stack.Navigator>
 )
@@ -96,6 +112,8 @@ const ApplicantsStack = () => (
   <Stack.Navigator screenOptions={hidden}>
     <Stack.Screen name="Applications" component={Applications} />
     <Stack.Screen name="JobApplicants" component={JobApplicants} />
+    <Stack.Screen name="Recommended" component={Recommended} />
+    <Stack.Screen name="FindWorkers" component={FindWorkers} />
     {hiringScreens()}
   </Stack.Navigator>
 )
@@ -105,6 +123,9 @@ const TeamStack = () => (
     <Stack.Screen name="MyTeam" component={MyTeam} />
     <Stack.Screen name="Attendance" component={Attendance} />
     <Stack.Screen name="Payroll" component={Payroll} />
+    <Stack.Screen name="FundJob" component={FundJob} />
+    <Stack.Screen name="JoiningConfirmation" component={JoiningConfirmation} />
+    <Stack.Screen name="OfferTracking" component={OfferTracking} />
   </Stack.Navigator>
 )
 
@@ -118,6 +139,10 @@ const ProfileStack = () => (
     <Stack.Screen name="OfferTracking" component={OfferTracking} />
     <Stack.Screen name="JoiningConfirmation" component={JoiningConfirmation} />
     <Stack.Screen name="Payroll" component={Payroll} />
+    <Stack.Screen name="Reviews" component={Reviews} />
+    <Stack.Screen name="Settings" component={Settings} />
+    <Stack.Screen name="Notifications" component={Notifications} />
+    <Stack.Screen name="InterviewResults" component={InterviewResults} />
   </Stack.Navigator>
 )
 

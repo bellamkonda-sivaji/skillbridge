@@ -7,3 +7,7 @@ export const withdraw = (id, reason, note) =>
 
 export const interviews = () => client.get('/worker/interviews').then((r) => r.data)
 export const interviewDetail = (id) => client.get(`/worker/interviews/${id}`).then((r) => r.data)
+export const rescheduleInterview = (id, reason) =>
+  client.post(`/worker/interviews/${id}/reschedule`, { reason }).then((r) => r.data)
+export const cancelInterview = (id, reason) =>
+  client.post(`/worker/interviews/${id}/cancel`, { reason }).then((r) => r.data)

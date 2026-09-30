@@ -152,11 +152,32 @@ export default function JobManagement({ navigation, route }) {
               onPress={() => navigation.navigate('JobApplicants', { jobId, jobTitle: job.title })}
             />
             <Button
+              title={t('shortlist.title')}
+              icon="star-outline"
+              tone="outline"
+              style={{ marginTop: space.md }}
+              onPress={() => navigation.navigate('Shortlist', { jobId, jobTitle: job.title })}
+            />
+            <Button
+              title={t('results.title')}
+              icon="chatbubbles-outline"
+              tone="outline"
+              style={{ marginTop: space.md }}
+              onPress={() => navigation.navigate('InterviewResults', { jobId, jobTitle: job.title })}
+            />
+            <Button
               title={t('applicants.recommended')}
               icon="sparkles-outline"
               tone="outline"
               style={{ marginTop: space.md }}
               onPress={() => navigation.navigate('Recommended', { jobId, jobTitle: job.title })}
+            />
+            <Button
+              title={t('fund.title')}
+              icon="wallet-outline"
+              tone="outline"
+              style={{ marginTop: space.md }}
+              onPress={() => navigation.navigate('FundJob', { jobId, jobTitle: job.title })}
             />
           </>
         ) : null}

@@ -41,10 +41,16 @@ import JoiningInstructions from '../screens/offers/JoiningInstructions'
 import MyWork from '../screens/work/MyWork'
 import TodayShift from '../screens/work/TodayShift'
 import EmploymentDetails from '../screens/work/EmploymentDetails'
+import Interviews from '../screens/work/Interviews'
+import InterviewDetails from '../screens/work/InterviewDetails'
+import AttendanceHistory from '../screens/work/AttendanceHistory'
 
 import Profile from '../screens/Profile'
 import Earnings from '../screens/Earnings'
 import Messages from '../screens/Messages'
+import PayoutMethods from '../screens/PayoutMethods'
+import Reviews from '../screens/Reviews'
+import Settings from '../screens/Settings'
 
 const Stack = createNativeStackNavigator()
 const Tab = createBottomTabNavigator()
@@ -65,6 +71,8 @@ const JobsStack = () => (
 const ApplicationsStack = () => (
   <Stack.Navigator screenOptions={hidden}>
     <Stack.Screen name="MyApplications" component={MyApplications} />
+    <Stack.Screen name="Interviews" component={Interviews} />
+    <Stack.Screen name="InterviewDetails" component={InterviewDetails} />
     <Stack.Screen name="ApplicationDetails" component={ApplicationDetails} />
     <Stack.Screen name="WithdrawApplication" component={WithdrawApplication} />
     <Stack.Screen name="Offers" component={Offers} />
@@ -80,6 +88,9 @@ const MyWorkStack = () => (
     <Stack.Screen name="MyWork" component={MyWork} />
     <Stack.Screen name="TodayShift" component={TodayShift} />
     <Stack.Screen name="EmploymentDetails" component={EmploymentDetails} />
+    <Stack.Screen name="AttendanceHistory" component={AttendanceHistory} />
+    <Stack.Screen name="Interviews" component={Interviews} />
+    <Stack.Screen name="InterviewDetails" component={InterviewDetails} />
   </Stack.Navigator>
 )
 
@@ -89,6 +100,17 @@ const ProfileStack = () => (
     <Stack.Screen name="Earnings" component={Earnings} />
     <Stack.Screen name="SavedJobs" component={SavedJobs} />
     <Stack.Screen name="Messages" component={Messages} />
+    <Stack.Screen name="PayoutMethods" component={PayoutMethods} />
+    <Stack.Screen name="Reviews" component={Reviews} />
+    <Stack.Screen name="Settings" component={Settings} />
+    <Stack.Screen name="AttendanceHistory" component={AttendanceHistory} />
+    <Stack.Screen name="Interviews" component={Interviews} />
+    <Stack.Screen name="InterviewDetails" component={InterviewDetails} />
+    {/* The profile menu links to the onboarding steps for editing. */}
+    <Stack.Screen name="BasicInfo" component={BasicInfo} />
+    <Stack.Screen name="JobPreferences" component={JobPreferences} />
+    <Stack.Screen name="SkillsStep" component={SkillsStep} />
+    <Stack.Screen name="LocationStep" component={LocationStep} />
   </Stack.Navigator>
 )
 

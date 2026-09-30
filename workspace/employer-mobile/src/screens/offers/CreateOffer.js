@@ -43,6 +43,7 @@ export default function CreateOffer({ navigation, route }) {
 
   const split = splitPrice(form.salary)
   const oneDay = draft.offerType === 'ONE_DAY' || draft.engagementModel === 'ONE_DAY'
+
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }))
   const toggleBenefit = (v) => setForm((f) => ({
     ...f,
@@ -56,27 +57,31 @@ export default function CreateOffer({ navigation, route }) {
     return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
   }
 
-  const send = async () => {
+  // An offer cannot be edited once the worker has seen it, so this hands off to
+  // a preview rather than sending on the first press.
+  const review = () => {
     if (!(Number(form.salary) > 0)) { setError('Enter what you will pay.'); return }
-    setBusy(true); setError('')
-    try {
-      const offer = await offersApi.send(applicationId, {
+    navigation.navigate('OfferPreview', {
+      applicationId,
+      workerName: draft.workerName,
+      jobTitle: draft.jobTitle,
+      draft: {
         salary: Number(form.salary),
         salaryUnit: draft.salaryUnit,
-        joiningDate: iso(form.joiningDate),
-        message: form.message || undefined,
-        benefits: form.benefits.map((b) => ({ benefitType: b })),
-      })
-      navigation.replace('OfferSent', { offer, workerName: draft.workerName })
-    } catch (err) {
-      setError(errorText(err, 'We could not send this offer.'))
-    } finally { setBusy(false) }
+        joiningDateIso: iso(form.joiningDate),
+        message: form.message,
+        benefits: form.benefits,
+        oneDay,
+        workingHours: draft.workingHours,
+        location: draft.workLocation || draft.city,
+      },
+    })
   }
 
   return (
     <Screen
       padded={false}
-      footer={<Button title={t('offers.send')} icon="send" onPress={send} loading={busy} />}
+      footer={<Button title={t('offers.preview')} iconRight="arrow-forward" onPress={review} />}
     >
       <AppBar title={t('offers.create')} onBack={navigation.goBack} />
       <View style={{ paddingHorizontal: space.lg, paddingTop: space.lg }}>

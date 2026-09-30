@@ -99,8 +99,20 @@ export default function Profile({ navigation }) {
           <ListRow icon="wallet-outline" title={t('earnings.title')}
             onPress={() => navigation.navigate('Earnings')} />
           <Divider />
-          <ListRow icon="chatbubbles-outline" title={t('messages.title')}
+          <ListRow icon="notifications-outline" title={t('notifications.title')}
             onPress={() => navigation.navigate('Messages')} />
+          <Divider />
+          <ListRow icon="calendar-outline" title={t('interviews.title')}
+            onPress={() => navigation.navigate('Interviews')} />
+          <Divider />
+          <ListRow icon="checkbox-outline" title={t('attendanceHistory.title')}
+            onPress={() => navigation.navigate('AttendanceHistory')} />
+          <Divider />
+          <ListRow icon="card-outline" title={t('payouts.title')}
+            onPress={() => navigation.navigate('PayoutMethods')} />
+          <Divider />
+          <ListRow icon="star-outline" title={t('reviews.title')}
+            onPress={() => navigation.navigate('Reviews')} />
           <Divider />
           <ListRow
             icon="language-outline"
@@ -108,6 +120,9 @@ export default function Profile({ navigation }) {
             sub={LANGUAGES.find((l) => l.code === i18n.language)?.native}
             onPress={cycleLanguage}
           />
+          <Divider />
+          <ListRow icon="settings-outline" title={t('settings.title')}
+            onPress={() => navigation.navigate('Settings')} />
         </Card>
 
         <Card style={{ marginTop: space.lg, paddingHorizontal: space.lg }} padded={false}>

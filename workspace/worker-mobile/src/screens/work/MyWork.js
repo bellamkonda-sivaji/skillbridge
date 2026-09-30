@@ -72,6 +72,14 @@ export default function MyWork({ navigation }) {
           ListHeaderComponent={(
             <>
               <ErrorNote onRetry={load}>{error}</ErrorNote>
+              <Row style={{ marginBottom: space.lg }}>
+                <Button title={t('attendanceHistory.title')} icon="calendar-outline" tone="outline"
+                  size="sm" style={{ flex: 1 }}
+                  onPress={() => navigation.navigate('AttendanceHistory')} />
+                <Button title={t('interviews.title')} icon="chatbubbles-outline" tone="outline"
+                  size="sm" style={{ flex: 1 }}
+                  onPress={() => navigation.navigate('Interviews')} />
+              </Row>
               {today.length > 0 ? (
                 <Pressable onPress={() => navigation.navigate('TodayShift')}>
                   <Card style={s.todayCard}>

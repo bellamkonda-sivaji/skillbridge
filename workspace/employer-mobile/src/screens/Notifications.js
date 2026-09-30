@@ -22,14 +22,15 @@ const ICON = {
 }
 
 /**
- * Everything the platform has told this worker.
+ * Everything the platform has told this business.
  *
- * There is no worker-to-employer chat in the backend, and inventing one would
+ * There is no employer-to-worker chat in the backend, and inventing one would
  * mean showing threads nobody can reply to. What exists is the notification
- * feed - job matches, application news, offers, money - so that is what this
- * screen shows, with the employer's number one tap away on the work itself.
+ * feed - new applications, attendance, offers answered, pricing advice - so
+ * that is what this screen shows. Ringing the worker is one tap from their
+ * profile, which is how hiring here actually happens.
  */
-export default function Messages({ navigation }) {
+export default function Notifications({ navigation }) {
   const { t } = useTranslation()
   const [rows, setRows] = useState(null)
   const [error, setError] = useState('')
@@ -52,10 +53,10 @@ export default function Messages({ navigation }) {
     // Notification links are web paths; map the ones that have a screen here.
     const link = String(n.link || '')
     const jobId = link.match(/jobs\/(\d+)/)?.[1]
-    if (jobId) navigation.navigate('JobsTab', { screen: 'JobDetails', params: { jobId: Number(jobId) } })
-    else if (link.includes('application')) navigation.navigate('ApplicationsTab')
-    else if (link.includes('offer')) navigation.navigate('ApplicationsTab', { screen: 'Offers' })
-    else if (link.includes('attendance')) navigation.navigate('MyWorkTab')
+    if (jobId) navigation.navigate('JobsTab', { screen: 'JobManagement', params: { jobId: Number(jobId) } })
+    else if (link.includes('application')) navigation.navigate('ApplicantsTab')
+    else if (link.includes('offer')) navigation.navigate('ProfileTab', { screen: 'OfferTracking' })
+    else if (link.includes('attendance')) navigation.navigate('TeamTab')
   }
 
   const unread = (rows || []).filter((n) => !n.read).length
@@ -97,7 +98,7 @@ export default function Messages({ navigation }) {
             <EmptyState
               icon="notifications-outline"
               title={t('notifications.none')}
-              sub="Job matches, answers to your applications and money news show up here. Shop owners ring you directly — their number is on your work and offer screens."
+              sub="New applications, attendance and answers to your offers show up here. To reach a worker, ring them from their profile."
             />
           </Card>
         )}
