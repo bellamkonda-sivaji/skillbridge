@@ -137,6 +137,12 @@ export default {
     actualJoining: 'जुड़ने का दिन', reportingTime: 'आने का समय',
     photoProof: 'फ़ोटो (ज़रूरी नहीं)', notes: 'बात',
     confirmJoining: 'जुड़ने की पुष्टि करें', markCompleted: 'काम पूरा दर्ज करें',
+    completedTitle: 'काम पूरा हुआ!', releasedNote: 'मज़दूर का पैसा भेज दिया गया है।',
+    releaseWarning: 'पूरा दर्ज करते ही मज़दूर को पैसा चला जाएगा।',
+    markCompleted: 'काम पूरा दर्ज करें', employeeId: 'कर्मचारी ID',
+    cancelOffer: 'प्रस्ताव रद्द करें', cancelAsk: 'मज़दूर को बता दिया जाएगा कि अब खुला नहीं है।',
+    stepSent: 'प्रस्ताव भेजा', stepViewed: 'मज़दूर ने खोला', stepAccepted: 'मान लिया',
+    stepDeclined: 'मना किया', waitingOn: 'इंतज़ार', willTell: 'जवाब आते ही हम बताएंगे।',
     none: 'अभी कोई प्रस्ताव नहीं भेजा',
   },
   team: {

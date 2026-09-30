@@ -70,9 +70,7 @@ export default function OfferTracking({ navigation }) {
           renderItem={({ item }) => (
             <Pressable
               style={({ pressed }) => [s.card, pressed && { opacity: 0.85 }]}
-              onPress={() => item.status === 'ACCEPTED'
-                ? navigation.navigate('JoiningConfirmation', { offerId: item.id })
-                : null}
+              onPress={() => navigation.navigate('OfferStatusDetail', { offerId: item.id })}
             >
               <Row align="flex-start">
                 <Avatar name={item.workerName} size={46} />
@@ -86,9 +84,7 @@ export default function OfferTracking({ navigation }) {
                 </View>
                 <View style={{ alignItems: 'flex-end', gap: 8 }}>
                   <Badge label={item.status} tone={TONE[item.status] || 'grey'} />
-                  {item.status === 'ACCEPTED' ? (
-                    <Ionicons name="chevron-forward" size={19} color={colors.muted} />
-                  ) : null}
+                  <Ionicons name="chevron-forward" size={19} color={colors.muted} />
                 </View>
               </Row>
             </Pressable>

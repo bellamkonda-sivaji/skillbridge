@@ -64,12 +64,16 @@ export default function ApplicantProfile({ navigation, route }) {
       padded={false}
       footer={applicationId ? (
         <Row>
-          <Button title={t('applicants.reject')} tone="dangerQuiet" style={{ flex: 1 }}
-            loading={busy === 'REJECTED'} onPress={() => decide('REJECTED')} />
-          <Button title={t('applicants.shortlistAction')} style={{ flex: 1 }}
+          {/* Shortlisting is the common case, so it stays one tap. Anything
+              else - a talk, an offer, a rejection with a message - goes
+              through the decision screen. */}
+          <Button title={t('applicants.shortlistAction')} tone="outline" style={{ flex: 1 }}
             loading={busy === 'SHORTLISTED'} onPress={() => decide('SHORTLISTED')} />
-          <Button title={t('applicants.sendOffer')} tone="success" style={{ flex: 1 }}
-            onPress={() => navigation.navigate('CreateOffer', { applicationId, workerId, jobId })} />
+          <Button title={t('decision.title')} style={{ flex: 1 }}
+            onPress={() => navigation.navigate('ApplicationDecision', {
+              applicationId, workerId, jobId,
+              workerName: worker.name, matchScore: worker.matchScore,
+            })} />
         </Row>
       ) : null}
     >

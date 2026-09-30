@@ -136,6 +136,12 @@ export default {
     actualJoining: 'Day they joined', reportingTime: 'Time they came',
     photoProof: 'Photo (optional)', notes: 'Notes',
     confirmJoining: 'Confirm they joined', markCompleted: 'Mark the work done',
+    completedTitle: 'Work completed!', releasedNote: "The worker's money has been released.",
+    releaseWarning: 'Marking this done releases the money to the worker.',
+    markCompleted: 'Mark the work done', employeeId: 'Employee ID',
+    cancelOffer: 'Cancel the offer', cancelAsk: 'The worker will be told it is no longer open.',
+    stepSent: 'Offer sent', stepViewed: 'Worker opened it', stepAccepted: 'Accepted',
+    stepDeclined: 'Said no', waitingOn: 'Waiting', willTell: 'We will tell you as soon as they answer.',
     none: 'No offers sent yet',
   },
   team: {

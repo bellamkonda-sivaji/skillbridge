@@ -21,13 +21,13 @@ the worker app: the Expo host IP in development, `expo.extra.apiUrl` in a build.
 
 | Flow | Screens |
 |---|---|
-| Getting in | Splash · Language · Create account · OTP · Log in |
+| Getting in | Splash · Language · Account type · Create account · OTP · Log in |
 | Business setup | Business details · Verification · Plan and fees · All set |
 | Posting | An 8-step wizard: who · how long · the work · when · pay · requirements · how you choose · check — then Job is live |
 | Managing | Dashboard · My jobs · Job management (counters, pay, details) |
 | Hiring | Applications · Applicants for a job · Worker profile with work history · Suggested workers · Find workers · Compare · Shortlisted people · What do you want to do? |
 | Talking | Arrange a call or visit · Calendar · After the talk (results) |
-| Offers | Make an offer · Check the offer · Offer sent · Offer status · Confirm they joined |
+| Offers | Make an offer · Check the offer · Offer sent · Offer status · One offer's status in full · Confirm they joined, through to Work completed |
 | Money | Pay · Put money behind a job |
 | Running the team | My team · Attendance (day view and change requests) |
 | Account | Business profile · Alerts · What workers said · Settings |

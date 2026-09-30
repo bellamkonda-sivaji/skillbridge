@@ -137,6 +137,12 @@ export default {
     actualJoining: 'చేరిన రోజు', reportingTime: 'వచ్చిన సమయం',
     photoProof: 'ఫోటో (ఇష్టమైతే)', notes: 'గమనికలు',
     confirmJoining: 'చేరారని ఖరారు చేయి', markCompleted: 'పని అయ్యిందని గుర్తు పెట్టు',
+    completedTitle: 'పని పూర్తయ్యింది!', releasedNote: 'కార్మికుడి డబ్బు విడుదలైంది.',
+    releaseWarning: 'పూర్తి అని గుర్తు పెడితే కార్మికుడికి డబ్బు వెళ్తుంది.',
+    markCompleted: 'పని అయ్యిందని గుర్తు పెట్టు', employeeId: 'ఉద్యోగి ID',
+    cancelOffer: 'ఆఫర్ రద్దు చేయి', cancelAsk: 'ఇక అందుబాటులో లేదని కార్మికుడికి చెబుతాం.',
+    stepSent: 'ఆఫర్ పంపాం', stepViewed: 'కార్మికుడు తెరిచారు', stepAccepted: 'ఒప్పుకున్నారు',
+    stepDeclined: 'వద్దన్నారు', waitingOn: 'ఎదురుచూపు', willTell: 'జవాబు రాగానే మీకు చెబుతాం.',
     none: 'ఇంకా ఆఫర్లు పంపలేదు',
   },
   team: {

@@ -39,10 +39,12 @@ import ScheduleInterview from '../screens/interviews/ScheduleInterview'
 import InterviewCalendar from '../screens/interviews/InterviewCalendar'
 import InterviewResults from '../screens/interviews/InterviewResults'
 
+import AccountType from '../screens/AccountType'
 import CreateOffer from '../screens/offers/CreateOffer'
 import OfferPreview from '../screens/offers/OfferPreview'
 import OfferSent from '../screens/offers/OfferSent'
 import OfferTracking from '../screens/offers/OfferTracking'
+import OfferStatusDetail from '../screens/offers/OfferStatusDetail'
 import JoiningConfirmation from '../screens/offers/JoiningConfirmation'
 
 import MyTeam from '../screens/team/MyTeam'
@@ -78,6 +80,7 @@ const hiringScreens = () => ([
   <Stack.Screen key="OfferPreview" name="OfferPreview" component={OfferPreview} />,
   <Stack.Screen key="OfferSent" name="OfferSent" component={OfferSent} />,
   <Stack.Screen key="OfferTracking" name="OfferTracking" component={OfferTracking} />,
+  <Stack.Screen key="OfferStatusDetail" name="OfferStatusDetail" component={OfferStatusDetail} />,
   <Stack.Screen key="JoiningConfirmation" name="JoiningConfirmation" component={JoiningConfirmation} />,
   <Stack.Screen key="FundJob" name="FundJob" component={FundJob} />,
 ])
@@ -138,6 +141,7 @@ const ProfileStack = () => (
     <Stack.Screen name="InterviewCalendar" component={InterviewCalendar} />
     <Stack.Screen name="OfferTracking" component={OfferTracking} />
     <Stack.Screen name="JoiningConfirmation" component={JoiningConfirmation} />
+    <Stack.Screen name="OfferStatusDetail" component={OfferStatusDetail} />
     <Stack.Screen name="Payroll" component={Payroll} />
     <Stack.Screen name="Reviews" component={Reviews} />
     <Stack.Screen name="Settings" component={Settings} />
@@ -217,6 +221,7 @@ export default function RootNavigator() {
           <>
             <Stack.Screen name="Splash" component={Splash} />
             <Stack.Screen name="Language" component={Language} />
+            <Stack.Screen name="AccountType" component={AccountType} />
             <Stack.Screen name="CreateAccount" component={CreateAccount} />
             <Stack.Screen name="Otp" component={Otp} />
             <Stack.Screen name="Login" component={Login} />

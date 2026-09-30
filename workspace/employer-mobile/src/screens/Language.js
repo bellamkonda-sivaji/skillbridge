@@ -16,7 +16,7 @@ import { colors, radius, space } from '../theme'
 export default function Language({ navigation, route }) {
   const { t, i18n } = useTranslation()
   const [picked, setPicked] = useState(i18n.language || 'en')
-  const nextScreen = route?.params?.next || 'CreateAccount'
+  const nextScreen = route?.params?.next || 'AccountType'
 
   const choose = async (code) => {
     setPicked(code)
