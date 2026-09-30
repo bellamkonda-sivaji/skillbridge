@@ -6,7 +6,7 @@ import {
   AppBar, Badge, Body, Button, Card, ErrorNote, Fact, H3, Loader, Row, Screen,
   Small, Spacer, formatDate, timeOnly,
 } from '../../ui'
-import { MODE_ICON, MODE_KEY } from './Interviews'
+import { modeIcon, modeLabel, modeTone } from '../../ui/interviewMode'
 import * as appsApi from '../../api/applications'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
@@ -83,8 +83,8 @@ export default function InterviewDetails({ navigation, route }) {
       <AppBar title={t('interviews.title')} onBack={navigation.goBack} />
       <View style={{ paddingHorizontal: space.lg, paddingTop: space.lg }}>
         <Row align="flex-start">
-          <View style={s.icon}>
-            <Ionicons name={MODE_ICON[item.mode] || 'calendar-outline'} size={24} color={colors.violet} />
+          <View style={[s.icon, { backgroundColor: modeTone(item.mode)[1] }]}>
+            <Ionicons name={modeIcon(item.mode)} size={24} color={modeTone(item.mode)[0]} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={s.title}>{item.jobTitle}</Text>
@@ -98,9 +98,7 @@ export default function InterviewDetails({ navigation, route }) {
           <Text style={s.whenValue}>
             {formatDate(item.scheduledAt)} · {timeOnly(item.scheduledAt)}
           </Text>
-          <Small style={{ marginTop: 4 }}>
-            {t(`interviews.${MODE_KEY[item.mode] || 'inPerson'}`)}
-          </Small>
+          <Small style={{ marginTop: 4 }}>{modeLabel(item)}</Small>
         </Card>
 
         {place ? (

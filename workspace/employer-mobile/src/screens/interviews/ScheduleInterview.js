@@ -5,15 +5,12 @@ import {
   AppBar, Avatar, Button, CheckRow, Chip, ChoiceCard, ErrorNote, Field, H3,
   Input, Row, Screen, Small, Spacer,
 } from '../../ui'
+import { MODE_OPTIONS as MODES } from '../../ui/interviewMode'
 import * as interviewsApi from '../../api/interviews'
 import { errorText } from '../../api/client'
 import { colors, space } from '../../theme'
 
-const MODES = [
-  { value: 'PHONE', icon: 'call-outline', key: 'phone' },
-  { value: 'IN_PERSON', icon: 'storefront-outline', key: 'inPerson' },
-  { value: 'VIDEO', icon: 'videocam-outline', key: 'video' },
-]
+
 
 const TIMES = ['09:00', '10:00', '11:00', '12:00', '15:00', '16:00', '17:00', '18:00']
 
@@ -21,7 +18,7 @@ const TIMES = ['09:00', '10:00', '11:00', '12:00', '15:00', '16:00', '17:00', '1
 export default function ScheduleInterview({ navigation, route }) {
   const { t } = useTranslation()
   const { applicationId, workerName, jobId } = route?.params || {}
-  const [mode, setMode] = useState('IN_PERSON')
+  const [mode, setMode] = useState('VISIT_SHOP')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('11:00')
   const [location, setLocation] = useState('')
@@ -92,7 +89,7 @@ export default function ScheduleInterview({ navigation, route }) {
           </View>
         </Field>
 
-        {mode === 'IN_PERSON' ? (
+        {mode === 'VISIT_SHOP' ? (
           <Field label={t('interviews.location')}>
             <Input value={location} onChangeText={setLocation} placeholder="My shop, Korlagunta" />
           </Field>

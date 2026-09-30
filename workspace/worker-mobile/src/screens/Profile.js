@@ -29,7 +29,7 @@ export default function Profile({ navigation }) {
 
   useFocusEffect(useCallback(() => { load() }, [load]))
 
-  const completion = profile?.completionPercent ?? profile?.profileCompletion ?? 40
+  const completion = profile?.profileCompleted ?? profile?.completionPercent ?? 0
   const name = profile?.name || user?.name || ''
 
   const cycleLanguage = async () => {
@@ -54,7 +54,8 @@ export default function Profile({ navigation }) {
             <H2>{name}</H2>
             {profile?.jobTitle ? <Small style={{ marginTop: 2 }}>{profile.jobTitle}</Small> : null}
             <Row gap={6} style={{ marginTop: 6 }}>
-              {profile?.verified ? <Badge label={t('jobs.verified')} tone="green" /> : null}
+              {profile?.verificationStatus === 'VERIFIED'
+                ? <Badge label={t('jobs.verified')} tone="green" /> : null}
               {profile?.city ? <Small>{profile.city}</Small> : null}
             </Row>
           </View>

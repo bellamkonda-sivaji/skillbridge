@@ -5,6 +5,7 @@ import MapView, { Marker } from 'react-native-maps'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { AppBar, Loader, Small, pay, workerPay } from '../../ui'
+import Photo from '../../ui/Photo'
 import * as jobsApi from '../../api/jobs'
 import { colors, radius, space } from '../../theme'
 
@@ -61,6 +62,8 @@ export default function NearbyJobs({ navigation }) {
               style={s.callout}
               onPress={() => navigation.navigate('JobDetails', { jobId: picked.id })}
             >
+              <Photo uri={picked.photoUrl || picked.employerLogoUrl} size={48}
+                radius={10} icon="briefcase-outline" />
               <View style={{ flex: 1 }}>
                 <Text style={s.calloutTitle} numberOfLines={1}>{picked.title}</Text>
                 <Small numberOfLines={1}>{picked.businessName}</Small>

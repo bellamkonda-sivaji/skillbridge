@@ -8,12 +8,11 @@ import {
   AppBar, Badge, Card, EmptyState, ErrorNote, Loader, Row, SegTabs, Small,
   formatDate, timeOnly,
 } from '../../ui'
+import { modeIcon, modeLabel, modeTone } from '../../ui/interviewMode'
 import * as appsApi from '../../api/applications'
 import { errorText } from '../../api/client'
 import { colors, space } from '../../theme'
 
-export const MODE_KEY = { PHONE: 'phone', IN_PERSON: 'inPerson', VIDEO: 'video' }
-export const MODE_ICON = { PHONE: 'call-outline', IN_PERSON: 'storefront-outline', VIDEO: 'videocam-outline' }
 
 /**
  * Talks and visits the worker has been invited to.
@@ -79,14 +78,14 @@ export default function Interviews({ navigation }) {
             <Card style={{ marginBottom: space.md }}
               onPress={() => navigation.navigate('InterviewDetails', { id: item.id })}>
               <Row align="flex-start">
-                <View style={s.icon}>
-                  <Ionicons name={MODE_ICON[item.mode] || 'calendar-outline'} size={21} color={colors.violet} />
+                <View style={[s.icon, { backgroundColor: modeTone(item.mode)[1] }]}>
+                  <Ionicons name={modeIcon(item.mode)} size={21} color={modeTone(item.mode)[0]} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={s.title}>{item.jobTitle}</Text>
                   <Small style={{ marginTop: 2 }}>{item.businessName}</Small>
                   <Row gap={space.sm} style={{ marginTop: 7, flexWrap: 'wrap' }}>
-                    <Badge label={t(`interviews.${MODE_KEY[item.mode] || 'inPerson'}`)} tone="violet" />
+                    <Badge label={modeLabel(item)} tone="violet" />
                     {item.status ? <Badge label={item.status} tone="grey" /> : null}
                   </Row>
                   <Small style={{ marginTop: 6 }}>

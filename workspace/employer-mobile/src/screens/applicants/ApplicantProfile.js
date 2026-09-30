@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, Linking, StyleSheet, Text, View } from 'react-native'
+import { Alert, Linking, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Avatar, Badge, Body, Button, Card, ErrorNote, H3, KV, Loader, Row,
   Screen, SegTabs, Small, Spacer, distance, formatDate, money,
 } from '../../ui'
+import Photo from '../../ui/Photo'
 import * as applicantsApi from '../../api/applicants'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
@@ -142,6 +143,8 @@ export default function ApplicantProfile({ navigation, route }) {
           history.length ? history.map((h, i) => (
             <Card key={h.id || i} style={{ marginBottom: space.md }}>
               <Row align="flex-start">
+                <Photo uri={h.photoUrl || h.businessLogoUrl} size={48} radius={10}
+                  icon="storefront-outline" />
                 <View style={{ flex: 1 }}>
                   <Text style={s.histTitle}>{h.businessName}</Text>
                   <Small style={{ marginTop: 2 }}>{h.jobTitle}</Small>
@@ -172,6 +175,18 @@ export default function ApplicantProfile({ navigation, route }) {
               ) : null}
             </Card>
           )) : <Body>No previous work recorded yet.</Body>
+        ) : null}
+
+        {tab === 'about' && worker.photos?.length ? (
+          <>
+            <H3 style={{ marginTop: space.xl, marginBottom: space.sm }}>Work photos</H3>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: space.sm }}>
+              {worker.photos.map((src, i) => (
+                <Photo key={i} uri={src} width={110} height={86} radius={radius.md} />
+              ))}
+            </ScrollView>
+          </>
         ) : null}
 
         {tab === 'skills' ? (

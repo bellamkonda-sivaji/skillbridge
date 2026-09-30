@@ -360,12 +360,22 @@ export function ProgressBar({ value, tone = colors.blue }) {
 
 /* ============================================================ bits ========= */
 
-/** Initials when there is no photo, which is most of the time. */
+/**
+ * A photo when there is one, initials when there is not - and initials again
+ * if the photo fails to load, which base64 data URLs from an old record do.
+ */
 export function Avatar({ uri, name, size = 48, style }) {
+  const [failed, setFailed] = useState(false)
   const initials = String(name || '?')
     .split(' ').filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase()
-  if (uri) {
-    return <Image source={{ uri }} style={[{ width: size, height: size, borderRadius: size / 2 }, style]} />
+  if (uri && !failed) {
+    return (
+      <Image
+        source={{ uri }}
+        onError={() => setFailed(true)}
+        style={[{ width: size, height: size, borderRadius: size / 2 }, style]}
+      />
+    )
   }
   return (
     <View style={[s.avatar, { width: size, height: size, borderRadius: size / 2 }, style]}>

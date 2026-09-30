@@ -6,6 +6,7 @@ import {
   AppBar, Badge, Body, Button, Card, ErrorNote, Fact, H1, H3, Loader, Row, Screen,
   Small, Spacer, SuccessPanel, distance, formatDate, hhmm, pay, timeAgo, workerPay,
 } from '../../ui'
+import Photo from '../../ui/Photo'
 import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
@@ -101,9 +102,14 @@ export default function JobDetails({ navigation, route }) {
       <AppBar onBack={navigation.goBack} />
 
       <View style={{ paddingHorizontal: space.lg, paddingTop: space.lg }}>
-        <View style={s.hero}>
-          <Ionicons name="briefcase" size={34} color={colors.blue} />
-        </View>
+        <Photo
+          uri={job.photoUrl || job.employerLogoUrl || job.employerPhotos?.[0]}
+          width="100%"
+          height={170}
+          radius={radius.lg}
+          icon="briefcase-outline"
+          iconSize={38}
+        />
 
         <Row style={{ marginTop: space.lg }} align="flex-start">
           <View style={{ flex: 1 }}>
@@ -203,10 +209,6 @@ export default function JobDetails({ navigation, route }) {
 }
 
 const s = StyleSheet.create({
-  hero: {
-    height: 150, borderRadius: radius.lg, backgroundColor: colors.blueSoft,
-    alignItems: 'center', justifyContent: 'center',
-  },
   bizRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 4 },
   biz: { fontSize: 15, color: colors.body, fontWeight: '600' },
   payCard: {

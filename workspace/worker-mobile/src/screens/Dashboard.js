@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { LinearGradient } from 'expo-linear-gradient'
 import {
   Avatar, Badge, Body, Button, Card, EmptyState, ErrorNote, H2, H3, Loader, Small, money,
 } from '../ui'
@@ -55,7 +56,7 @@ export default function Dashboard({ navigation }) {
 
   const refresh = async () => { setRefreshing(true); await load(); setRefreshing(false) }
 
-  const firstName = String(user?.name || '').split(' ')[0] || 'there'
+  const firstName = String(data?.greetingName || user?.name || '').split(' ')[0] || 'there'
   const recommended = data?.recommendedJobs || data?.matches || []
 
   if (!data && !error) return <SafeAreaView style={s.fill}><Loader label={t('common.loading')} /></SafeAreaView>
@@ -71,10 +72,10 @@ export default function Dashboard({ navigation }) {
           <View style={{ flex: 1 }}>
             <Small>{t(`dashboard.${greetingKey()}`)},</Small>
             <H2 style={{ marginTop: 2 }}>{firstName} 👋</H2>
-            {user?.city ? (
+            {data?.locationLabel || user?.city ? (
               <View style={s.place}>
                 <Ionicons name="location-outline" size={13} color={colors.muted} />
-                <Small>{user.city}</Small>
+                <Small>{data?.locationLabel || user.city}</Small>
               </View>
             ) : null}
           </View>
@@ -87,6 +88,33 @@ export default function Dashboard({ navigation }) {
           <Ionicons name="search" size={19} color={colors.muted} />
           <Small style={{ fontSize: 14.5 }}>{t('dashboard.searchHint')}</Small>
         </Pressable>
+
+        {/* The promo band from the designs. It is not decoration: it is the one
+            place that tells a new worker what filling in their profile buys
+            them, which is the single biggest lever on match quality. */}
+        {(data?.profileCompletion ?? 0) < 100 ? (
+        <LinearGradient
+          colors={[colors.blue, '#6366F1']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={s.promo}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={s.promoTitle}>{t('dashboard.promoTitle')}</Text>
+            <Text style={s.promoSub}>
+              {data?.profileCompletionHint || t('dashboard.promoSub')}
+            </Text>
+            <Pressable
+              style={s.promoBtn}
+              onPress={() => navigation.navigate('ProfileTab')}
+            >
+              <Text style={s.promoBtnText}>{t('dashboard.promoAction')}</Text>
+              <Ionicons name="arrow-forward" size={14} color={colors.blueDark} />
+            </Pressable>
+          </View>
+          <Ionicons name="trending-up" size={54} color="rgba(255,255,255,0.35)" />
+        </LinearGradient>
+        ) : null}
 
         {/* Work today comes first - it is the only thing that is time-critical. */}
         {today.length > 0 ? (
@@ -121,13 +149,13 @@ export default function Dashboard({ navigation }) {
             value={data?.jobsNearYou ?? recommended.length ?? 0} label={t('dashboard.jobsNearYou')}
             onPress={() => navigation.navigate('JobsTab')} />
           <Tile tone={colors.blueSoft} fg={colors.blueDark} icon="document-text-outline"
-            value={data?.applications ?? 0} label={t('dashboard.applied')}
+            value={data?.applicationsCount ?? 0} label={t('dashboard.applied')}
             onPress={() => navigation.navigate('ApplicationsTab')} />
           <Tile tone={colors.violetSoft} fg={colors.violet} icon="chatbubbles-outline"
-            value={data?.interviews ?? 0} label={t('dashboard.interviews')}
-            onPress={() => navigation.navigate('ApplicationsTab')} />
+            value={data?.interviewsCount ?? 0} label={t('dashboard.interviews')}
+            onPress={() => navigation.navigate('MyWorkTab', { screen: 'Interviews' })} />
           <Tile tone={colors.orangeSoft} fg={colors.orangeText} icon="wallet-outline"
-            value={money(data?.walletBalance ?? data?.earnings ?? 0)} label={t('dashboard.earnings')}
+            value={money(data?.earnings ?? 0)} label={t('dashboard.earnings')}
             onPress={() => navigation.navigate('ProfileTab', { screen: 'Earnings' })} />
         </View>
 
@@ -177,6 +205,18 @@ function Tile({ tone, fg, icon, value, label, onPress }) {
 
 const s = StyleSheet.create({
   fill: { flex: 1, backgroundColor: colors.bg },
+  promo: {
+    flexDirection: 'row', alignItems: 'center', gap: space.md,
+    borderRadius: radius.lg, padding: space.lg, marginBottom: space.lg,
+  },
+  promoTitle: { fontSize: 17, fontWeight: '800', color: colors.white, lineHeight: 23 },
+  promoSub: { fontSize: 13, color: 'rgba(255,255,255,0.9)', marginTop: 4, lineHeight: 18 },
+  promoBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start',
+    backgroundColor: colors.white, borderRadius: 999,
+    paddingHorizontal: space.md, paddingVertical: 7, marginTop: space.md,
+  },
+  promoBtnText: { fontSize: 12.5, fontWeight: '800', color: colors.blueDark },
   header: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginBottom: space.lg },
   place: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   search: {

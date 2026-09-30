@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Body, Button, CheckRow, ErrorNote, Field, H1, Input, PasswordInput,
-  SafeNote, Screen, Small, Spacer, Steps,
+  Row, SafeNote, Screen, Small, Spacer, Steps,
 } from '../ui'
 import { errorText } from '../api/client'
 import * as authApi from '../api/auth'
@@ -119,6 +120,29 @@ export default function CreateAccount({ navigation }) {
         </CheckRow>
 
         <Spacer h={space.md} />
+
+        {/* The mockups show these under the form. They are not wired to a
+            provider yet - the backend has no OAuth endpoint - so rather than
+            a button that silently does nothing, pressing one says so. */}
+        <View style={s.orRow}>
+          <View style={s.orLine} />
+          <Small style={{ marginHorizontal: space.md }}>{t('account.or')}</Small>
+          <View style={s.orLine} />
+        </View>
+        <Row>
+          <SocialButton
+            label="Google"
+            icon="logo-google"
+            onPress={() => setError('Google sign-in is not switched on yet. Use your mobile number.')}
+          />
+          <SocialButton
+            label="Apple"
+            icon="logo-apple"
+            onPress={() => setError('Apple sign-in is not switched on yet. Use your mobile number.')}
+          />
+        </Row>
+
+        <Spacer h={space.lg} />
         <SafeNote>{t('account.safe')}</SafeNote>
 
         <View style={s.loginRow}>
@@ -136,7 +160,22 @@ export default function CreateAccount({ navigation }) {
   )
 }
 
+const SocialButton = ({ label, icon, onPress }) => (
+  <Pressable onPress={onPress} style={({ pressed }) => [s.social, pressed && { opacity: 0.75 }]}>
+    <Ionicons name={icon} size={19} color={colors.ink} />
+    <Text style={s.socialText}>{label}</Text>
+  </Pressable>
+)
+
 const s = StyleSheet.create({
+  orRow: { flexDirection: 'row', alignItems: 'center', marginBottom: space.md },
+  orLine: { flex: 1, height: 1, backgroundColor: colors.line },
+  social: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, minHeight: 50, borderRadius: 12, borderWidth: 1, borderColor: colors.line,
+    backgroundColor: colors.white,
+  },
+  socialText: { fontSize: 15, fontWeight: '700', color: colors.ink },
   loginRow: { alignItems: 'center', marginTop: space.lg },
   loginText: { fontSize: 13.5, color: colors.body },
   loginLink: { fontWeight: '700', color: colors.blue },

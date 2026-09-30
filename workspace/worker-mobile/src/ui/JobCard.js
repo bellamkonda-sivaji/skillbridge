@@ -1,8 +1,9 @@
 import React from 'react'
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { colors, radius, space } from '../theme'
 import { Badge } from './index'
+import Photo from './Photo'
 import { distance, pay, timeAgo, workerPay } from './format'
 
 /**
@@ -17,13 +18,12 @@ export default function JobCard({ job, onPress, onToggleSave, saved, style }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [s.card, pressed && { opacity: 0.8 }, style]}>
       <View style={s.thumbWrap}>
-        {job.photoUrl ? (
-          <Image source={{ uri: job.photoUrl }} style={s.thumb} />
-        ) : (
-          <View style={[s.thumb, s.thumbFallback]}>
-            <Ionicons name="briefcase-outline" size={24} color={colors.blue} />
-          </View>
-        )}
+        <Photo
+          uri={job.photoUrl || job.employerLogoUrl || job.employerPhotoUrl}
+          size={68}
+          radius={radius.md}
+          icon="briefcase-outline"
+        />
       </View>
 
       <View style={s.body}>
@@ -71,8 +71,6 @@ const s = StyleSheet.create({
     padding: space.md, marginBottom: space.md,
   },
   thumbWrap: { width: 68 },
-  thumb: { width: 68, height: 68, borderRadius: radius.md, backgroundColor: colors.soft },
-  thumbFallback: { alignItems: 'center', justifyContent: 'center', backgroundColor: colors.blueSoft },
   body: { flex: 1, minWidth: 0 },
   topRow: { flexDirection: 'row', gap: space.sm, alignItems: 'flex-start' },
   title: { flex: 1, fontSize: 15.5, fontWeight: '700', color: colors.ink, lineHeight: 21 },

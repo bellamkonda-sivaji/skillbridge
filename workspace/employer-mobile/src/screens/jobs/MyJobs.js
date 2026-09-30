@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons'
 import {
   Badge, Button, EmptyState, ErrorNote, H2, Loader, Row, SegTabs, Small, money, timeAgo,
 } from '../../ui'
+import Photo from '../../ui/Photo'
 import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
@@ -75,9 +76,8 @@ export default function MyJobs({ navigation }) {
               onPress={() => navigation.navigate('JobManagement', { jobId: item.id })}
             >
               <Row align="flex-start">
-                <View style={s.thumb}>
-                  <Ionicons name="briefcase-outline" size={21} color={colors.blue} />
-                </View>
+                <Photo uri={item.photoUrl || item.employerLogoUrl} size={48} radius={12}
+                  icon="briefcase-outline" />
                 <View style={{ flex: 1 }}>
                   <Text style={s.title} numberOfLines={1}>{item.title}</Text>
                   <Small style={{ marginTop: 2 }}>
@@ -124,10 +124,6 @@ const s = StyleSheet.create({
   card: {
     backgroundColor: colors.white, borderRadius: radius.lg, borderWidth: 1,
     borderColor: colors.line, padding: space.md, marginBottom: space.md,
-  },
-  thumb: {
-    width: 48, height: 48, borderRadius: 12, backgroundColor: colors.blueSoft,
-    alignItems: 'center', justifyContent: 'center',
   },
   title: { fontSize: 16, fontWeight: '700', color: colors.ink },
   pay: { fontSize: 15, fontWeight: '800', color: colors.ink },

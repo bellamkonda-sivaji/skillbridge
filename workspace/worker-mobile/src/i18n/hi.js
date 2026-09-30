@@ -53,6 +53,7 @@ export default {
   },
   dashboard: {
     morning: 'सुप्रभात', afternoon: 'नमस्कार', evening: 'शुभ संध्या',
+    promoTitle: 'आपका हुनर\nराह खोलता है', promoSub: 'प्रोफ़ाइल भरें, अच्छा काम खुद मिलेगा।', promoAction: 'प्रोफ़ाइल पूरी करें',
     searchHint: 'पास का काम खोजें',
     jobsNearYou: 'पास के काम', applied: 'आवेदन', interviews: 'बातचीत', earnings: 'पैसा',
     recommended: 'आपके लिए काम', todayWork: 'आज का काम',

@@ -55,6 +55,7 @@ export default {
   },
   dashboard: {
     morning: 'Good morning', afternoon: 'Good afternoon', evening: 'Good evening',
+    promoTitle: 'Your skills\nopen doors', promoSub: 'Fill your profile and better work finds you.', promoAction: 'Complete my profile',
     searchHint: 'Search work near you',
     jobsNearYou: 'Jobs near you', applied: 'Applied', interviews: 'Talks', earnings: 'Money',
     recommended: 'Work for you', todayWork: 'Your work today',

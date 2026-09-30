@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Linking, StyleSheet, Text, View } from 'react-native'
+import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
@@ -7,6 +7,7 @@ import {
   Row, Screen, SegTabs, Small, Spacer,
 } from '../../ui'
 import JobCard from '../../ui/JobCard'
+import Photo from '../../ui/Photo'
 import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
@@ -43,10 +44,17 @@ export default function EmployerProfile({ navigation, route }) {
     <Screen padded={false}>
       <AppBar onBack={navigation.goBack} />
       <View style={{ paddingHorizontal: space.lg, paddingTop: space.lg }}>
-        <View style={s.cover}><Ionicons name="storefront" size={38} color={colors.blue} /></View>
+        <Photo
+          uri={data.coverUrl || data.photos?.[0]}
+          width="100%"
+          height={140}
+          radius={radius.lg}
+          icon="storefront-outline"
+          iconSize={38}
+        />
 
         <Row style={{ marginTop: space.lg }} align="flex-start">
-          <Avatar name={data.businessName} size={58} />
+          <Avatar uri={data.logoUrl} name={data.businessName} size={58} />
           <View style={{ flex: 1 }}>
             <H1 style={{ fontSize: 21 }}>{data.businessName}</H1>
             <Row gap={6} style={{ marginTop: 5 }}>
@@ -85,6 +93,18 @@ export default function EmployerProfile({ navigation, route }) {
               {data.foundedYear ? <KV k={t('employer.founded')} v={String(data.foundedYear)} /> : null}
               {data.teamSize ? <KV k={t('employer.teamSize')} v={String(data.teamSize)} /> : null}
             </Card>
+            {data.photos?.length ? (
+              <>
+                <H3 style={{ marginTop: space.xl, marginBottom: space.sm }}>{t('employer.photos')}</H3>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ gap: space.sm }}>
+                  {data.photos.map((src, i) => (
+                    <Photo key={i} uri={src} width={110} height={86} radius={radius.md} />
+                  ))}
+                </ScrollView>
+              </>
+            ) : null}
+
             {data.phone ? (
               <Button
                 title={t('employer.contact')}
@@ -122,9 +142,4 @@ export default function EmployerProfile({ navigation, route }) {
   )
 }
 
-const s = StyleSheet.create({
-  cover: {
-    height: 130, borderRadius: radius.lg, backgroundColor: colors.blueSoft,
-    alignItems: 'center', justifyContent: 'center',
-  },
-})
+const s = StyleSheet.create({})

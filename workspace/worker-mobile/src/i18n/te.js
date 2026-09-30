@@ -53,6 +53,7 @@ export default {
   },
   dashboard: {
     morning: 'శుభోదయం', afternoon: 'నమస్కారం', evening: 'శుభ సాయంత్రం',
+    promoTitle: 'మీ నైపుణ్యాలే\nమీ దారి', promoSub: 'ప్రొఫైల్ నింపితే మంచి పని మీకే వస్తుంది.', promoAction: 'ప్రొఫైల్ పూర్తి చేయి',
     searchHint: 'దగ్గరలో పని వెతకండి',
     jobsNearYou: 'దగ్గర పనులు', applied: 'దరఖాస్తు', interviews: 'మాట్లాడేవి', earnings: 'డబ్బు',
     recommended: 'మీ కోసం పని', todayWork: 'ఈ రోజు పని',
