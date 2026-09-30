@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "JobOn Employer",
+    "slug": "jobon-employer",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "jobonemployer",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.jobon.employer",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "JobOn needs your photos so you can upload your shop licence and photos."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.jobon.employer"
+    },
+    "web": { "favicon": "./assets/favicon.png", "bundler": "metro" },
+    "plugins": ["expo-image-picker"],
+    "extra": { "apiUrl": "" }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "JobOn Worker",
+    "slug": "jobon-worker",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "joboworker",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.jobon.worker",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "JobOn needs your photos so you can add a profile picture.",
+        "NSLocationWhenInUseUsageDescription": "JobOn uses your location to show work near you."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.jobon.worker",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": ["expo-image-picker"],
+    "extra": {
+      "apiUrl": ""
+    }
+  }
+}

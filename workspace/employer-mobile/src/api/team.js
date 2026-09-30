@@ -1,0 +1,24 @@
+import client from './client'
+
+export const employments = () => client.get('/employer/employments').then((r) => r.data)
+export const payroll = (employmentId) =>
+  client.get(`/employer/employments/${employmentId}/payroll`).then((r) => r.data)
+
+// ---- attendance
+export const attendanceDay = (date) =>
+  client.get('/employer/attendance/day', { params: { date } }).then((r) => r.data)
+export const attendanceCalendar = (from, to) =>
+  client.get('/employer/attendance/calendar', { params: { from, to } }).then((r) => r.data)
+export const approve = (id) => client.post(`/employer/attendance/${id}/approve`).then((r) => r.data)
+export const reject = (id) => client.post(`/employer/attendance/${id}/reject`).then((r) => r.data)
+export const approveAll = (date) =>
+  client.post('/employer/attendance/approve-all', { date }).then((r) => r.data)
+export const requests = () => client.get('/employer/attendance/requests').then((r) => r.data)
+export const approveRequest = (id, body) =>
+  client.post(`/employer/attendance/requests/${id}/approve`, body).then((r) => r.data)
+export const rejectRequest = (id, reason) =>
+  client.post(`/employer/attendance/requests/${id}/reject`, { reason }).then((r) => r.data)
+
+// ---- money
+export const billing = () => client.get('/employer/billing').then((r) => r.data)
+export const escrow = (jobId) => client.get(`/employer/jobs/${jobId}/escrow`).then((r) => r.data)
