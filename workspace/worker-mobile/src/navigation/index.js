@@ -71,6 +71,8 @@ const JobsStack = () => (
 const ApplicationsStack = () => (
   <Stack.Navigator screenOptions={hidden}>
     <Stack.Screen name="MyApplications" component={MyApplications} />
+    {/* Reachable from a job opened inside this tab. */}
+    <Stack.Screen name="EmployerProfile" component={EmployerProfile} />
     <Stack.Screen name="Interviews" component={Interviews} />
     <Stack.Screen name="InterviewDetails" component={InterviewDetails} />
     <Stack.Screen name="ApplicationDetails" component={ApplicationDetails} />
@@ -100,6 +102,9 @@ const ProfileStack = () => (
     <Stack.Screen name="Earnings" component={Earnings} />
     <Stack.Screen name="SavedJobs" component={SavedJobs} />
     <Stack.Screen name="Messages" component={Messages} />
+    {/* Saved work lives in this tab, so opening a job from it must work here. */}
+    <Stack.Screen name="JobDetails" component={JobDetails} />
+    <Stack.Screen name="EmployerProfile" component={EmployerProfile} />
     <Stack.Screen name="PayoutMethods" component={PayoutMethods} />
     <Stack.Screen name="Reviews" component={Reviews} />
     <Stack.Screen name="Settings" component={Settings} />

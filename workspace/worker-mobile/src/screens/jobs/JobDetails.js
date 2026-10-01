@@ -7,7 +7,9 @@ import {
   Small, Spacer, SuccessPanel, distance, formatDate, hhmm, pay, timeAgo, workerPay,
 } from '../../ui'
 import Photo from '../../ui/Photo'
+import { workArt } from '../../ui/workArt'
 import * as jobsApi from '../../api/jobs'
+import * as appsApi from '../../api/applications'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 
@@ -26,16 +28,29 @@ export default function JobDetails({ navigation, route }) {
   const [error, setError] = useState('')
   const [applying, setApplying] = useState(false)
   const [applied, setApplied] = useState(false)
+  const [justApplied, setJustApplied] = useState(false)
   const [saved, setSaved] = useState(false)
   const [expanded, setExpanded] = useState(false)
 
   const load = useCallback(async () => {
     setError('')
     try {
-      const d = await jobsApi.jobDetail(jobId)
+      // The job record carries neither `saved` nor `applied` - those live on
+      // the card shape and the two list endpoints. Without this the heart and
+      // the Apply button show the wrong state on a job the worker has
+      // already saved or applied to.
+      const [d, savedList, applications] = await Promise.all([
+        jobsApi.jobDetail(jobId),
+        jobsApi.savedJobs().catch(() => []),
+        appsApi.listApplications().catch(() => []),
+      ])
       setJob(d)
-      setApplied(Boolean(d.applied))
-      setSaved(Boolean(d.saved))
+      const savedIds = (Array.isArray(savedList) ? savedList : savedList?.content || [])
+        .map((j) => j.id)
+      const appliedIds = (Array.isArray(applications) ? applications : applications?.content || [])
+        .map((a) => a.jobId ?? a.job?.id)
+      setSaved(savedIds.includes(Number(jobId)))
+      setApplied(appliedIds.includes(Number(jobId)))
     } catch (err) {
       setError(errorText(err, 'We could not load this work.'))
     }
@@ -48,6 +63,7 @@ export default function JobDetails({ navigation, route }) {
     try {
       await jobsApi.applyToJob(jobId, {})
       setApplied(true)
+      setJustApplied(true)
     } catch (err) {
       Alert.alert('', errorText(err, 'We could not send your application.'))
     } finally {
@@ -64,7 +80,9 @@ export default function JobDetails({ navigation, route }) {
   if (!job && !error) return <Screen scroll={false}><Loader /></Screen>
   if (!job) return <Screen><AppBar onBack={navigation.goBack} /><ErrorNote onRetry={load}>{error}</ErrorNote></Screen>
 
-  if (applied) {
+  // The success panel is for the moment of applying. Arriving at a job that
+  // was applied to days ago should show the job, with the button saying so.
+  if (applied && justApplied) {
     return (
       <Screen padded={false} bg={colors.white}>
         <AppBar onBack={navigation.goBack} />
@@ -72,7 +90,7 @@ export default function JobDetails({ navigation, route }) {
           <View style={{ alignSelf: 'stretch', marginTop: space.xxl, gap: space.md }}>
             <Button title={t('applications.title')}
               onPress={() => navigation.navigate('ApplicationsTab')} />
-            <Button title={t('jobs.title')} tone="outline" onPress={() => navigation.navigate('FindJobs')} />
+            <Button title={t('jobs.title')} tone="outline" onPress={() => navigation.navigate('JobsTab', { screen: 'FindJobs' })} />
           </View>
         </SuccessPanel>
       </Screen>
@@ -95,7 +113,13 @@ export default function JobDetails({ navigation, route }) {
             onPress={toggleSave}
             style={{ flex: 1 }}
           />
-          <Button title={t('jobs.applyNow')} onPress={apply} loading={applying} style={{ flex: 2 }} />
+          <Button
+            title={applied ? t('jobs.applied2') : t('jobs.applyNow')}
+            onPress={apply}
+            loading={applying}
+            disabled={applied}
+            style={{ flex: 2 }}
+          />
         </Row>
       )}
     >
@@ -104,6 +128,7 @@ export default function JobDetails({ navigation, route }) {
       <View style={{ paddingHorizontal: space.lg, paddingTop: space.lg }}>
         <Photo
           uri={job.photoUrl || job.employerLogoUrl || job.employerPhotos?.[0]}
+          art={workArt(job)}
           width="100%"
           height={170}
           radius={radius.lg}

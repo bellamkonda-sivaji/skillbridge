@@ -15,7 +15,7 @@ export default function OfferSent({ navigation, route }) {
         <View style={{ gap: space.md }}>
           <Button title={t('offers.goToTracking')} onPress={() => navigation.replace('OfferTracking')} />
           <Button title={t('common.done')} tone="outline"
-            onPress={() => navigation.navigate('Applications')} />
+            onPress={() => navigation.navigate('ApplicantsTab', { screen: 'Applications' })} />
         </View>
       )}
     >

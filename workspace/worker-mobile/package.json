@@ -12,9 +12,13 @@
     "axios": "^1.20.0",
     "expo": "~57.0.26",
     "expo-constants": "~57.0.20",
+    "expo-font": "~57.0.4",
     "expo-image-picker": "~57.0.20",
     "expo-linear-gradient": "~57.0.2",
+    "expo-location": "~57.0.20",
+    "expo-splash-screen": "~57.0.9",
     "expo-status-bar": "~57.0.1",
+    "expo-system-ui": "~57.0.4",
     "i18next": "^26.4.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -27,8 +31,8 @@
   },
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "private": true

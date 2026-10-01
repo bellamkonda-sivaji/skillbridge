@@ -7,33 +7,56 @@
     "icon": "./assets/icon.png",
     "scheme": "joboworker",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.jobon.worker",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "JobOn needs your photos so you can add a profile picture.",
+        "NSCameraUsageDescription": "JobOn uses the camera so you can take a profile picture.",
         "NSLocationWhenInUseUsageDescription": "JobOn uses your location to show work near you."
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png",
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.jobon.worker",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "plugins": ["expo-image-picker"],
+    "plugins": [
+      "expo-location",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "JobOn needs your photos so you can add a profile picture.",
+          "cameraPermission": "JobOn uses the camera so you can take a profile picture."
+        }
+      ],
+      "expo-font"
+    ],
     "extra": {
       "apiUrl": ""
     }

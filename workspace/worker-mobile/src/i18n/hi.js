@@ -65,6 +65,8 @@ export default {
     category: 'काम का प्रकार', salaryRange: 'पैसा', distance: 'दूरी',
     experienceLevel: 'अनुभव', language: 'भाषा', showJobs: 'काम दिखाएं',
     reset: 'रीसेट', map: 'नक्शा', list: 'सूची', nearYou: 'आपके पास के काम',
+    mapUnavailable: 'नक्शे के लिए Google Maps की चाबी चाहिए। तब तक पास वाले काम पहले दिखेंगे।',
+    mapOnPhone: 'नक्शा फ़ोन ऐप में चलता है। यहाँ पास वाले काम पहले दिखेंगे।',
     saved: 'सहेजे गए', noSaved: 'अभी कुछ सहेजा नहीं',
     youGet: 'आपको मिलेगा', type: 'प्रकार', location: 'जगह',
     description: 'इस काम के बारे में', responsibilities: 'आपको क्या करना है',

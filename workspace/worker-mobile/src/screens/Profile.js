@@ -9,6 +9,7 @@ import {
 } from '../ui'
 import { LANGUAGES, setLanguage } from '../i18n'
 import * as profileApi from '../api/profile'
+import * as jobsApi from '../api/jobs'
 import { errorText } from '../api/client'
 import { useSession } from '../session/SessionProvider'
 import { colors, radius, space } from '../theme'
@@ -18,18 +19,30 @@ export default function Profile({ navigation }) {
   const { t, i18n } = useTranslation()
   const { user, signOut } = useSession()
   const [profile, setProfile] = useState(null)
+  const [progress, setProgress] = useState(null)
   const [error, setError] = useState('')
 
   const load = useCallback(async () => {
     setError('')
-    try { setProfile(await profileApi.getProfile()) } catch (err) {
+    try {
+      // The profile endpoint's `profileCompleted` is a yes/no. The percentage
+      // and its hint only exist on the dashboard, so the figure comes from
+      // there rather than from coercing a boolean into a number.
+      const [me, dash] = await Promise.all([
+        profileApi.getProfile(),
+        jobsApi.dashboard().catch(() => null),
+      ])
+      setProfile(me)
+      setProgress(dash)
+    } catch (err) {
       setError(errorText(err, 'We could not load your profile.'))
     }
   }, [])
 
   useFocusEffect(useCallback(() => { load() }, [load]))
 
-  const completion = profile?.profileCompleted ?? profile?.completionPercent ?? 0
+  const completion = Number(progress?.profileCompletion ?? 0)
+  const completionHint = progress?.profileCompletionHint
   const name = profile?.name || user?.name || ''
 
   const cycleLanguage = async () => {
@@ -65,7 +78,7 @@ export default function Profile({ navigation }) {
       <View style={{ paddingHorizontal: space.lg }}>
         <ErrorNote onRetry={load}>{error}</ErrorNote>
 
-        {completion < 100 ? (
+        {completion > 0 && completion < 100 ? (
           <Card style={{ marginBottom: space.lg }}>
             <Row>
               <View style={s.ring}>
@@ -73,7 +86,9 @@ export default function Profile({ navigation }) {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={s.completionTitle}>{t('profile.completion')}</Text>
-                <Small style={{ marginTop: 2 }}>{t('profile.completionSub')}</Small>
+                <Small style={{ marginTop: 2 }}>
+                  {completionHint || t('profile.completionSub')}
+                </Small>
               </View>
             </Row>
             <View style={{ marginTop: space.md }}>

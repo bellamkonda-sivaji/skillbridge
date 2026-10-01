@@ -11,13 +11,19 @@ import { colors, radius } from '../theme'
  * A broken-image icon or an empty grey box both read as a bug.
  */
 export default function Photo({
-  uri, width, height, size, radius: r = radius.md, icon = 'image-outline',
+  uri, art, width, height, size, radius: r = radius.md, icon = 'image-outline',
   iconSize, tone = colors.blue, bg = colors.blueSoft, style, resizeMode = 'cover',
 }) {
   const [failed, setFailed] = useState(false)
   const w = width ?? size
   const h = height ?? size
   const box = [{ width: w, height: h, borderRadius: r }, style]
+
+  // Order matters: a real photo, then the drawing for this kind of work, then
+  // an icon. A wall of identical icons makes every job look the same.
+  if ((!uri || failed) && art) {
+    return <Image source={art} style={box} resizeMode={resizeMode} accessible={false} />
+  }
 
   if (!uri || failed) {
     return (

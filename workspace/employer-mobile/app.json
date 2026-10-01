@@ -7,28 +7,47 @@
     "icon": "./assets/icon.png",
     "scheme": "jobonemployer",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FFFFFF"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.jobon.employer",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "JobOn needs your photos so you can upload your shop licence and photos."
+        "NSPhotoLibraryUsageDescription": "JobOn needs your photos so you can upload your shop licence and photos.",
+        "NSCameraUsageDescription": "JobOn uses the camera so you can photograph your shop licence."
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png",
         "backgroundColor": "#FFFFFF"
       },
       "package": "com.jobon.employer"
     },
-    "web": { "favicon": "./assets/favicon.png", "bundler": "metro" },
-    "plugins": ["expo-image-picker"],
-    "extra": { "apiUrl": "" }
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "JobOn needs your photos so you can upload your shop licence and photos.",
+          "cameraPermission": "JobOn uses the camera so you can photograph your shop licence."
+        }
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "apiUrl": ""
+    }
   }
 }

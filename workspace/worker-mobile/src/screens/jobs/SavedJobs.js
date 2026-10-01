@@ -54,7 +54,7 @@ export default function SavedJobs({ navigation }) {
               icon="heart-outline"
               title={t('jobs.noSaved')}
               sub="Tap the heart on any work to keep it here."
-              action={<Button title={t('jobs.title')} onPress={() => navigation.navigate('FindJobs')} />}
+              action={<Button title={t('jobs.title')} onPress={() => navigation.navigate('JobsTab', { screen: 'FindJobs' })} />}
             />
           )}
         />

@@ -94,7 +94,7 @@ export default function JoiningConfirmation({ navigation, route }) {
         footer={(
           <View style={{ gap: space.md }}>
             <Button title={t('team.payroll')}
-              onPress={() => navigation.navigate('Payroll')} />
+              onPress={() => navigation.navigate('TeamTab', { screen: 'Payroll' })} />
             <Button title={t('common.done')} tone="outline"
               onPress={() => navigation.navigate('OfferTracking')} />
           </View>

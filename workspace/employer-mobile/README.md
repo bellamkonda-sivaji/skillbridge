@@ -6,16 +6,28 @@ medical shops, warehouses and building sites around Tirupati.
 Expo (SDK 57) / React Native. Standalone — its own API client, translations and
 theme, sharing no code with the worker app or the web front end.
 
-## Running it
+## Running it on a phone
 
 ```bash
 npm install
-npm start          # then press a / i, or scan the QR code
-npm run web
+npx expo run:android      # builds the native app and installs it
+npx expo run:ios          # needs Xcode, not just the command line tools
+npm run web               # react-native-web, handy for a quick look
 ```
 
-The backend must be running on port 8080. API resolution works the same way as
-the worker app: the Expo host IP in development, `expo.extra.apiUrl` in a build.
+Both apps have been built and run on a real Android build (SDK 57, NDK 27,
+new architecture). `npx expo-doctor` passes 21/21.
+
+**The map needs a Google Maps key.** Put it in `app.json` under
+`expo.android.config.googleMaps.apiKey`. Without one the app does not crash -
+the nearby screen lists the same jobs nearest-first and says why. Google Maps
+on Android throws from inside the native view when the key is missing, which
+React Native turns into a red screen, so the key is checked before a MapView
+is ever mounted.
+
+**The emulator reaches the backend** at `10.0.2.2:8080`, which the app falls
+back to automatically. On a real phone, either set `expo.extra.apiUrl` or let
+it use the IP Expo is already serving the bundle from.
 
 ## What is in it
 
@@ -64,3 +76,15 @@ src/
 `ui/catalog.js` mirrors the server's commission slabs so the wizard can show a
 split as the employer types. The server recalculates on save and is the
 authority: if the two ever drift, the job carries the server's figure.
+
+## Pictures
+
+Most records carry no photograph. Rather than a wall of identical grey icons -
+which makes every job look the same, the one thing a list of jobs must not do -
+each kind of work has its own flat illustration in `assets/work/`. They are
+drawings, not photographs: they give a card weight without pretending to show
+a real person or a real shop.
+
+A real photo always wins. `Photo` falls back photo → drawing → icon, and the
+drawing is chosen from the job's category, or from its title when an older
+record has none.

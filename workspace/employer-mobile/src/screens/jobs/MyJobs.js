@@ -8,6 +8,7 @@ import {
   Badge, Button, EmptyState, ErrorNote, H2, Loader, Row, SegTabs, Small, money, timeAgo,
 } from '../../ui'
 import Photo from '../../ui/Photo'
+import { workArt } from '../../ui/workArt'
 import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
@@ -76,8 +77,8 @@ export default function MyJobs({ navigation }) {
               onPress={() => navigation.navigate('JobManagement', { jobId: item.id })}
             >
               <Row align="flex-start">
-                <Photo uri={item.photoUrl || item.employerLogoUrl} size={48} radius={12}
-                  icon="briefcase-outline" />
+                <Photo uri={item.photoUrl || item.employerLogoUrl} art={workArt(item)}
+                  size={48} radius={12} />
                 <View style={{ flex: 1 }}>
                   <Text style={s.title} numberOfLines={1}>{item.title}</Text>
                   <Small style={{ marginTop: 2 }}>

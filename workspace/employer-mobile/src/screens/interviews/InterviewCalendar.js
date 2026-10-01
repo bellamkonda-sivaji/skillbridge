@@ -71,7 +71,7 @@ export default function InterviewCalendar({ navigation }) {
         title={t('interviews.title')}
         onBack={navigation.canGoBack() ? navigation.goBack : undefined}
         right={(
-          <Pressable hitSlop={10} onPress={() => navigation.navigate('Applications')}>
+          <Pressable hitSlop={10} onPress={() => navigation.navigate('ApplicantsTab', { screen: 'Applications' })}>
             <Ionicons name="add-circle-outline" size={24} color={colors.blue} />
           </Pressable>
         )}

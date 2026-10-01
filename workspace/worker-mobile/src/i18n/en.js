@@ -67,6 +67,8 @@ export default {
     category: 'Type of work', salaryRange: 'Pay', distance: 'Distance',
     experienceLevel: 'Experience', language: 'Language', showJobs: 'Show jobs',
     reset: 'Reset', map: 'Map', list: 'List', nearYou: 'Jobs near you',
+    mapUnavailable: 'The map needs a Google Maps key. Until then, the same work is listed nearest first.',
+    mapOnPhone: 'The map runs on the phone app. Here the same work is listed nearest first.',
     saved: 'Saved work', noSaved: 'Nothing saved yet',
     youGet: 'You get', type: 'Type', location: 'Place',
     description: 'About this work', responsibilities: 'What you will do',

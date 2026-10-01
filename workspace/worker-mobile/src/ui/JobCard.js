@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { colors, radius, space } from '../theme'
 import { Badge } from './index'
 import Photo from './Photo'
+import { workArt } from './workArt'
 import { distance, pay, timeAgo, workerPay } from './format'
 
 /**
@@ -20,6 +21,7 @@ export default function JobCard({ job, onPress, onToggleSave, saved, style }) {
       <View style={s.thumbWrap}>
         <Photo
           uri={job.photoUrl || job.employerLogoUrl || job.employerPhotoUrl}
+          art={workArt(job)}
           size={68}
           radius={radius.md}
           icon="briefcase-outline"

@@ -72,6 +72,7 @@ const hiringScreens = () => ([
   <Stack.Screen key="ApplicantProfile" name="ApplicantProfile" component={ApplicantProfile} />,
   <Stack.Screen key="Compare" name="Compare" component={Compare} />,
   <Stack.Screen key="Shortlist" name="Shortlist" component={Shortlist} />,
+  <Stack.Screen key="JobApplicants" name="JobApplicants" component={JobApplicants} />,
   <Stack.Screen key="ApplicationDecision" name="ApplicationDecision" component={ApplicationDecision} />,
   <Stack.Screen key="ScheduleInterview" name="ScheduleInterview" component={ScheduleInterview} />,
   <Stack.Screen key="InterviewCalendar" name="InterviewCalendar" component={InterviewCalendar} />,
@@ -91,7 +92,6 @@ const HomeStack = () => (
     <Stack.Screen name="PostJob" component={PostJob} />
     <Stack.Screen name="JobPublished" component={JobPublished} />
     <Stack.Screen name="JobManagement" component={JobManagement} />
-    <Stack.Screen name="JobApplicants" component={JobApplicants} />
     <Stack.Screen name="Recommended" component={Recommended} />
     <Stack.Screen name="FindWorkers" component={FindWorkers} />
     <Stack.Screen name="Notifications" component={Notifications} />
@@ -105,7 +105,6 @@ const JobsStack = () => (
     <Stack.Screen name="PostJob" component={PostJob} />
     <Stack.Screen name="JobPublished" component={JobPublished} />
     <Stack.Screen name="JobManagement" component={JobManagement} />
-    <Stack.Screen name="JobApplicants" component={JobApplicants} />
     <Stack.Screen name="Recommended" component={Recommended} />
     {hiringScreens()}
   </Stack.Navigator>
@@ -114,7 +113,6 @@ const JobsStack = () => (
 const ApplicantsStack = () => (
   <Stack.Navigator screenOptions={hidden}>
     <Stack.Screen name="Applications" component={Applications} />
-    <Stack.Screen name="JobApplicants" component={JobApplicants} />
     <Stack.Screen name="Recommended" component={Recommended} />
     <Stack.Screen name="FindWorkers" component={FindWorkers} />
     {hiringScreens()}
@@ -129,6 +127,7 @@ const TeamStack = () => (
     <Stack.Screen name="FundJob" component={FundJob} />
     <Stack.Screen name="JoiningConfirmation" component={JoiningConfirmation} />
     <Stack.Screen name="OfferTracking" component={OfferTracking} />
+    <Stack.Screen name="OfferStatusDetail" component={OfferStatusDetail} />
   </Stack.Navigator>
 )
 
@@ -146,7 +145,7 @@ const ProfileStack = () => (
     <Stack.Screen name="Reviews" component={Reviews} />
     <Stack.Screen name="Settings" component={Settings} />
     <Stack.Screen name="Notifications" component={Notifications} />
-    <Stack.Screen name="InterviewResults" component={InterviewResults} />
+    {hiringScreens()}
   </Stack.Navigator>
 )
 

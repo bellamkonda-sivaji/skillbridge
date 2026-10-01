@@ -65,6 +65,8 @@ export default {
     category: 'పని రకం', salaryRange: 'జీతం', distance: 'దూరం',
     experienceLevel: 'అనుభవం', language: 'భాష', showJobs: 'పనులు చూపు',
     reset: 'రీసెట్', map: 'మ్యాప్', list: 'జాబితా', nearYou: 'మీ దగ్గర పనులు',
+    mapUnavailable: 'మ్యాప్‌కి Google Maps కీ కావాలి. అప్పటివరకు దగ్గరివి ముందుగా చూపిస్తాం.',
+    mapOnPhone: 'మ్యాప్ ఫోన్ యాప్‌లో పనిచేస్తుంది. ఇక్కడ దగ్గరివి ముందుగా చూపిస్తాం.',
     saved: 'భద్రపరిచినవి', noSaved: 'ఇంకా ఏమీ భద్రపరచలేదు',
     youGet: 'మీకు వచ్చేది', type: 'రకం', location: 'స్థలం',
     description: 'ఈ పని గురించి', responsibilities: 'మీరు చేయాల్సినవి',

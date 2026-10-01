@@ -7,21 +7,28 @@ Expo (SDK 57) / React Native. Standalone — it has its own API client, its own
 translations and its own theme, and shares no code with the employer app or the
 web front end.
 
-## Running it
+## Running it on a phone
 
 ```bash
 npm install
-npm start          # then press a / i, or scan the QR code
-npm run web        # renders through react-native-web, useful for quick checks
+npx expo run:android      # builds the native app and installs it
+npx expo run:ios          # needs Xcode, not just the command line tools
+npm run web               # react-native-web, handy for a quick look
 ```
 
-The backend must be running on port 8080 (`workspace/backend/run.sh`).
+Both apps have been built and run on a real Android build (SDK 57, NDK 27,
+new architecture). `npx expo-doctor` passes 21/21.
 
-**Where it looks for the API.** A phone cannot reach `localhost` — that is the
-phone itself — so in development the app takes the IP Expo is already serving
-the bundle from, which is the same machine the API runs on. For a real build,
-set `expo.extra.apiUrl` in `app.json`; anything that is not a non-empty string
-is ignored.
+**The map needs a Google Maps key.** Put it in `app.json` under
+`expo.android.config.googleMaps.apiKey`. Without one the app does not crash -
+the nearby screen lists the same jobs nearest-first and says why. Google Maps
+on Android throws from inside the native view when the key is missing, which
+React Native turns into a red screen, so the key is checked before a MapView
+is ever mounted.
+
+**The emulator reaches the backend** at `10.0.2.2:8080`, which the app falls
+back to automatically. On a real phone, either set `expo.extra.apiUrl` or let
+it use the IP Expo is already serving the bundle from.
 
 ## What is in it
 
@@ -66,3 +73,15 @@ src/
 `NearbyJobs.web.js` sits beside `NearbyJobs.js`: `react-native-maps` has no web
 renderer, so on web the same jobs are listed nearest-first instead of showing an
 empty grey box. The native build keeps the real map.
+
+## Pictures
+
+Most records carry no photograph. Rather than a wall of identical grey icons -
+which makes every job look the same, the one thing a list of jobs must not do -
+each kind of work has its own flat illustration in `assets/work/`. They are
+drawings, not photographs: they give a card weight without pretending to show
+a real person or a real shop.
+
+A real photo always wins. `Photo` falls back photo → drawing → icon, and the
+drawing is chosen from the job's category, or from its title when an older
+record has none.
