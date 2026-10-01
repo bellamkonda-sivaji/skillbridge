@@ -137,10 +137,6 @@ const ProfileStack = () => (
     <Stack.Screen name="BusinessDetails" component={BusinessDetails} />
     <Stack.Screen name="Verification" component={Verification} />
     <Stack.Screen name="PlanPricing" component={PlanPricing} />
-    <Stack.Screen name="InterviewCalendar" component={InterviewCalendar} />
-    <Stack.Screen name="OfferTracking" component={OfferTracking} />
-    <Stack.Screen name="JoiningConfirmation" component={JoiningConfirmation} />
-    <Stack.Screen name="OfferStatusDetail" component={OfferStatusDetail} />
     <Stack.Screen name="Payroll" component={Payroll} />
     <Stack.Screen name="Reviews" component={Reviews} />
     <Stack.Screen name="Settings" component={Settings} />
