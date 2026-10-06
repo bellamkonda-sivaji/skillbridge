@@ -13,6 +13,7 @@ import * as applicantsApi from '../api/applicants'
 import { errorText } from '../api/client'
 import { useSession } from '../session/SessionProvider'
 import { colors, radius, space } from '../theme'
+import LanguagePicker from '../ui/LanguagePicker'
 
 const greetingKey = () => {
   const h = new Date().getHours()
@@ -71,6 +72,8 @@ export default function Dashboard({ navigation }) {
             <H2 style={{ marginTop: 2 }}>{firstName} 👋</H2>
             <Small style={{ marginTop: 2 }}>{t('dashboard.letsBuild')}</Small>
           </View>
+          {/* Between the name and the avatar, where the screenshot asked for it. */}
+          <LanguagePicker style={{ marginRight: space.sm }} />
           <Avatar name={data?.businessName || user?.name} size={44} />
         </Row>
 

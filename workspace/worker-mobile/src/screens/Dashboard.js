@@ -15,6 +15,7 @@ import * as attendanceApi from '../api/attendance'
 import { errorText } from '../api/client'
 import { useSession } from '../session/SessionProvider'
 import { colors, radius, space } from '../theme'
+import LanguagePicker from '../ui/LanguagePicker'
 
 const greetingKey = () => {
   const h = new Date().getHours()
@@ -79,6 +80,9 @@ export default function Dashboard({ navigation }) {
               </View>
             ) : null}
           </View>
+          {/* Between the name and the avatar, where the screenshot asked for it:
+              reachable on the first screen, without reading any English. */}
+          <LanguagePicker style={{ marginRight: space.sm }} />
           <Avatar name={user?.name} size={44} />
         </View>
 
