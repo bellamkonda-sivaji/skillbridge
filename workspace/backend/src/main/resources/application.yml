@@ -29,6 +29,12 @@ skillbridge:
   pricing:
     # Platform fee on worker earnings, percent. Drives the schedule estimate and /api/config/pricing.
     platform-fee-percent: 5
+  fcm:
+    # Path to the Firebase service account JSON. Blank by default: with no key
+    # the server stores device tokens but never sends, which is what we want in
+    # development and in tests. Never commit the key - it can notify every user
+    # of the product. Set FCM_CREDENTIALS in the environment instead.
+    credentials: "${FCM_CREDENTIALS:}"
   razorpay:
     # All blank by default: with no keys the gateway calls answer 503
     # RAZORPAY_NOT_CONFIGURED, the webhook signature never verifies, reconciliation

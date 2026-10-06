@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "5247485439",
+    "project_id": "mindsyncos-23c3a",
+    "storage_bucket": "mindsyncos-23c3a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5247485439:android:3effd0d2991140d65a13ca",
+        "android_client_info": {
+          "package_name": "com.jobon.worker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOZWeTopH46SDPG-4lwsZP5ZNR09i7AYY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

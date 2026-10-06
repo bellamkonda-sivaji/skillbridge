@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "JobOn Worker",
+    "name": "JobOn",
     "slug": "jobon-worker",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -26,13 +26,16 @@
       "package": "com.jobon.worker",
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "CALL_PHONE",
+        "POST_NOTIFICATIONS"
       ],
       "config": {
         "googleMaps": {
           "apiKey": ""
         }
-      }
+      },
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -61,7 +64,14 @@
           "cameraPermission": "JobOn uses the camera so you can take a profile picture."
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "color": "#2563EB",
+          "defaultChannel": "office.v1"
+        }
+      ]
     ],
     "extra": {
       "apiUrl": ""
