@@ -16,7 +16,6 @@ const CONFIG = {
     signupLabel: 'Create a worker account',
     other: [
       { to: '/employer/login', label: 'Log in as a business' },
-      { to: '/admin/login', label: 'Admin' },
     ],
     demo: 'Demo: 9000000007 or john.kamau@mail.com / pass1234',
   },
@@ -29,7 +28,6 @@ const CONFIG = {
     signupLabel: 'Create a business account',
     other: [
       { to: '/worker/login', label: 'Log in as a worker' },
-      { to: '/admin/login', label: 'Admin' },
     ],
     demo: 'Demo: 9000000002 or james@safiriconstruction.com / pass1234',
   },
@@ -121,7 +119,11 @@ function LoginForm({ accountType }) {
           ))}
         </div>
 
-        <p className="ob-foot-note" style={{ fontSize: 12.5 }}>{cfg.demo}</p>
+        {/* Seeded demo logins, for development only. Vite strips this from
+            a production build, so the credentials never reach the server. */}
+        {import.meta.env.DEV && cfg.demo ? (
+          <p className="ob-foot-note" style={{ fontSize: 12.5 }}>{cfg.demo}</p>
+        ) : null}
       </ObCard>
     </ObShell>
   )
@@ -157,7 +159,7 @@ export function ChooseLogin() {
           </Link>
         </div>
         <p className="ob-foot-note">
-          No account yet? <Link to="/join">Sign up</Link> · <Link to="/admin/login">Admin</Link>
+          No account yet? <Link to="/join">Sign up</Link>
         </p>
       </ObCard>
     </ObShell>
