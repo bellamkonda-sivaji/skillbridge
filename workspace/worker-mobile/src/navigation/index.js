@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
@@ -10,6 +10,7 @@ import { useSession } from '../session/SessionProvider'
 import { colors } from '../theme'
 
 import Splash from '../screens/Splash'
+import Permissions from '../screens/Permissions'
 import Language from '../screens/Language'
 import AccountType from '../screens/AccountType'
 import CreateAccount from '../screens/CreateAccount'
@@ -52,6 +53,9 @@ import PayoutMethods from '../screens/PayoutMethods'
 import Reviews from '../screens/Reviews'
 import Settings from '../screens/Settings'
 import Help from '../screens/Help'
+import { alreadyAsked } from '../permissions/ask'
+import { registerChannels } from '../permissions/channels'
+import { registerPushToken } from '../permissions/push'
 
 const Stack = createNativeStackNavigator()
 const Tab = createBottomTabNavigator()
@@ -167,8 +171,26 @@ function MainTabs() {
 
 export default function RootNavigator() {
   const { booting, signedIn } = useSession()
+  const { t, i18n } = useTranslation()
+  // Null while we are still reading the flag, so the first frame is never the
+  // wrong screen - showing Splash and then yanking it away looks like a bug.
+  const [askedPermissions, setAskedPermissions] = useState(null)
 
-  if (booting) {
+  useEffect(() => {
+    alreadyAsked().then(setAskedPermissions)
+  }, [])
+
+  // The channels have to exist before the first notification arrives, or
+  // Android files it under its own default and the person's choice of what to
+  // silence is ignored. Names are translated, so re-run when the language changes.
+  useEffect(() => { registerChannels(t) }, [t, i18n.language])
+
+  // Only once signed in: a token is worthless until we know whose phone it is.
+  useEffect(() => {
+    if (signedIn) registerPushToken()
+  }, [signedIn])
+
+  if (booting || askedPermissions === null) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white }}>
         <ActivityIndicator size="large" color={colors.blue} />
@@ -192,6 +214,11 @@ export default function RootNavigator() {
           </>
         ) : (
           <>
+            {/* Straight after install, explain what we are about to ask for
+                before Android's own dialogs appear cold. */}
+            {askedPermissions ? null : (
+              <Stack.Screen name="Permissions" component={Permissions} />
+            )}
             <Stack.Screen name="Splash" component={Splash} />
             <Stack.Screen name="Language" component={Language} />
             <Stack.Screen name="AccountType" component={AccountType} />
