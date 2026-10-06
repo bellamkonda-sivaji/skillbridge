@@ -40,7 +40,7 @@ public class AdminAuditLog {
     private Long entityId;
 
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "TEXT")
     private String detail;
 
     @Builder.Default

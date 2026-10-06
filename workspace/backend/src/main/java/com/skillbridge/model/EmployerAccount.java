@@ -36,7 +36,7 @@ public class EmployerAccount implements Account {
     private boolean phoneVerified = false;
 
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "TEXT")
     private String photoUrl;
 
     @Builder.Default

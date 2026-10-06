@@ -44,7 +44,7 @@ public class ContactLog {
     private ContactOutcome outcome;
 
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "TEXT")
     private String note;
 
     @Column(name = "contacted_by_admin_id")

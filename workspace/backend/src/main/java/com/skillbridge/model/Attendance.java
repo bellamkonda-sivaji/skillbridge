@@ -70,7 +70,7 @@ public class Attendance {
 
     /** Why it was approved or rejected, in the decider's own words. */
     @Lob
-    @Column(name = "decision_note", columnDefinition = "CLOB")
+    @Column(name = "decision_note", columnDefinition = "TEXT")
     private String decisionNote;
 
     /** True once the back office has touched the row, so both sides can see it was corrected. */

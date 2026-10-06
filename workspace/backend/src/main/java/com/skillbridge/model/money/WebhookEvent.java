@@ -31,7 +31,7 @@ public class WebhookEvent {
     @Column(name = "event_type", nullable = false, length = 80) private String eventType;
 
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "TEXT")
     private String payload;
 
     /**

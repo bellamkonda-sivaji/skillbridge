@@ -36,7 +36,7 @@ public class Lead {
     private String name;
 
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "TEXT")
     private String message;
 
     @Builder.Default
@@ -59,7 +59,7 @@ public class Lead {
     private Long assignedAdminId;
 
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "TEXT")
     private String note;
 
     @Builder.Default

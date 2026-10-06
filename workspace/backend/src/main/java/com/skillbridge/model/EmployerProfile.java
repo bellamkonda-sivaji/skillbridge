@@ -80,12 +80,12 @@ public class EmployerProfile {
     /** Base64 data URL of the business registration document. CLOB: a base64
      *  payload is ~33% larger than the file, so a fixed VARCHAR cap overflows. */
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "TEXT")
     private String registrationDocUrl;
 
     /** Base64 data URL of the business logo. */
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "TEXT")
     private String logoUrl;
 
     /** The "I am authorised to hire for this business" tick on the verification step. */

@@ -69,7 +69,7 @@ public class AttendanceRequest {
     private LocalTime requestedCheckOut;
 
     @Lob
-    @Column(name = "reason", columnDefinition = "CLOB")
+    @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
 
     @Builder.Default
@@ -88,7 +88,7 @@ public class AttendanceRequest {
     private String decidedByName;
 
     @Lob
-    @Column(name = "decision_note", columnDefinition = "CLOB")
+    @Column(name = "decision_note", columnDefinition = "TEXT")
     private String decisionNote;
 
     @Builder.Default

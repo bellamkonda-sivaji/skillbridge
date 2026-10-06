@@ -42,7 +42,7 @@ public class WorkerAccount implements Account {
 
     /** Holds a base64 data URL, so it needs CLOB rather than a capped varchar. */
     @Lob
-    @Column(columnDefinition = "CLOB")
+    @Column(columnDefinition = "TEXT")
     private String photoUrl;
 
     @Builder.Default
