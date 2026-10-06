@@ -68,7 +68,7 @@
       ]
     ],
     "extra": {
-      "apiUrl": ""
+      "apiUrl": "https://jobon.api.mindsyncos.com/api"
     }
   }
 }
