@@ -310,3 +310,26 @@ export function waitingLabel(hours) {
   const d = Math.round(h / 24)
   return `${d} ${d === 1 ? 'day' : 'days'} waiting`
 }
+
+/* ---------- help desk ---------- */
+export const listSupportTickets = (params) =>
+  api.get('/admin/support/tickets', { params }).then((r) => r.data)
+export const getSupportSummary = () => api.get('/admin/support/summary').then((r) => r.data)
+export const assignSupportTicket = (id) =>
+  api.post(`/admin/support/tickets/${id}/assign`).then((r) => r.data)
+export const replySupportTicket = (id, body) =>
+  api.post(`/admin/support/tickets/${id}/replies`, body).then((r) => r.data)
+export const setSupportStatus = (id, status) =>
+  api.patch(`/admin/support/tickets/${id}/status`, { status }).then((r) => r.data)
+
+/** Plain words for the desk's own vocabulary, so the UI never prints an enum. */
+export const SUPPORT_STATUS_LABEL = {
+  OPEN: 'Waiting', IN_PROGRESS: 'Being handled', RESOLVED: 'Sorted', CLOSED: 'Closed',
+}
+export const SUPPORT_STATUS_TONE = {
+  OPEN: 'pending', IN_PROGRESS: 'interview', RESOLVED: 'accepted', CLOSED: 'viewed',
+}
+export const SUPPORT_TOPIC_LABEL = {
+  MONEY: 'Money', WORK: 'Work', OFFER: 'Job offer', ATTENDANCE: 'Attendance',
+  DOCUMENTS: 'Papers', ACCOUNT: 'Account', OTHER: 'Something else',
+}

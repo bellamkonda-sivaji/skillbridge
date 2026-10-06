@@ -12,6 +12,7 @@ import * as offersApi from '../../api/offers'
 import * as attendanceApi from '../../api/attendance'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { word } from '../../ui/words'
 
 /** Every job they hold: running now, starting soon, or finished. */
 export default function MyWork({ navigation }) {
@@ -113,7 +114,7 @@ export default function MyWork({ navigation }) {
                 <Small numberOfLines={1}>{item.businessName}</Small>
                 <Row gap={space.sm} style={{ marginTop: 6 }}>
                   <Badge
-                    label={item.status}
+                    label={word(t, item.status)}
                     tone={['ACTIVE', 'JOINED', 'ONGOING'].includes(item.status) ? 'green' : 'grey'}
                   />
                   {item.salary ? (

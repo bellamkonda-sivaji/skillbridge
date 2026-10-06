@@ -51,6 +51,7 @@ import Messages from '../screens/Messages'
 import PayoutMethods from '../screens/PayoutMethods'
 import Reviews from '../screens/Reviews'
 import Settings from '../screens/Settings'
+import Help from '../screens/Help'
 
 const Stack = createNativeStackNavigator()
 const Tab = createBottomTabNavigator()
@@ -108,6 +109,7 @@ const ProfileStack = () => (
     <Stack.Screen name="PayoutMethods" component={PayoutMethods} />
     <Stack.Screen name="Reviews" component={Reviews} />
     <Stack.Screen name="Settings" component={Settings} />
+    <Stack.Screen name="Help" component={Help} />
     <Stack.Screen name="AttendanceHistory" component={AttendanceHistory} />
     <Stack.Screen name="Interviews" component={Interviews} />
     <Stack.Screen name="InterviewDetails" component={InterviewDetails} />

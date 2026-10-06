@@ -10,6 +10,7 @@ import {
 import * as appsApi from '../../api/applications'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { word } from '../../ui/words'
 
 export const STATUS_TONE = {
   APPLIED: 'orange', PENDING: 'orange', VIEWED: 'blue', SHORTLISTED: 'violet',
@@ -24,9 +25,11 @@ export const statusLabel = (status, t) => {
     INTERVIEW: t('applications.interview'), INTERVIEW_SCHEDULED: t('applications.interview'),
     SELECTED: t('applications.selected'), OFFERED: t('applications.selected'),
     HIRED: t('applications.selected'), REJECTED: t('applications.rejected'),
-    WITHDRAWN: 'Taken back',
+    WITHDRAWN: t('words.WITHDRAWN'),
   }
-  return map[status] || status
+  // Anything this map has not met yet still has to read as words, not as a
+  // database value - ACCEPTED reached this screen as "ACCEPTED" before.
+  return map[status] || word(t, status)
 }
 
 /** Everywhere they have applied, and what is happening with each. */

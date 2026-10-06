@@ -9,6 +9,7 @@ import {
 import * as offersApi from '../../api/offers'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { word } from '../../ui/words'
 
 /** One job in full: the terms, the days worked and the money so far. */
 export default function EmploymentDetails({ navigation, route }) {
@@ -68,7 +69,7 @@ export default function EmploymentDetails({ navigation, route }) {
               <Small style={{ marginTop: 2 }}>{item.businessName}</Small>
             </View>
             <Badge
-              label={item.status}
+              label={word(t, item.status)}
               tone={['ACTIVE', 'JOINED', 'ONGOING'].includes(item.status) ? 'green' : 'grey'}
             />
           </Row>

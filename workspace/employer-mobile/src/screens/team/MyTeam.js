@@ -11,6 +11,7 @@ import {
 import * as teamApi from '../../api/team'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { word } from '../../ui/words'
 
 /** The people currently working for this business. */
 export default function MyTeam({ navigation }) {
@@ -73,7 +74,7 @@ export default function MyTeam({ navigation }) {
                   ) : null}
                   <Row gap={space.sm} style={{ marginTop: 7 }}>
                     <Badge
-                      label={item.status}
+                      label={word(t, item.status)}
                       tone={['ACTIVE', 'JOINED', 'ONGOING'].includes(item.status) ? 'green' : 'grey'}
                     />
                     {item.salary ? <Small style={{ fontWeight: '700' }}>{money(item.salary)}</Small> : null}

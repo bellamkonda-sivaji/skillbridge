@@ -12,6 +12,7 @@ import { workArt } from '../../ui/workArt'
 import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { word } from '../../ui/words'
 
 const TONE = {
   OPEN: 'green', ACTIVE: 'green', PAUSED: 'orange',
@@ -85,7 +86,7 @@ export default function MyJobs({ navigation }) {
                     {[item.area, item.city].filter(Boolean).join(', ')}
                   </Small>
                   <Row gap={space.sm} style={{ marginTop: 7 }}>
-                    <Badge label={item.status} tone={TONE[item.status] || 'grey'} />
+                    <Badge label={word(t, item.status)} tone={TONE[item.status] || 'grey'} />
                     <Small>{item.applicationsCount ?? item.applicantsCount ?? 0} {t('jobs.applicants')}</Small>
                   </Row>
                   <Row gap={space.md} style={{ marginTop: 7 }}>

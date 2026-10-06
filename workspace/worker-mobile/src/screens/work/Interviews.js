@@ -12,6 +12,7 @@ import { modeIcon, modeLabel, modeTone } from '../../ui/interviewMode'
 import * as appsApi from '../../api/applications'
 import { errorText } from '../../api/client'
 import { colors, space } from '../../theme'
+import { word } from '../../ui/words'
 
 
 /**
@@ -86,7 +87,7 @@ export default function Interviews({ navigation }) {
                   <Small style={{ marginTop: 2 }}>{item.businessName}</Small>
                   <Row gap={space.sm} style={{ marginTop: 7, flexWrap: 'wrap' }}>
                     <Badge label={modeLabel(item)} tone="violet" />
-                    {item.status ? <Badge label={item.status} tone="grey" /> : null}
+                    {item.status ? <Badge label={word(t, item.status)} tone="grey" /> : null}
                   </Row>
                   <Small style={{ marginTop: 6 }}>
                     {formatDate(item.scheduledAt)} · {timeOnly(item.scheduledAt)}

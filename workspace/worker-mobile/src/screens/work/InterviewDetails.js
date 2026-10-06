@@ -10,6 +10,7 @@ import { modeIcon, modeLabel, modeTone } from '../../ui/interviewMode'
 import * as appsApi from '../../api/applications'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { word } from '../../ui/words'
 
 /** One talk or visit, with the two things a worker may need to do about it. */
 export default function InterviewDetails({ navigation, route }) {
@@ -90,7 +91,7 @@ export default function InterviewDetails({ navigation, route }) {
             <Text style={s.title}>{item.jobTitle}</Text>
             <Small style={{ marginTop: 2 }}>{item.businessName}</Small>
           </View>
-          {item.status ? <Badge label={item.status} tone={open ? 'violet' : 'grey'} /> : null}
+          {item.status ? <Badge label={word(t, item.status)} tone={open ? 'violet' : 'grey'} /> : null}
         </Row>
 
         <Card style={s.when}>

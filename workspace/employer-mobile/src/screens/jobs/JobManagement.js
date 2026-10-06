@@ -10,6 +10,7 @@ import { splitPrice } from '../../ui/catalog'
 import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { word } from '../../ui/words'
 
 /**
  * One job: how it is doing, what it pays, and the advice when it is not
@@ -88,7 +89,7 @@ export default function JobManagement({ navigation, route }) {
 
       <View style={{ paddingHorizontal: space.lg, paddingTop: space.lg }}>
         <Row gap={space.sm} style={{ marginBottom: space.lg, flexWrap: 'wrap' }}>
-          <Badge label={job.status} tone={live ? 'green' : 'grey'} />
+          <Badge label={word(t, job.status)} tone={live ? 'green' : 'grey'} />
           {live ? (
             <Button title={t('jobs.pause')} tone="quiet" size="sm" full={false}
               onPress={() => changeStatus('PAUSED')} />

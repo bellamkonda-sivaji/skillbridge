@@ -11,6 +11,7 @@ import {
 import * as offersApi from '../../api/offers'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { word } from '../../ui/words'
 
 const TONE = { PENDING: 'orange', SENT: 'orange', ACCEPTED: 'green', DECLINED: 'red', CANCELLED: 'grey' }
 
@@ -83,7 +84,7 @@ export default function OfferTracking({ navigation }) {
                   <Text style={s.pay}>{money(item.salary)}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end', gap: 8 }}>
-                  <Badge label={item.status} tone={TONE[item.status] || 'grey'} />
+                  <Badge label={word(t, item.status)} tone={TONE[item.status] || 'grey'} />
                   <Ionicons name="chevron-forward" size={19} color={colors.muted} />
                 </View>
               </Row>

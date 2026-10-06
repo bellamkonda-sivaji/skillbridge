@@ -17,6 +17,7 @@ const NAV = [
   { to: '/admin', end: true, icon: 'grid', label: 'Overview' },
   { to: '/admin/call-list', icon: 'phone', label: 'Call list' },
   { to: '/admin/enquiries', icon: 'chat', label: 'Enquiries' },
+  { to: '/admin/support', icon: 'chat', label: 'Help desk' },
   { to: '/admin/attendance', icon: 'checkCircle', label: 'Attendance' },
   { to: '/admin/jobs', icon: 'briefcase', label: 'Jobs' },
   { to: '/admin/applications', icon: 'doc', label: 'Applications' },

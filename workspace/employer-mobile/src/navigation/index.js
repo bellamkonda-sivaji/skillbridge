@@ -54,6 +54,7 @@ import FundJob from '../screens/team/FundJob'
 import Profile from '../screens/Profile'
 import Reviews from '../screens/Reviews'
 import Settings from '../screens/Settings'
+import Help from '../screens/Help'
 import Notifications from '../screens/Notifications'
 
 const Stack = createNativeStackNavigator()
@@ -140,6 +141,7 @@ const ProfileStack = () => (
     <Stack.Screen name="Payroll" component={Payroll} />
     <Stack.Screen name="Reviews" component={Reviews} />
     <Stack.Screen name="Settings" component={Settings} />
+    <Stack.Screen name="Help" component={Help} />
     <Stack.Screen name="Notifications" component={Notifications} />
     {hiringScreens()}
   </Stack.Navigator>

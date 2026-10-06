@@ -14,6 +14,26 @@ const UNIT = {
 export const pay = (amount, unit) => money(amount) + (UNIT[unit] || '')
 
 /**
+ * The same pay, said out loud.
+ *
+ * "₹700/day" is four symbols a reader has to decode. Spoken, it has to be words
+ * - and the words differ by language, so the caller passes `t`. Falls back to
+ * the printed form if a unit has no phrase, which is better than silence.
+ */
+const SPOKEN_UNIT = {
+  HOURLY: 'listen.rupeesAnHour', DAILY: 'listen.rupeesADay',
+  PER_WEEK: 'listen.rupeesAWeek', MONTHLY: 'listen.rupeesAMonth',
+}
+
+export function paySpoken(amount, unit, t) {
+  const n = Number(amount)
+  if (!Number.isFinite(n) || n <= 0) return ''
+  const key = SPOKEN_UNIT[unit]
+  const rounded = Math.round(n)
+  return key ? t(key, { n: rounded }) : pay(n, unit)
+}
+
+/**
  * What the employer pays, and what the worker receives.
  *
  * These are two different numbers and the employer side has to show both: the

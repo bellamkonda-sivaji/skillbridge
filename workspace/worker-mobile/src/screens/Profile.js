@@ -137,6 +137,12 @@ export default function Profile({ navigation }) {
             onPress={cycleLanguage}
           />
           <Divider />
+          {/* Help sits above Settings on purpose: someone in trouble over their
+              wages should reach a person before they reach a preferences list. */}
+          <ListRow icon="help-buoy-outline" title={t('help.title')}
+            sub={t('help.sub')}
+            onPress={() => navigation.navigate('Help')} />
+          <Divider />
           <ListRow icon="settings-outline" title={t('settings.title')}
             onPress={() => navigation.navigate('Settings')} />
         </Card>

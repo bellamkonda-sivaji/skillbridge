@@ -3,6 +3,7 @@ import { Linking, Pressable, StyleSheet, Text, View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Avatar, Badge, Row, Small, distance, money } from '../../ui'
 import { colors, radius, space } from '../../theme'
+import { word } from '../../ui/words'
 
 /** One applicant, as they appear in every list on this side of the product. */
 export default function ApplicantCard({ item, onPress, onCall, selected, onToggleSelect, t }) {
@@ -45,7 +46,7 @@ export default function ApplicantCard({ item, onPress, onCall, selected, onToggl
             ) : null}
             {item.availableNow ? <Badge label={t('applicants.availableNow')} tone="green" /> : null}
             {item.status && item.status !== 'APPLIED' ? (
-              <Badge label={item.status} tone="violet" />
+              <Badge label={word(t, item.status)} tone="violet" />
             ) : null}
           </Row>
         </View>

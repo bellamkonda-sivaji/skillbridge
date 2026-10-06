@@ -9,6 +9,7 @@ import {
 import * as offersApi from '../../api/offers'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { word } from '../../ui/words'
 
 const TONE = { PENDING: 'orange', SENT: 'orange', ACCEPTED: 'green', DECLINED: 'red', CANCELLED: 'grey' }
 
@@ -107,7 +108,7 @@ export default function OfferStatusDetail({ navigation, route }) {
             <Text style={s.name}>{offer.workerName}</Text>
             <Small style={{ marginTop: 2 }}>{offer.jobTitle}</Small>
           </View>
-          <Badge label={offer.status} tone={TONE[offer.status] || 'grey'} />
+          <Badge label={word(t, offer.status)} tone={TONE[offer.status] || 'grey'} />
         </Row>
 
         <ErrorNote onRetry={load}>{error}</ErrorNote>

@@ -62,6 +62,7 @@ import AdminVerifications from './admin/pages/Verifications'
 import AdminAnalytics from './admin/pages/Analytics'
 import AdminFinance from './admin/pages/Finance'
 import AdminCallQueue from './admin/pages/CallQueue'
+import AdminSupport from './admin/pages/Support'
 import AdminLeads from './admin/pages/Leads'
 import AdminAttendance from './admin/pages/Attendance'
 import { RequirePermission } from './admin/components'
@@ -306,6 +307,7 @@ export default function App() {
       <Route path="/admin" element={<Protected type="ADMIN"><AdminShell /></Protected>}>
         <Route index element={<AdminOverview />} />
         <Route path="call-list" element={<AdminCallQueue />} />
+        <Route path="support" element={<AdminSupport />} />
         <Route path="enquiries" element={<AdminLeads />} />
         <Route path="attendance" element={<AdminAttendance />} />
         <Route path="jobs" element={<AdminJobs />} />

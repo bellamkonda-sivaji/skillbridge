@@ -5,6 +5,8 @@ import {
 } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
+import { useTranslation } from 'react-i18next'
+import Listen from './Listen'
 import { colors, radius, shadow, space, type, HIT } from '../theme'
 
 export * from './format'
@@ -295,18 +297,27 @@ export function EmptyState({ icon = 'search-outline', title, sub, action }) {
 
 export function ErrorNote({ children, onRetry }) {
   if (!children) return null
+  // Something has gone wrong and the next step is written in the one sentence
+  // the person may be least able to read, so it can be heard as well.
+  const spoken = typeof children === 'string' ? children : null
   return (
     <View style={s.errorNote}>
       <Ionicons name="alert-circle-outline" size={20} color={colors.redText} />
       <View style={s.flex}>
         <Text style={s.errorText}>{children}</Text>
+        {spoken ? <Listen text={spoken} style={{ marginTop: space.sm }} /> : null}
       </View>
-      {onRetry ? (
-        <Pressable onPress={onRetry} hitSlop={10}>
-          <Text style={s.errorRetry}>Retry</Text>
-        </Pressable>
-      ) : null}
+      {onRetry ? <RetryLink onRetry={onRetry} /> : null}
     </View>
+  )
+}
+
+function RetryLink({ onRetry }) {
+  const { t } = useTranslation()
+  return (
+    <Pressable onPress={onRetry} hitSlop={10}>
+      <Text style={s.errorRetry}>{t('common.retry')}</Text>
+    </Pressable>
   )
 }
 

@@ -10,6 +10,7 @@ import {
 import * as offersApi from '../../api/offers'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { word } from '../../ui/words'
 
 const TONE = { PENDING: 'orange', SENT: 'orange', ACCEPTED: 'green', DECLINED: 'red', CANCELLED: 'grey' }
 
@@ -58,7 +59,7 @@ export default function Offers({ navigation }) {
                     <Row gap={6} style={{ marginTop: 6 }}>
                       <Badge label={oneDay ? t('work.oneDay') : t('work.monthly')} tone="violet" />
                       {item.status ? (
-                        <Badge label={item.status} tone={TONE[item.status] || 'grey'} />
+                        <Badge label={word(t, item.status)} tone={TONE[item.status] || 'grey'} />
                       ) : null}
                     </Row>
                   </View>

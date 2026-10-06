@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Badge, Body, Button, Card, ErrorNote, Fact, H1, H3, Loader, Row, Screen,
-  Small, Spacer, SuccessPanel, distance, formatDate, hhmm, pay, timeAgo, workerPay,
+  Small, Spacer, SuccessPanel, distance, formatDate, hhmm, pay, paySpoken, timeAgo, workerPay,
 } from '../../ui'
 import Photo from '../../ui/Photo'
+import Listen from '../../ui/Listen'
 import { workArt } from '../../ui/workArt'
 import * as jobsApi from '../../api/jobs'
 import * as appsApi from '../../api/applications'
@@ -152,15 +153,24 @@ export default function JobDetails({ navigation, route }) {
           {job.urgent ? <Badge label={t('jobs.urgent')} tone="red" /> : null}
         </Row>
 
-        {/* The take-home, said plainly and made unmissable. */}
+        {/* The take-home, said plainly and made unmissable. Money is the one
+            thing nobody should have to guess at, so it can also be heard. */}
         <Card style={s.payCard} padded>
           <Small style={{ color: colors.greenText }}>{t('jobs.youGet')}</Small>
           <Text style={s.payBig}>{pay(workerPay(job), job.salaryUnit)}</Text>
           {job.platformFee > 0 ? (
             <Small style={{ marginTop: 4 }}>
-              This is what reaches you, after the {job.feePercent}% JobOn fee.
+              {t('jobs.feeNote', { percent: job.feePercent })}
             </Small>
           ) : null}
+          <Listen
+            style={{ marginTop: space.md }}
+            text={[
+              job.title,
+              `${t('jobs.youGet')} ${paySpoken(workerPay(job), job.salaryUnit, t)}`,
+              job.platformFee > 0 ? t('jobs.feeNote', { percent: job.feePercent }) : '',
+            ].filter(Boolean).join('. ')}
+          />
         </Card>
 
         <View style={s.facts}>

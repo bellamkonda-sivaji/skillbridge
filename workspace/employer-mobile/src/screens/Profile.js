@@ -91,6 +91,12 @@ export default function Profile({ navigation }) {
             onPress={cycleLanguage}
           />
           <Divider />
+          {/* Above Settings, for the same reason as in the worker app: a shop
+              owner chasing a problem should reach a person, not a preferences list. */}
+          <ListRow icon="help-buoy-outline" title={t('help.title')}
+            sub={t('help.sub')}
+            onPress={() => navigation.navigate('Help')} />
+          <Divider />
           <ListRow icon="settings-outline" title={t('settings.title')}
             onPress={() => navigation.navigate('Settings')} />
         </Card>
