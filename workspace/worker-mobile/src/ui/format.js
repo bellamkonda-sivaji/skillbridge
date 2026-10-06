@@ -78,3 +78,19 @@ export function minutesLabel(mins) {
 export function isoDay(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
+
+/**
+ * Money small enough to sit on a map pin.
+ *
+ * A pin has room for about five characters, so thousands collapse: ₹12,000
+ * becomes ₹12k. The unit is dropped deliberately - on one screen every pin
+ * carries the same unit far more often than not, and the detail card below
+ * spells it out in full the moment a pin is tapped.
+ */
+export function payShort(amount) {
+  const n = Number(amount)
+  if (!Number.isFinite(n) || n <= 0) return '₹—'
+  if (n < 1000) return '₹' + Math.round(n)
+  const k = n / 1000
+  return '₹' + (k < 10 ? k.toFixed(1).replace(/\.0$/, '') : Math.round(k)) + 'k'
+}

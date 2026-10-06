@@ -8,6 +8,7 @@ import {
 import { AVAILABILITY, RADIUS_OPTIONS } from '../../ui/catalog'
 import { errorText } from '../../api/client'
 import * as profileApi from '../../api/profile'
+import { currentLocation } from '../../location/current'
 import { useSession } from '../../session/SessionProvider'
 import { colors, radius, space } from '../../theme'
 
@@ -27,6 +28,18 @@ export default function LocationStep({ navigation }) {
   const [availability, setAvailability] = useState('IMMEDIATE')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [coords, setCoords] = useState(null)
+  const [locating, setLocating] = useState(false)
+
+  // The pin is optional — someone can finish on town and area alone — but when
+  // we do have it, distance ranking on the jobs list finally has real numbers.
+  const locate = async () => {
+    setLocating(true); setError('')
+    const got = await currentLocation()
+    if (got.ok) setCoords({ latitude: got.latitude, longitude: got.longitude })
+    else setError(t(`onboarding.loc_${got.reason}`))
+    setLocating(false)
+  }
 
   const finish = async () => {
     setBusy(true); setError('')
@@ -35,6 +48,8 @@ export default function LocationStep({ navigation }) {
         step: 'LOCATION',
         city: city.trim(),
         area: area.trim() || undefined,
+        latitude: coords?.latitude,
+        longitude: coords?.longitude,
         preferredRadiusKm: km,
         availability,
       })
@@ -70,18 +85,19 @@ export default function LocationStep({ navigation }) {
         </Field>
 
         <View style={s.mapBox}>
-          <Ionicons name="map-outline" size={30} color={colors.blue} />
+          <Ionicons name={coords ? 'location' : 'map-outline'} size={30} color={colors.blue} />
           <Small style={{ textAlign: 'center', marginTop: 6 }}>
-            We use your area to show work close by.
+            {coords ? t('onboarding.locPinned') : t('onboarding.locWhy')}
           </Small>
           <Button
-            title={t('onboarding.useLocation')}
-            icon="locate-outline"
+            title={coords ? t('onboarding.locAgain') : t('onboarding.useLocation')}
+            icon={coords ? 'checkmark' : 'locate-outline'}
             tone="outline"
             size="sm"
             full={false}
+            loading={locating}
             style={{ marginTop: space.md }}
-            onPress={() => setArea(area || 'Karakambadi')}
+            onPress={locate}
           />
         </View>
 

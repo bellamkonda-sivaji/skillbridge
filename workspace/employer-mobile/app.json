@@ -22,13 +22,24 @@
         "monochromeImage": "./assets/android-icon-monochrome.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.jobon.employer"
+      "package": "com.jobon.employer",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
     "plugins": [
+      [
+        "./plugins/withTileUserAgent",
+        {
+          "userAgent": "JobOn-Employer/1.0 (+https://jobon.in; hello@jobon.in)"
+        }
+      ],
+      "expo-location",
       [
         "expo-splash-screen",
         {

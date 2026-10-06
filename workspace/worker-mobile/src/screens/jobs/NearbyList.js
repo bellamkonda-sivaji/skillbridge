@@ -17,10 +17,12 @@ import { colors, radius, space } from '../../theme'
 export default function NearbyList({ jobs, reason, onOpen }) {
   return (
     <View style={{ padding: space.lg }}>
-      <View style={s.note}>
-        <Ionicons name="information-circle-outline" size={18} color={colors.blueDark} />
-        <Small style={{ flex: 1, color: colors.blueDark }}>{reason}</Small>
-      </View>
+      {reason ? (
+        <View style={s.note}>
+          <Ionicons name="information-circle-outline" size={18} color={colors.blueDark} />
+          <Small style={{ flex: 1, color: colors.blueDark }}>{reason}</Small>
+        </View>
+      ) : null}
       {jobs.map((j) => (
         <Pressable key={j.id} style={s.row} onPress={() => onOpen(j)}>
           <Photo uri={j.photoUrl || j.employerLogoUrl} art={workArt(j)} size={46} radius={11} />

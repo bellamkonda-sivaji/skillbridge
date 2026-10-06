@@ -39,6 +39,12 @@
       "bundler": "metro"
     },
     "plugins": [
+      [
+        "./plugins/withTileUserAgent",
+        {
+          "userAgent": "JobOn-Worker/1.0 (+https://jobon.in; hello@jobon.in)"
+        }
+      ],
       "expo-location",
       [
         "expo-splash-screen",

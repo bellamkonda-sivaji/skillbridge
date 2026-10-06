@@ -7,6 +7,7 @@ import {
 } from '../../ui'
 import { BUSINESS_TYPES } from '../../ui/catalog'
 import * as profileApi from '../../api/profile'
+import { currentLocation } from '../../location/current'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 
@@ -26,6 +27,18 @@ export default function BusinessDetails({ navigation }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
+  const [coords, setCoords] = useState(null)
+  const [locating, setLocating] = useState(false)
+
+  // Optional: a shop can register on address alone. But a worker browsing the
+  // map only sees businesses that have a real point to draw.
+  const locate = async () => {
+    setLocating(true); setError('')
+    const got = await currentLocation()
+    if (got.ok) setCoords({ latitude: got.latitude, longitude: got.longitude })
+    else setError(t(`business.loc_${got.reason}`))
+    setLocating(false)
+  }
 
   const set = (k) => (v) => {
     setForm((f) => ({ ...f, [k]: v }))
@@ -48,6 +61,8 @@ export default function BusinessDetails({ navigation }) {
         address: form.address.trim() || undefined,
         city: form.city.trim(),
         area: form.area.trim() || undefined,
+        latitude: coords?.latitude,
+        longitude: coords?.longitude,
         contactPersonName: form.contactPersonName.trim() || undefined,
       })
       navigation.navigate('Verification')
@@ -102,13 +117,14 @@ export default function BusinessDetails({ navigation }) {
         </View>
 
         <View style={s.mapBox}>
-          <Ionicons name="map-outline" size={28} color={colors.blue} />
+          <Ionicons name={coords ? 'location' : 'map-outline'} size={28} color={colors.blue} />
           <Small style={{ textAlign: 'center', marginTop: 6 }}>
-            Your area is how workers find you.
+            {coords ? t('business.locPinned') : t('business.locWhy')}
           </Small>
-          <Button title={t('business.useLocation')} icon="locate-outline" tone="outline"
-            size="sm" full={false} style={{ marginTop: space.md }}
-            onPress={() => set('area')(form.area || 'Korlagunta')} />
+          <Button title={coords ? t('business.locAgain') : t('business.useLocation')}
+            icon={coords ? 'checkmark' : 'locate-outline'} tone="outline"
+            size="sm" full={false} loading={locating} style={{ marginTop: space.md }}
+            onPress={locate} />
         </View>
 
         <Field label={t('business.contactPerson')} hint={t('common.optional')}>
