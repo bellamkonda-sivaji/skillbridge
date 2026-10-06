@@ -273,7 +273,11 @@ public class EmploymentService {
                             + attendance.getWorkDate() + ". Tap to confirm.",
                     NotificationType.SYSTEM, "/employer/attendance");
         }
-        return AttendanceDto.from(attendance);
+        // The running total travels back with the check-out so the app can mark a
+        // milestone without a second call at the exact moment it matters.
+        long daysWorked = attendanceRepository
+                .countByEmployment_WorkerAndCheckOutAtIsNotNull(worker);
+        return AttendanceDto.withDaysWorked(attendance, daysWorked);
     }
 
     public List<AttendanceDto> attendanceForWorker(WorkerAccount worker, Long employmentId,

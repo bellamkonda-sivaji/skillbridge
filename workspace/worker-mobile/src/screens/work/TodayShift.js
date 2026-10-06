@@ -11,6 +11,7 @@ import {
 import * as attendanceApi from '../../api/attendance'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import Stamp, { milestoneFor } from '../../ui/Stamp'
 
 /**
  * Starting and finishing work.
@@ -23,6 +24,7 @@ export default function TodayShift({ navigation }) {
   const { t } = useTranslation()
   const [rows, setRows] = useState(null)
   const [busy, setBusy] = useState(null)
+  const [stamp, setStamp] = useState(null)
   const [error, setError] = useState('')
   const [, setTick] = useState(0)
 
@@ -49,9 +51,17 @@ export default function TodayShift({ navigation }) {
   const punch = async (row, kind) => {
     setBusy(row.employmentId); setError('')
     try {
-      await (kind === 'IN'
+      const res = await (kind === 'IN'
         ? attendanceApi.checkIn(row.employmentId)
         : attendanceApi.checkOut(row.employmentId))
+      // Finishing a day is the only moment a stamp can be earned. The server
+      // sends the running total back with the check-out, so there is no second
+      // call and no guessing in the app.
+      if (kind === 'OUT') {
+        const days = res?.daysWorkedTotal
+        const earned = milestoneFor(days)
+        if (earned) setStamp({ milestone: earned, days })
+      }
       await load()
     } catch (err) {
       setError(errorText(err, 'That did not go through. Please try again.'))
@@ -62,6 +72,11 @@ export default function TodayShift({ navigation }) {
 
   return (
     <SafeAreaView style={s.fill} edges={['top', 'left', 'right']}>
+      <Stamp
+        milestone={stamp?.milestone}
+        daysWorked={stamp?.days}
+        onClose={() => setStamp(null)}
+      />
       <AppBar
         title={t('myWork.todayShift')}
         onBack={navigation.canGoBack() ? navigation.goBack : undefined}

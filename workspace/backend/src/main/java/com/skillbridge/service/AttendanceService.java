@@ -646,7 +646,7 @@ public class AttendanceService {
         return new AttendanceDto(null, e.getId(), e.getWorker().getId(), e.getWorker().getName(),
                 e.getWorker().getPhone(), e.getJob().getId(), e.getJob().getTitle(), on,
                 null, null, AttendanceStatus.NOT_CHECKED_IN, "Not marked", null, null,
-                null, null, false, hasOpenRequest, false);
+                null, null, false, hasOpenRequest, false, null);
     }
 
     private boolean isLive(Employment e, LocalDate on) {

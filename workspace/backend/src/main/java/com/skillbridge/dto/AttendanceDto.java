@@ -33,11 +33,31 @@ public record AttendanceDto(
         String approvalLabel,
         boolean needsApproval,
         boolean hasOpenRequest,
-        boolean editedByAdmin
+        boolean editedByAdmin,
+        /**
+         * How many days this worker has finished in total, all jobs counted.
+         *
+         * Only filled in on the check-out response, because that is the one
+         * moment the number is worth a round trip - the worker app turns it
+         * into a milestone stamp. Null everywhere else.
+         */
+        Long daysWorkedTotal
 ) {
 
     public static AttendanceDto from(Attendance a) {
         return from(a, false);
+    }
+
+    /** Check-out only: carries the running total so the app can mark a milestone. */
+    public static AttendanceDto withDaysWorked(Attendance a, long daysWorkedTotal) {
+        AttendanceDto base = from(a, false);
+        return new AttendanceDto(
+                base.id(), base.employmentId(), base.workerId(), base.workerName(),
+                base.workerPhone(), base.jobId(), base.jobTitle(), base.workDate(),
+                base.checkInAt(), base.checkOutAt(), base.status(), base.statusLabel(),
+                base.minutesWorked(), base.workedLabel(), base.approvalStatus(),
+                base.approvalLabel(), base.needsApproval(), base.hasOpenRequest(),
+                base.editedByAdmin(), daysWorkedTotal);
     }
 
     public static AttendanceDto from(Attendance a, boolean hasOpenRequest) {
@@ -62,6 +82,7 @@ public record AttendanceDto(
                 approval.label(),
                 AttendanceRules.needsApproval(a),
                 hasOpenRequest,
-                a.isEditedByAdmin());
+                a.isEditedByAdmin(),
+                null);
     }
 }
