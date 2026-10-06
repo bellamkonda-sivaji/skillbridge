@@ -6,6 +6,14 @@ import { ObShell, ObCard, ObHead, Field, PasswordField, Alert } from '../onboard
 import { useAuth } from '../context/AuthContext'
 import { errMsg } from '../api'
 
+const DEMO = import.meta.env.DEV
+  ? {
+      WORKER: 'Demo: 9000000007 or john.kamau@mail.com / pass1234',
+      EMPLOYER: 'Demo: 9000000002 or james@safiriconstruction.com / pass1234',
+      ADMIN: 'Demo: admin@skillbridge.com / admin123',
+    }
+  : {}
+
 const CONFIG = {
   WORKER: {
     title: 'Log in to find work',
@@ -17,7 +25,6 @@ const CONFIG = {
     other: [
       { to: '/employer/login', label: 'Log in as a business' },
     ],
-    demo: 'Demo: 9000000007 or john.kamau@mail.com / pass1234',
   },
   EMPLOYER: {
     title: 'Log in to hire',
@@ -29,7 +36,6 @@ const CONFIG = {
     other: [
       { to: '/worker/login', label: 'Log in as a worker' },
     ],
-    demo: 'Demo: 9000000002 or james@safiriconstruction.com / pass1234',
   },
   ADMIN: {
     title: 'Operations login',
@@ -41,7 +47,6 @@ const CONFIG = {
       { to: '/worker/login', label: 'Worker login' },
       { to: '/employer/login', label: 'Business login' },
     ],
-    demo: 'Demo: admin@skillbridge.com / admin123',
   },
 }
 
@@ -121,8 +126,8 @@ function LoginForm({ accountType }) {
 
         {/* Seeded demo logins, for development only. Vite strips this from
             a production build, so the credentials never reach the server. */}
-        {import.meta.env.DEV && cfg.demo ? (
-          <p className="ob-foot-note" style={{ fontSize: 12.5 }}>{cfg.demo}</p>
+        {DEMO[accountType] ? (
+          <p className="ob-foot-note" style={{ fontSize: 12.5 }}>{DEMO[accountType]}</p>
         ) : null}
       </ObCard>
     </ObShell>
