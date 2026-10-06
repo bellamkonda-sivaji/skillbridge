@@ -2,21 +2,27 @@ spring:
   application:
     name: skillbridge-backend
   datasource:
-    url: jdbc:h2:mem:skillbridge;DB_CLOSE_DELAY=-1;MODE=LEGACY
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: ""
+    # In-memory H2 by default, so a fresh clone runs with no database to set
+    # up and the seeder gives you a working demo. Every deployed environment
+    # overrides these: H2 in memory loses every account on restart.
+    url: ${DB_URL:jdbc:h2:mem:skillbridge;DB_CLOSE_DELAY=-1;MODE=LEGACY}
+    driver-class-name: ${DB_DRIVER:org.h2.Driver}
+    username: ${DB_USER:sa}
+    password: ${DB_PASSWORD:}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${DDL_AUTO:update}
     show-sql: false
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
+        # Left unset so Hibernate detects it from the connection. Naming a
+        # dialect here would pin every environment to H2.
   h2:
     console:
-      enabled: true
+      # A web SQL console over the whole database. Fine on a laptop, never
+      # on a server - SecurityConfig lets /h2-console through unauthenticated.
+      enabled: ${H2_CONSOLE:false}
       path: /h2-console
 
 server:
@@ -24,7 +30,10 @@ server:
 
 skillbridge:
   jwt:
-    secret: "SkillBridgeSecretKeyForJwtSigning2026!SecureEnoughForProductionUse"
+    # Anyone holding this can mint a valid admin token, so a deployed
+    # environment must set JWT_SECRET. The default exists only so a fresh
+    # clone starts; it is public in the repository and worthless as a secret.
+    secret: "${JWT_SECRET:SkillBridgeSecretKeyForJwtSigning2026!SecureEnoughForProductionUse}"
     expiration-ms: 86400000
   pricing:
     # Platform fee on worker earnings, percent. Drives the schedule estimate and /api/config/pricing.
