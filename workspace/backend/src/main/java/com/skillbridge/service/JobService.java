@@ -109,6 +109,11 @@ public class JobService {
                 .salaryUnit(request.salaryUnit())
                 .city(city)
                 .area(request.area())
+                // Inherited from the business, like the coordinates above: the
+                // work is almost always at the shop, and a job with no PIN
+                // scores nothing on locality when a worker is matched to it.
+                .pincode(request.pincode() != null && !request.pincode().isBlank()
+                        ? request.pincode() : profile.getPincode())
                 .latitude(request.latitude() != 0 ? request.latitude() : profile.getLatitude())
                 .longitude(request.longitude() != 0 ? request.longitude() : profile.getLongitude())
                 .minExperienceYears(Math.max(0, request.minExperienceYears()))
