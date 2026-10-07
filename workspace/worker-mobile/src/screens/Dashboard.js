@@ -83,7 +83,17 @@ export default function Dashboard({ navigation }) {
           {/* Between the name and the avatar, where the screenshot asked for it:
               reachable on the first screen, without reading any English. */}
           <LanguagePicker style={{ marginRight: space.sm }} />
-          <Avatar name={user?.name} size={44} />
+          {/* The avatar is where a thumb goes looking for "me". Leaving it
+              inert makes the whole header feel dead. */}
+          <Pressable
+            onPress={() => navigation.navigate('ProfileTab')}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('tabs.profile')}
+            style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}
+          >
+            <Avatar name={user?.name} uri={user?.photoUrl} size={44} />
+          </Pressable>
         </View>
 
         <ErrorNote onRetry={load}>{error}</ErrorNote>

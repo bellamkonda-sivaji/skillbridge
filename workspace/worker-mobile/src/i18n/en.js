@@ -236,6 +236,7 @@ export default {
     bankAccount: 'Bank account', addBank: 'Add your bank account',
   },
   profile: {
+    changePhoto: 'Change photo',
     title: 'My profile', edit: 'Edit', completion: 'Profile complete',
     completionSub: 'Fill your profile to get better work.',
     personal: 'My details', skills: 'What I can do', experience: 'Where I worked',

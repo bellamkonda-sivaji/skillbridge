@@ -25,6 +25,7 @@ export default function BasicInfo({ navigation }) {
   const [photo, setPhoto] = useState(null)
   const [altPhone, setAltPhone] = useState('')
   const [busy, setBusy] = useState(false)
+  const [photoData, setPhotoData] = useState(null)
   const [error, setError] = useState('')
 
   const pickPhoto = async () => {
@@ -32,9 +33,26 @@ export default function BasicInfo({ navigation }) {
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync()
       if (!perm.granted) { setError('We need permission to open your photos.'); return }
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.6,
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        // The photo is stored as a base64 data URL, so it travels inside the
+        // JSON body. Quality is low on purpose: this is shown at 66px on a
+        // profile and 44px in a header, and a full-size phone photo would be
+        // megabytes of text for something nobody will ever see at that size.
+        quality: 0.4,
+        base64: true,
       })
-      if (!result.canceled) setPhoto(result.assets[0].uri)
+      if (result.canceled) return
+      const asset = result.assets[0]
+      setPhoto(asset.uri)
+      // The local file:// URI only exists on this phone. What gets saved is
+      // the data URL - without it the picture shows once and is gone on the
+      // next launch, which is exactly how this used to behave.
+      if (asset.base64) {
+        const mime = asset.mimeType || 'image/jpeg'
+        setPhotoData(`data:${mime};base64,${asset.base64}`)
+      }
     } catch {
       setError('We could not open your photos.')
     }
@@ -49,8 +67,9 @@ export default function BasicInfo({ navigation }) {
         dateOfBirth: dob || undefined,
         gender: gender || undefined,
         alternatePhone: altPhone.replace(/\D/g, '') || undefined,
+        photoUrl: photoData || undefined,
       })
-      updateUser({ name: name.trim() })
+      updateUser({ name: name.trim(), ...(photoData ? { photoUrl: photoData } : {}) })
       navigation.navigate('JobPreferences')
     } catch (err) {
       setError(errorText(err, 'We could not save that. Please try again.'))

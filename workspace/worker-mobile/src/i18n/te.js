@@ -234,6 +234,7 @@ export default {
     bankAccount: 'బ్యాంక్ ఖాతా', addBank: 'బ్యాంక్ ఖాతా జోడించు',
   },
   profile: {
+    changePhoto: 'ఫోటో మార్చు',
     title: 'నా ప్రొఫైల్', edit: 'మార్చు', completion: 'ప్రొఫైల్ పూర్తి',
     completionSub: 'ప్రొఫైల్ నింపితే మంచి పని వస్తుంది.',
     personal: 'నా వివరాలు', skills: 'నాకు వచ్చేవి', experience: 'పనిచేసిన చోట్లు',

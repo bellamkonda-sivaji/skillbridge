@@ -1,5 +1,6 @@
+import * as ImagePicker from 'expo-image-picker'
 import React, { useCallback, useState } from 'react'
-import { Alert, StyleSheet, Text, View } from 'react-native'
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
@@ -17,7 +18,7 @@ import { colors, radius, space } from '../theme'
 /** The account screen: who they are, and the way out. */
 export default function Profile({ navigation }) {
   const { t, i18n } = useTranslation()
-  const { user, signOut } = useSession()
+  const { signOut, updateUser, user } = useSession()
   const [profile, setProfile] = useState(null)
   const [progress, setProgress] = useState(null)
   const [error, setError] = useState('')
@@ -58,11 +59,42 @@ export default function Profile({ navigation }) {
     ])
   }
 
+  const changePhoto = async () => {
+    try {
+      const perm = await ImagePicker.requestMediaLibraryPermissionsAsync()
+      if (!perm.granted) return
+      const res = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1],
+        quality: 0.4, base64: true,
+      })
+      if (res.canceled || !res.assets?.[0]?.base64) return
+      const a = res.assets[0]
+      const dataUrl = `data:${a.mimeType || 'image/jpeg'};base64,${a.base64}`
+      // Paint it immediately, then save. Waiting on the network to show a
+      // picture the person just chose feels broken on a slow connection.
+      setProfile((prev) => (prev ? { ...prev, photoUrl: dataUrl } : prev))
+      await profileApi.saveOnboardingStep({ step: 'BASIC', photoUrl: dataUrl })
+      updateUser({ photoUrl: dataUrl })
+    } catch {
+      // Keeping the old picture is the right failure here; nothing is lost.
+      load()
+    }
+  }
+
   return (
     <Screen padded={false}>
       <View style={s.header}>
         <Row>
-          <Avatar uri={profile?.photoUrl} name={name} size={66} />
+          {/* Changing the picture should not mean going back through
+              onboarding, which is where it used to be the only option. */}
+          <Pressable onPress={changePhoto} hitSlop={6}
+            accessibilityRole="button" accessibilityLabel={t('profile.changePhoto')}
+            style={({ pressed }) => (pressed ? { opacity: 0.75 } : null)}>
+            <Avatar uri={profile?.photoUrl} name={name} size={66} />
+            <View style={s.camera}>
+              <Ionicons name="camera" size={13} color={colors.white} />
+            </View>
+          </Pressable>
           <View style={{ flex: 1 }}>
             <H2>{name}</H2>
             {profile?.jobTitle ? <Small style={{ marginTop: 2 }}>{profile.jobTitle}</Small> : null}
@@ -166,6 +198,12 @@ export default function Profile({ navigation }) {
 const Divider = () => <View style={s.divider} />
 
 const s = StyleSheet.create({
+  camera: {
+    position: 'absolute', right: -2, bottom: -2,
+    width: 24, height: 24, borderRadius: 12,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: colors.blue, borderWidth: 2, borderColor: colors.white,
+  },
   header: {
     backgroundColor: colors.white, padding: space.lg, paddingTop: space.xl,
     borderBottomWidth: 1, borderBottomColor: colors.line, marginBottom: space.lg,

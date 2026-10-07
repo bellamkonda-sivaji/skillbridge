@@ -74,7 +74,16 @@ export default function Dashboard({ navigation }) {
           </View>
           {/* Between the name and the avatar, where the screenshot asked for it. */}
           <LanguagePicker style={{ marginRight: space.sm }} />
-          <Avatar name={data?.businessName || user?.name} size={44} />
+          {/* Same as the worker app: tapping the mark opens the profile. */}
+          <Pressable
+            onPress={() => navigation.navigate('ProfileTab')}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={t('tabs.profile')}
+            style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}
+          >
+            <Avatar name={data?.businessName || user?.name} uri={user?.photoUrl} size={44} />
+          </Pressable>
         </Row>
 
         <ErrorNote onRetry={load}>{error}</ErrorNote>
