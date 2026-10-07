@@ -32,6 +32,7 @@ public class WorkerOnboardingRequest {
     private Boolean fresher;
     private String city;
     private String area;
+    private String pincode;
     private Double latitude;
     private Double longitude;
     private Integer preferredRadiusKm;

@@ -70,6 +70,7 @@ public class UserService {
         profile.setBio(request.bio());
         profile.setCity(request.city());
         profile.setArea(request.area());
+        profile.setPincode(request.pincode());
         profile.setLatitude(request.latitude());
         profile.setLongitude(request.longitude());
         profile.setLocationEnabled(request.locationEnabled());
@@ -123,6 +124,7 @@ public class UserService {
         if (request.getBio() != null) profile.setBio(request.getBio());
         if (request.getCity() != null) profile.setCity(request.getCity());
         if (request.getArea() != null) profile.setArea(request.getArea());
+        if (request.getPincode() != null) profile.setPincode(request.getPincode());
         if (request.getLatitude() != null) profile.setLatitude(request.getLatitude());
         if (request.getLongitude() != null) profile.setLongitude(request.getLongitude());
         if (profile.getLatitude() != 0.0 && profile.getLongitude() != 0.0) {

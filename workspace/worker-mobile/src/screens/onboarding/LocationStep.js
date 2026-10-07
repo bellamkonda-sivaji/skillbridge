@@ -8,7 +8,6 @@ import {
 import { AVAILABILITY, RADIUS_OPTIONS } from '../../ui/catalog'
 import { errorText } from '../../api/client'
 import * as profileApi from '../../api/profile'
-import { currentLocation } from '../../location/current'
 import { useSession } from '../../session/SessionProvider'
 import { colors, radius, space } from '../../theme'
 
@@ -22,34 +21,25 @@ import { colors, radius, space } from '../../theme'
 export default function LocationStep({ navigation }) {
   const { t } = useTranslation()
   const { updateUser } = useSession()
-  const [city, setCity] = useState('Tirupati')
-  const [area, setArea] = useState('')
   const [km, setKm] = useState(3)
   const [availability, setAvailability] = useState('IMMEDIATE')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const [coords, setCoords] = useState(null)
-  const [locating, setLocating] = useState(false)
+  const [address, setAddress] = useState(emptyAddress())
 
   // The pin is optional — someone can finish on town and area alone — but when
   // we do have it, distance ranking on the jobs list finally has real numbers.
-  const locate = async () => {
-    setLocating(true); setError('')
-    const got = await currentLocation()
-    if (got.ok) setCoords({ latitude: got.latitude, longitude: got.longitude })
-    else setError(t(`onboarding.loc_${got.reason}`))
-    setLocating(false)
-  }
 
   const finish = async () => {
     setBusy(true); setError('')
     try {
       await profileApi.saveOnboardingStep({
         step: 'LOCATION',
-        city: city.trim(),
-        area: area.trim() || undefined,
-        latitude: coords?.latitude,
-        longitude: coords?.longitude,
+        city: address.city || undefined,
+        area: address.locality || undefined,
+        pincode: address.pincode || undefined,
+        latitude: address.latitude ?? undefined,
+        longitude: address.longitude ?? undefined,
         preferredRadiusKm: km,
         availability,
       })
@@ -76,30 +66,12 @@ export default function LocationStep({ navigation }) {
 
         <ErrorNote>{error}</ErrorNote>
 
-        <Field label={t('onboarding.city')}>
-          <Input value={city} onChangeText={setCity} placeholder="Tirupati" />
-        </Field>
+        {/* Where they live, in the three ways people can actually give it:
+            search it, take it from the phone, or type it. No map to pin -
+            reading a map is a skill, and getting this wrong means never being
+            shown the work next door. */}
+        <AddressPicker value={address} onChange={setAddress} />
 
-        <Field label={t('onboarding.area')}>
-          <Input value={area} onChangeText={setArea} placeholder="Karakambadi" />
-        </Field>
-
-        <View style={s.mapBox}>
-          <Ionicons name={coords ? 'location' : 'map-outline'} size={30} color={colors.blue} />
-          <Small style={{ textAlign: 'center', marginTop: 6 }}>
-            {coords ? t('onboarding.locPinned') : t('onboarding.locWhy')}
-          </Small>
-          <Button
-            title={coords ? t('onboarding.locAgain') : t('onboarding.useLocation')}
-            icon={coords ? 'checkmark' : 'locate-outline'}
-            tone="outline"
-            size="sm"
-            full={false}
-            loading={locating}
-            style={{ marginTop: space.md }}
-            onPress={locate}
-          />
-        </View>
 
         <Field label={t('onboarding.radius')}>
           <View style={s.chips}>
@@ -127,9 +99,4 @@ export default function LocationStep({ navigation }) {
 
 const s = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  mapBox: {
-    alignItems: 'center', justifyContent: 'center', padding: space.xl,
-    borderRadius: radius.lg, borderWidth: 1.5, borderStyle: 'dashed',
-    borderColor: colors.blueLine, backgroundColor: colors.blueSoft, marginBottom: space.lg,
-  },
 })

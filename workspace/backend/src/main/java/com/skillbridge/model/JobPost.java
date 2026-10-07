@@ -57,6 +57,11 @@ public class JobPost {
 
     private String area;
 
+
+    /** Where the work is, as a PIN. Inherited from the business unless the job says otherwise. */
+
+    private String pincode;
+
     private double latitude;
 
     private double longitude;

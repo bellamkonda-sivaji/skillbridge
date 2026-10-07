@@ -12,6 +12,7 @@ public record WorkerProfileRequest(
         String bio,
         String city,
         String area,
+        String pincode,
         double latitude,
         double longitude,
         boolean locationEnabled,

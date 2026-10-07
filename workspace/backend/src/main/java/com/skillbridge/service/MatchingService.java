@@ -58,7 +58,13 @@ public class MatchingService {
         double skillScore = computeSkillScore(worker.getSkills(), job.getRequiredSkills());
         double distanceKm = geoService.distanceKm(worker.getLatitude(), worker.getLongitude(),
                 job.getLatitude(), job.getLongitude());
-        double distanceScore = computeDistanceScore(distanceKm);
+        // A shared PIN or area rescues the match when coordinates are poor.
+        // A cheap phone indoors can be a kilometre out, and without this a
+        // worker and a shop on the same street can both score zero on distance
+        // simply because neither got a good fix.
+        double distanceScore = Math.max(
+                computeDistanceScore(distanceKm),
+                computeLocalityScore(worker, job));
         double experienceScore = computeExperienceScore(worker.getExperienceYears());
         double availabilityScore = computeAvailabilityScore(worker.getAvailability(), job.getWorkType());
         double salaryScore = computeSalaryScore(worker.getExpectedSalary(), worker.getSalaryUnit(),
@@ -123,6 +129,36 @@ public class MatchingService {
         }
         double raw = matched + Math.min(partialBonus, (double) (requiredSkills.size() - matched));
         return Math.min(100.0, raw / requiredSkills.size() * 100.0);
+    }
+
+    /**
+     * How close they are by what the person actually wrote down.
+     *
+     * Same PIN code is the strong signal: it is the one part of an Indian
+     * address that is unambiguous, and people know their own. Same area within
+     * the same town is weaker but still worth something; the same town alone
+     * says very little in a city.
+     *
+     * Returns 0 when nothing is known, so it can only ever help a match, never
+     * push a genuinely near job down.
+     */
+    private double computeLocalityScore(WorkerProfile worker, JobPost job) {
+        String workerPin = normalise(worker.getPincode());
+        String jobPin = normalise(job.getPincode());
+        if (!workerPin.isEmpty() && workerPin.equals(jobPin)) return 100.0;
+
+        String workerCity = normalise(worker.getCity());
+        String jobCity = normalise(job.getCity());
+        if (workerCity.isEmpty() || !workerCity.equals(jobCity)) return 0.0;
+
+        String workerArea = normalise(worker.getArea());
+        String jobArea = normalise(job.getArea());
+        if (!workerArea.isEmpty() && workerArea.equals(jobArea)) return 80.0;
+        return 40.0;
+    }
+
+    private static String normalise(String s) {
+        return s == null ? "" : s.trim().toLowerCase();
     }
 
     private double computeDistanceScore(double distanceKm) {

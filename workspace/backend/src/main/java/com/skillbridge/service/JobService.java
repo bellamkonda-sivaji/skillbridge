@@ -150,6 +150,15 @@ public class JobService {
         reprice(job);
         if (request.city() != null && !request.city().isBlank()) job.setCity(request.city());
         if (request.area() != null) job.setArea(request.area());
+        if (request.pincode() != null && !request.pincode().isBlank()) {
+            job.setPincode(request.pincode());
+        } else if (job.getPincode() == null || job.getPincode().isBlank()) {
+            // Inherited, because the work is almost always at the shop. A job
+            // without one scores nothing on locality, which would quietly
+            // undo the matching for every employer who never retypes it.
+            EmployerProfile p = job.getEmployer() == null ? null : job.getEmployer().getProfile();
+            if (p != null && p.getPincode() != null) job.setPincode(p.getPincode());
+        }
         if (request.latitude() != 0) job.setLatitude(request.latitude());
         if (request.longitude() != 0) job.setLongitude(request.longitude());
         if (request.minExperienceYears() > 0) job.setMinExperienceYears(request.minExperienceYears());

@@ -61,6 +61,16 @@ public class WorkerProfile {
 
     private String area;
 
+    /**
+     * The PIN code the worker lives in.
+     *
+     * Distance does the real ranking, but a PIN is what people actually know
+     * and say, and it is the one part of an address that is unambiguous. It
+     * also rescues a match when coordinates are rough: two points a kilometre
+     * apart on a bad GPS fix still share a PIN.
+     */
+    private String pincode;
+
     private double latitude;
 
     private double longitude;

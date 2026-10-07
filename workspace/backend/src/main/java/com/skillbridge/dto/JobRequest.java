@@ -33,6 +33,7 @@ public record JobRequest(
         SalaryUnit salaryUnit,
         String city,
         String area,
+        String pincode,
         double latitude,
         double longitude,
         int minExperienceYears,
