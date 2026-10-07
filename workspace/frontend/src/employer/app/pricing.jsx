@@ -25,40 +25,25 @@ const UNIT_SUFFIX = {
 
 /* ================================================================= the split ================= */
 
-/** The three numbers, largest type on the one the reader cares about most. */
+/** What the employer pays. Only that: the fee and the worker's share are ours. */
 export function PriceSplit({ pricing, compact }) {
   if (!pricing || !pricing.postedSalary) return null
   const unit = UNIT_SUFFIX[pricing.salaryUnit] || ''
   if (compact) {
     return (
       <div className="wk-sub" style={{ marginTop: 2 }}>
-        You pay {money(pricing.postedSalary)} · worker gets{' '}
-        <strong>{money(pricing.workerSalary)}</strong> · fee {pricing.feePercent}%
+        You pay {money(pricing.postedSalary)}
       </div>
     )
   }
   return (
     <>
       <div className="emp-price-split">
-        <div className="row">
+        <div className="row total">
           <span className="k">You pay</span>
           <span className="v">{money(pricing.postedSalary)}<span className="u">{unit}</span></span>
         </div>
-        <div className="row muted">
-          <span className="k">JobOn fee ({pricing.feePercent}%)</span>
-          <span className="v">− {money(pricing.platformFee)}</span>
-        </div>
-        <div className="row total">
-          <span className="k">Worker gets</span>
-          <span className="v">{money(pricing.workerSalary)}<span className="u">{unit}</span></span>
-        </div>
       </div>
-      {pricing.slabLabel && (
-        <p className="wk-sub emp-price-note">
-          {pricing.feePercent}% is the rate for this pay band ({pricing.slabLabel}).
-          The worker sees {money(pricing.workerSalary)} — that is what reaches them.
-        </p>
-      )}
     </>
   )
 }
@@ -133,14 +118,8 @@ export function EditPrice({ job, pricing, suggested, onSaved, onCancel }) {
 
       {value > 0 && (
         <div className="emp-price-split" style={{ marginTop: 14 }}>
-          <div className="row">
-            <span className="k">You pay</span><span className="v">{money(cost.total)}</span>
-          </div>
-          <div className="row muted">
-            <span className="k">JobOn fee ({cost.percent}%)</span><span className="v">− {money(cost.fee)}</span>
-          </div>
           <div className="row total">
-            <span className="k">Worker gets</span><span className="v">{money(cost.workerPay)}</span>
+            <span className="k">You pay</span><span className="v">{money(cost.total)}</span>
           </div>
         </div>
       )}

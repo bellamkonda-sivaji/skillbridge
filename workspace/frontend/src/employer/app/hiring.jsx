@@ -89,12 +89,8 @@ export function EstimateBox({ workerPay, fee, total, heading = 'You will pay (Es
   return (
     <div className="emp-estimate">
       <div className="hd">{heading}</div>
-      <div className="r"><span>Worker pay</span><span className="num">{money(workerPay)}</span></div>
-      {fee != null && (
-        <div className="r"><span>JobOn fee</span><span className="num">{money(fee)}</span></div>
-      )}
       <div className="r total"><span>Estimated total</span><span className="num">{money(total)}</span></div>
-      <div className="note">Final amount may vary based on platform fee configuration.</div>
+      <div className="note">This is what you pay for this hire.</div>
     </div>
   )
 }
