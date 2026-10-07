@@ -22,13 +22,24 @@ export default function JobPublished({ navigation, route }) {
       bg="#FFFFFF"
       footer={(
         <View style={{ gap: space.md }}>
+          {/* Money first. A posted job with nothing behind it cannot pay
+              anyone, and an employer who leaves this screen rarely comes back
+              to a funding page they never saw. */}
+          <Button
+            title={t('post.fundNow')}
+            icon="wallet-outline"
+            onPress={() => navigation.replace('FundJob', {
+              jobId: job.id, jobTitle: job.title,
+            })}
+          />
           <Button
             title={t('post.viewJob')}
+            tone="outline"
             onPress={() => navigation.replace('JobManagement', { jobId: job.id })}
           />
           <Button
             title={t('post.postAnother')}
-            tone="outline"
+            tone="quiet"
             onPress={() => navigation.replace('PostJob')}
           />
         </View>

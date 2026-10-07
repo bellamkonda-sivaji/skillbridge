@@ -157,6 +157,7 @@ export default {
     needsAttention: 'आपका ध्यान चाहिए', noAlerts: 'सब ठीक चल रहा है',
   },
   post: {
+    fundNow: 'इस काम के लिए पैसा डालें',
     draftWaiting: 'अपनी नौकरी की सूचना पूरी करें',
     stepOf: '{{total}} में से {{step}}वाँ चरण',
     untitledDraft: 'अभी नाम नहीं दिया',
