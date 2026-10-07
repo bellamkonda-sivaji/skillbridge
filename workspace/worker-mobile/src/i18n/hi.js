@@ -171,7 +171,6 @@ export default {
     mapOnPhone: 'नक्शा फ़ोन ऐप में चलता है। यहाँ पास वाले काम पहले दिखेंगे।',
     saved: 'सहेजे गए', noSaved: 'अभी कुछ सहेजा नहीं',
     youGet: 'आपको मिलेगा', type: 'प्रकार', location: 'जगह',
-    feeNote: 'यह पैसा आपके हाथ में आएगा। हर 100 रुपये में से {{percent}} रुपये JobOn रखता है।',
     description: 'इस काम के बारे में', responsibilities: 'आपको क्या करना है',
     showMore: 'और देखें', showLess: 'कम देखें',
     applyNow: 'अभी आवेदन करें', applied2: 'आवेदन किया', save: 'सहेजें', saved2: 'सहेजा',

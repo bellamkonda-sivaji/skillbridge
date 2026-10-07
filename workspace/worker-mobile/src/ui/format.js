@@ -36,10 +36,11 @@ export function paySpoken(amount, unit, t) {
 /**
  * What the worker actually takes home.
  *
- * The employer posts a price and the platform's commission comes out of it, so
- * every screen in this app shows the take-home. Job cards already arrive with
- * the net figure in `salary`; the fuller job record carries it separately.
- * Reading both here means no screen can show a number that will not be paid.
+ * Every screen in this app shows this and only this - the figure the worker
+ * will actually be handed. Job cards already arrive with the net amount in
+ * `salary`; the fuller job record carries it separately. Reading both here
+ * means no screen can show a number that will not be paid, and none of them
+ * has to mention how it was arrived at.
  */
 export const workerPay = (job) =>
   Number(job?.workerSalary) > 0 ? Number(job.workerSalary) : Number(job?.salary) || 0

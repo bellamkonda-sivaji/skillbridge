@@ -86,25 +86,16 @@ export const SKILLS = [
 
 export const LANGUAGE_OPTIONS = ['Telugu', 'Hindi', 'English', 'Tamil', 'Kannada', 'Urdu']
 
-/**
- * The commission bands, mirrored from PricingService on the server so the
- * wizard can show a split as the employer types. The server recalculates on
- * save and is the authority - if these ever drift, the job carries the
- * server's figure, not this one.
- */
-export const FEE_SLABS = [
-  { upTo: 499.99, percent: 7, label: 'Under ₹500' },
-  { upTo: 1000, percent: 10, label: '₹500 – ₹1,000' },
-  { upTo: 4000, percent: 13, label: '₹1,000 – ₹4,000' },
-  { upTo: 10000, percent: 16, label: '₹4,000 – ₹10,000' },
-  { upTo: null, percent: 20, label: 'Above ₹10,000' },
-]
 
+/**
+ * What the employer is agreeing to pay.
+ *
+ * Only the posted amount. The commission rates used to be mirrored here so the
+ * app could draw a split, which meant shipping them to every phone - anyone who
+ * unpacked the APK could read them. The server is the only place that needs to
+ * know, so that is the only place they live now.
+ */
 export function splitPrice(postedAmount) {
   const total = Number(postedAmount) || 0
-  if (!total) return { total: 0, fee: 0, workerPay: 0, percent: 0, slab: null }
-  const slab = FEE_SLABS.find((x) => x.upTo === null || total <= x.upTo) || FEE_SLABS[FEE_SLABS.length - 1]
-  // Whole rupees, matching the server: these wages are handed over as cash.
-  const fee = Math.round(total * (slab.percent / 100))
-  return { total, fee, workerPay: total - fee, percent: slab.percent, slab }
+  return { total }
 }

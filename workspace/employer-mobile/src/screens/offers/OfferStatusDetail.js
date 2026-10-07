@@ -116,11 +116,6 @@ export default function OfferStatusDetail({ navigation, route }) {
         <Card style={s.payCard}>
           <Small>{t('post.youPay')}</Small>
           <Text style={s.payBig}>{money(offer.salary)}</Text>
-          {offer.workerSalary ? (
-            <Small style={{ marginTop: 3 }}>
-              {t('post.workerGets')} {money(offer.workerSalary)}
-            </Small>
-          ) : null}
         </Card>
 
         <H3 style={{ marginTop: space.xl, marginBottom: space.md }}>{t('offers.workStatus')}</H3>

@@ -103,9 +103,7 @@ export default function CreateOffer({ navigation, route }) {
         {split.total > 0 ? (
           <Card style={{ marginBottom: space.lg }}>
             <KV k={t('post.youPay')} v={money(split.total)} strong />
-            <KV k={`${t('post.jobonFee')} (${split.percent}%)`} v={`− ${money(split.fee)}`} />
-            <KV k={t('post.workerGets')} v={money(split.workerPay)} strong />
-            <Small style={{ marginTop: space.sm }}>{t('post.feeNote')}</Small>
+            <Small style={{ marginTop: space.sm }}>{t('post.payNote')}</Small>
           </Card>
         ) : null}
 

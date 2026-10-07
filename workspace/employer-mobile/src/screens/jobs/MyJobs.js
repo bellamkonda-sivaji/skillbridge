@@ -91,9 +91,6 @@ export default function MyJobs({ navigation }) {
                   </Row>
                   <Row gap={space.md} style={{ marginTop: 7 }}>
                     <Text style={s.pay}>{money(item.salary)}</Text>
-                    {item.workerSalary ? (
-                      <Small>{t('post.workerGets')} {money(item.workerSalary)}</Small>
-                    ) : null}
                   </Row>
                   {item.postedAt ? (
                     <Small style={{ marginTop: 5 }}>{t('jobs.posted')} {timeAgo(item.postedAt)}</Small>

@@ -80,8 +80,6 @@ export default function OfferPreview({ navigation, route }) {
         <H3 style={{ marginTop: space.xl, marginBottom: space.sm }}>{t('offers.paySummary')}</H3>
         <Card>
           <KV k={t('post.youPay')} v={money(split.total)} strong />
-          <KV k={`${t('post.jobonFee')} (${split.percent}%)`} v={`− ${money(split.fee)}`} />
-          <KV k={t('post.workerGets')} v={money(split.workerPay)} strong />
         </Card>
 
         {(draft?.benefits || []).length ? (

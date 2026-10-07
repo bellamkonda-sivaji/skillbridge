@@ -186,24 +186,12 @@ export default function JobManagement({ navigation, route }) {
         {tab === 'pay' ? (
           <>
             <Card padded={false}>
-              <View style={s.splitRow}>
-                <Text style={s.splitKey}>{t('post.youPay')}</Text>
-                <Text style={s.splitValue}>{money(pricing?.postedSalary ?? job.salary)}</Text>
-              </View>
-              <View style={[s.splitRow, { backgroundColor: colors.soft }]}>
-                <Text style={s.splitKey}>
-                  {t('post.jobonFee')} ({pricing?.feePercent ?? split.percent}%)
-                </Text>
-                <Text style={[s.splitValue, { color: colors.orangeText }]}>
-                  − {money(pricing?.platformFee ?? split.fee)}
-                </Text>
-              </View>
+              {/* The posted price only. What we keep is not the employer's
+                  business, and showing it here was the same leak twice. */}
               <View style={[s.splitRow, s.splitTotal]}>
-                <Text style={[s.splitKey, { color: colors.greenText, fontWeight: '700' }]}>
-                  {t('post.workerGets')}
-                </Text>
-                <Text style={[s.splitValue, { color: colors.greenText, fontSize: 19 }]}>
-                  {money(pricing?.workerSalary ?? split.workerPay)}
+                <Text style={[s.splitKey, { fontWeight: '700' }]}>{t('post.youPay')}</Text>
+                <Text style={[s.splitValue, { fontSize: 19 }]}>
+                  {money(pricing?.postedSalary ?? job.salary)}
                 </Text>
               </View>
             </Card>
@@ -230,9 +218,7 @@ export default function JobManagement({ navigation, route }) {
                     onPress={() => setEditing(String(Number(editing) + step))} />
                 </Row>
                 <View style={{ marginTop: space.md }}>
-                  <KV k={t('post.youPay')} v={money(split.total)} />
-                  <KV k={`${t('post.jobonFee')} (${split.percent}%)`} v={`− ${money(split.fee)}`} />
-                  <KV k={t('post.workerGets')} v={money(split.workerPay)} strong />
+                  <KV k={t('post.youPay')} v={money(split.total)} strong />
                 </View>
                 <Input value={reason} onChangeText={setReason}
                   placeholder={t('jobs.whyChange')} style={{ marginTop: space.md }} />

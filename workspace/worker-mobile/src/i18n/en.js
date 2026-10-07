@@ -173,7 +173,6 @@ export default {
     mapOnPhone: 'The map runs on the phone app. Here the same work is listed nearest first.',
     saved: 'Saved work', noSaved: 'Nothing saved yet',
     youGet: 'You get', type: 'Type', location: 'Place',
-    feeNote: 'This is the money that reaches your hand. JobOn keeps {{percent}} out of every 100 rupees.',
     description: 'About this work', responsibilities: 'What you will do',
     showMore: 'Show more', showLess: 'Show less',
     applyNow: 'Apply now', applied2: 'You applied', save: 'Save', saved2: 'Saved',

@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Body, Button, Card, ErrorNote, H1, Row, Screen, Small, Spacer, Steps,
 } from '../../ui'
-import { FEE_SLABS } from '../../ui/catalog'
 import * as profileApi from '../../api/profile'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
@@ -101,26 +100,6 @@ export default function PlanPricing({ navigation }) {
           )
         })}
 
-        {/* The fee an employer actually pays, stated before they post. */}
-        <Spacer h={space.lg} />
-        <Card style={{ backgroundColor: colors.soft }}>
-          <Row gap={space.sm}>
-            <Ionicons name="pricetag-outline" size={19} color={colors.ink} />
-            <Text style={s.feeTitle}>Our fee on each job</Text>
-          </Row>
-          <Small style={{ marginTop: 6 }}>
-            It comes out of the pay you set - you pay exactly what you type, and the worker
-            sees what reaches them.
-          </Small>
-          <View style={{ marginTop: space.md }}>
-            {FEE_SLABS.map((sl) => (
-              <Row key={sl.label} style={s.feeRow}>
-                <Small style={{ flex: 1, color: colors.body }}>{sl.label}</Small>
-                <Text style={s.feePercent}>{sl.percent}%</Text>
-              </Row>
-            ))}
-          </View>
-        </Card>
         <Spacer h={space.lg} />
       </View>
     </Screen>
@@ -138,7 +117,4 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   radioOn: { backgroundColor: colors.blue, borderColor: colors.blue },
-  feeTitle: { fontSize: 15.5, fontWeight: '700', color: colors.ink },
-  feeRow: { paddingVertical: 6, borderTopWidth: 1, borderTopColor: colors.line },
-  feePercent: { fontSize: 14.5, fontWeight: '800', color: colors.ink },
 })

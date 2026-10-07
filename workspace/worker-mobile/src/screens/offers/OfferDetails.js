@@ -96,9 +96,6 @@ export default function OfferDetails({ navigation, route }) {
           <Text style={s.payBig}>
             {money(takeHome)}{oneDay ? ` ${t('common.perDay')}` : ` ${t('common.perMonth')}`}
           </Text>
-          {offer.platformFee > 0 ? (
-            <Small style={{ marginTop: 3 }}>This is what reaches you.</Small>
-          ) : null}
         </Card>
 
         <H3 style={{ marginTop: space.xl, marginBottom: space.sm }}>{t('offers.jobDetails')}</H3>

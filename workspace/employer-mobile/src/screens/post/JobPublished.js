@@ -39,7 +39,6 @@ export default function JobPublished({ navigation, route }) {
           <KV k={t('post.jobTitle')} v={job.title} strong />
           <KV k={t('post.openings')} v={String(job.workersNeeded || 1)} />
           <KV k={t('post.youPay')} v={money(job.salary)} />
-          <KV k={t('post.workerGets')} v={money(job.workerSalary ?? split.workerPay)} strong />
         </Card>
         <Button
           title={t('post.share')}

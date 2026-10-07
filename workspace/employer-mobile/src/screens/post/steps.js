@@ -266,28 +266,18 @@ export function StepSalary({ draft, set, t }) {
         />
       </Field>
 
-      {/* The split, shown as it is typed. An employer who meets the commission
-          for the first time at payout stops posting. */}
+      {/* What the employer pays, and nothing else. How the platform is funded
+          is between us and nobody else: an employer does not need to know what
+          we pay the worker any more than the worker needs to know what was
+          posted. One number, the one they are agreeing to. */}
       {split.total > 0 ? (
         <Card style={{ marginBottom: space.lg }} padded={false}>
-          <View style={s.splitRow}>
-            <Text style={s.splitKey}>{t('post.youPay')}</Text>
-            <Text style={s.splitValue}>{money(split.total)}</Text>
-          </View>
-          <View style={[s.splitRow, s.splitMuted]}>
-            <Text style={s.splitKey}>{t('post.jobonFee')} ({split.percent}%)</Text>
-            <Text style={[s.splitValue, { color: colors.orangeText }]}>− {money(split.fee)}</Text>
-          </View>
           <View style={[s.splitRow, s.splitTotal]}>
-            <Text style={[s.splitKey, { color: colors.greenText, fontWeight: '700' }]}>
-              {t('post.workerGets')}
-            </Text>
-            <Text style={[s.splitValue, { color: colors.greenText, fontSize: 19 }]}>
-              {money(split.workerPay)}
-            </Text>
+            <Text style={[s.splitKey, { fontWeight: '700' }]}>{t('post.youPay')}</Text>
+            <Text style={[s.splitValue, { fontSize: 19 }]}>{money(split.total)}</Text>
           </View>
           <View style={{ padding: space.md }}>
-            <Small>{t('post.feeNote')}</Small>
+            <Small>{t('post.payNote')}</Small>
           </View>
         </Card>
       ) : null}
@@ -447,8 +437,6 @@ export function StepReview({ draft, lang, t, onEdit }) {
 
       <Section title={t('post.salaryTitle')} step={5}>
         <KV k={t('post.youPay')} v={`${money(split.total)}${unit ? ` ${t(`common.${unit.key}`)}` : ''}`} strong />
-        <KV k={`${t('post.jobonFee')} (${split.percent}%)`} v={`− ${money(split.fee)}`} />
-        <KV k={t('post.workerGets')} v={money(split.workerPay)} strong />
         {(draft.benefits || []).length
           ? <KV k={t('post.benefits')} v={(draft.benefits || []).join(', ')} /> : null}
       </Section>

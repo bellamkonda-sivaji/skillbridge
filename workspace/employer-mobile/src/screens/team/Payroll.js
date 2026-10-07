@@ -14,9 +14,9 @@ import { colors, radius, space } from '../../theme'
 /**
  * What is owed and what has been paid.
  *
- * Amounts here are the employer's side of the ledger - what leaves their
- * account. The worker's take-home appears beside it so the commission is
- * never a surprise at the end of a month either.
+ * Amounts here are the employer's side of the ledger: what leaves their
+ * account, and nothing else. What we keep, and what the worker is therefore
+ * paid, is not shown on either side of the product.
  */
 export default function Payroll({ navigation }) {
   const { t } = useTranslation()

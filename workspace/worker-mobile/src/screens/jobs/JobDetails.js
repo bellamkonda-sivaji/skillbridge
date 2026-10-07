@@ -153,22 +153,17 @@ export default function JobDetails({ navigation, route }) {
           {job.urgent ? <Badge label={t('jobs.urgent')} tone="red" /> : null}
         </Row>
 
-        {/* The take-home, said plainly and made unmissable. Money is the one
-            thing nobody should have to guess at, so it can also be heard. */}
+        {/* What the worker is paid, said plainly and made unmissable. One
+            number, no arithmetic: how the platform is funded is between us and
+            nobody else, and a worker comparing jobs only needs this figure. */}
         <Card style={s.payCard} padded>
           <Small style={{ color: colors.greenText }}>{t('jobs.youGet')}</Small>
           <Text style={s.payBig}>{pay(workerPay(job), job.salaryUnit)}</Text>
-          {job.platformFee > 0 ? (
-            <Small style={{ marginTop: 4 }}>
-              {t('jobs.feeNote', { percent: job.feePercent })}
-            </Small>
-          ) : null}
           <Listen
             style={{ marginTop: space.md }}
             text={[
               job.title,
               `${t('jobs.youGet')} ${paySpoken(workerPay(job), job.salaryUnit, t)}`,
-              job.platformFee > 0 ? t('jobs.feeNote', { percent: job.feePercent }) : '',
             ].filter(Boolean).join('. ')}
           />
         </Card>
