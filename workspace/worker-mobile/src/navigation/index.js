@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, View } from 'react-native'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
@@ -56,6 +56,7 @@ import Help from '../screens/Help'
 import { alreadyAsked } from '../permissions/ask'
 import { registerChannels } from '../permissions/channels'
 import { registerPushToken } from '../permissions/push'
+import useNotificationTaps from './useNotificationTaps'
 
 const Stack = createNativeStackNavigator()
 const Tab = createBottomTabNavigator()
@@ -172,6 +173,11 @@ function MainTabs() {
 export default function RootNavigator() {
   const { booting, signedIn } = useSession()
   const { t, i18n } = useTranslation()
+
+  // A tapped notification has to reach the navigator, and the navigator does
+  // not exist as a hook target - hence a ref handed to the container.
+  const navigationRef = useRef(null)
+  useNotificationTaps(navigationRef)
   // Null while we are still reading the flag, so the first frame is never the
   // wrong screen - showing Splash and then yanking it away looks like a bug.
   const [askedPermissions, setAskedPermissions] = useState(null)
@@ -199,7 +205,7 @@ export default function RootNavigator() {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator screenOptions={hidden}>
         {signedIn ? (
           <>
