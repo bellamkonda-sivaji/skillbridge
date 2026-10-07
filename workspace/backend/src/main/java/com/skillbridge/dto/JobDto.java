@@ -1,5 +1,6 @@
 package com.skillbridge.dto;
 
+import com.skillbridge.model.AccountType;
 import com.skillbridge.model.EmploymentType;
 import com.skillbridge.model.EngagementModel;
 import com.skillbridge.model.HiringMethod;
@@ -10,6 +11,7 @@ import com.skillbridge.model.GenderPreference;
 import com.skillbridge.model.InterviewType;
 import com.skillbridge.model.JobDuration;
 import com.skillbridge.model.JobPost;
+import com.skillbridge.security.AuthenticationUtils;
 import com.skillbridge.model.JobStatus;
 import com.skillbridge.model.PaymentMode;
 import com.skillbridge.model.SalaryUnit;
@@ -33,9 +35,16 @@ public record JobDto(
         List<String> requiredSkills,
         WorkType workType,
         EmploymentType employmentType,
+        /**
+         * The pay, as the caller is allowed to see it.
+         *
+         * An employer sees what they posted; a worker sees what they will be
+         * handed. Neither is shown the other's figure, and the split below is
+         * admin-only - how the platform is funded is not something either side
+         * of a job negotiates around.
+         */
         double salary,
         SalaryUnit salaryUnit,
-        /** What the worker takes home after the platform commission. */
         double workerSalary,
         double platformFee,
         double feePercent,
@@ -85,14 +94,52 @@ public record JobDto(
         Integer durationMonths,
         List<DayTimeDto> dayTimes
 ) {
+    /**
+     * Who is asking.
+     *
+     * Serialisation is the only place this can be enforced once. Blanking the
+     * fields in each screen leaves them on the wire, where anyone watching the
+     * network - or reading the JSON in a debugger - can still see them.
+     *
+     * Outside a request (seeding, scheduled work) there is no principal, and
+     * the safe answer is "not an admin".
+     */
+    private static AccountType audience() {
+        try {
+            return AuthenticationUtils.currentType();
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static double adminOnly(double value) {
+        return audience() == AccountType.ADMIN ? value : 0d;
+    }
+
+    /** A worker is quoted their own pay, never the amount the employer posted. */
+    private static double visibleSalary(JobPost j) {
+        if (audience() == AccountType.WORKER) {
+            return j.getWorkerSalary() > 0 ? j.getWorkerSalary() : j.getSalary();
+        }
+        return j.getSalary();
+    }
+
+    /** The take-home is the worker's business and ours, not the employer's. */
+    private static double visibleWorkerSalary(JobPost j) {
+        AccountType who = audience();
+        if (who == AccountType.WORKER || who == AccountType.ADMIN) return j.getWorkerSalary();
+        return 0d;
+    }
+
     public static JobDto from(JobPost j, Double matchScore) {
         return new JobDto(
                 j.getId(), j.getEmployer().getId(), j.getEmployer().getName(),
                 j.getEmployer().getProfile() != null ? j.getEmployer().getProfile().getBusinessName() : null,
                 j.getEmployer().getAvgRating(), j.getEmployer().getRatingCount(),
                 j.getTitle(), j.getDescription(), j.getRequiredSkills(), j.getWorkType(),
-                j.getEmploymentType(), j.getSalary(), j.getSalaryUnit(),
-                j.getWorkerSalary(), j.getPlatformFee(), j.getFeePercent(), j.getCity(), j.getArea(),
+                j.getEmploymentType(), visibleSalary(j), j.getSalaryUnit(),
+                visibleWorkerSalary(j), adminOnly(j.getPlatformFee()), adminOnly(j.getFeePercent()),
+                j.getCity(), j.getArea(),
                 j.getLatitude(), j.getLongitude(), j.getMinExperienceYears(), j.getLanguage(),
                 j.getWorkersNeeded(), j.isUrgent(), j.getStatus(), j.getPostedAt(), j.getExpiresAt(),
                 j.getApplicantsCount(), matchScore,
