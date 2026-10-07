@@ -157,6 +157,9 @@ export default {
     needsAttention: 'Needs your attention', noAlerts: 'Everything is on track',
   },
   post: {
+    draftWaiting: 'Finish your job post',
+    stepOf: 'Step {{step}} of {{total}}',
+    untitledDraft: 'Not named yet',
     title: 'Post a job', workerType: 'What kind of worker do you need?',
     workerTypeSub: 'Pick the closest one.',
     employmentType: 'How long do you need them?',

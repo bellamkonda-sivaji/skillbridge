@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -10,6 +10,8 @@ import {
 import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
 import { colors, space } from '../../theme'
+import { clearDraft, loadDraft, saveDraft, worthSaving } from './draftStore'
+import { useSession } from '../../session/SessionProvider'
 
 const TOTAL = 8
 const LABELS = ['Who', 'Length', 'Work', 'When', 'Pay', 'Needs', 'Hiring', 'Check']
@@ -36,6 +38,7 @@ const time = (t) => (t && /^\d{1,2}:\d{2}$/.test(t) ? t.padStart(5, '0') : undef
  */
 export default function PostJob({ navigation }) {
   const { t, i18n } = useTranslation()
+  const { user } = useSession()
   const lang = i18n.language || 'en'
   const [step, setStep] = useState(1)
   const [busy, setBusy] = useState(false)
@@ -54,6 +57,30 @@ export default function PostJob({ navigation }) {
   })
 
   const set = (patch) => setDraft((d) => ({ ...d, ...patch }))
+
+  // Pick up where they left off. `restored` also gates the autosave below, so
+  // the empty initial state cannot overwrite a real draft before it loads.
+  const [restored, setRestored] = useState(false)
+  useEffect(() => {
+    let alive = true
+    loadDraft(user?.id).then((saved) => {
+      if (!alive) return
+      if (saved?.draft) {
+        setDraft((d) => ({ ...d, ...saved.draft }))
+        setStep(Math.min(Math.max(1, saved.step || 1), TOTAL))
+      }
+      setRestored(true)
+    })
+    return () => { alive = false }
+  }, [user?.id])
+
+  // Saved on every change rather than on a "save" button: the interruption
+  // that loses the work is never planned, so there is no moment to press one.
+  useEffect(() => {
+    if (!restored) return
+    if (!worthSaving(draft)) return
+    saveDraft(user?.id, draft, step)
+  }, [draft, step, restored, user?.id])
 
   // What each step needs before it can be left. Stated per step so the reason
   // a button is disabled is always the thing on screen.
@@ -103,6 +130,7 @@ export default function PostJob({ navigation }) {
         benefits: (draft.benefits || []).map((b) => ({ benefitType: b })),
       }
       const job = await jobsApi.createJob(body)
+      await clearDraft(user?.id)
       navigation.replace('JobPublished', { job })
     } catch (err) {
       setError(errorText(err, 'We could not post this job. Please check the details.'))

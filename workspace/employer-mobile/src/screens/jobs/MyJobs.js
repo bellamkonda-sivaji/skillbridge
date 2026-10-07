@@ -13,6 +13,8 @@ import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 import { word } from '../../ui/words'
+import { draftLabel, loadDraft, worthSaving } from '../post/draftStore'
+import { useSession } from '../../session/SessionProvider'
 
 const TONE = {
   OPEN: 'green', ACTIVE: 'green', PAUSED: 'orange',
@@ -20,9 +22,21 @@ const TONE = {
 }
 
 export default function MyJobs({ navigation }) {
+  const { user } = useSession()
   const { t } = useTranslation()
   const [rows, setRows] = useState(null)
   const [tab, setTab] = useState('ALL')
+  const [savedDraft, setSavedDraft] = useState(null)
+
+  useFocusEffect(
+    useCallback(() => {
+      let alive = true
+      loadDraft(user?.id).then((d) => {
+        if (alive) setSavedDraft(d && worthSaving(d.draft) ? d : null)
+      })
+      return () => { alive = false }
+    }, [user?.id]),
+  )
   const [error, setError] = useState('')
 
   const load = useCallback(async () => {
@@ -71,7 +85,27 @@ export default function MyJobs({ navigation }) {
           data={filtered}
           keyExtractor={(j) => String(j.id)}
           contentContainerStyle={{ padding: space.lg }}
-          ListHeaderComponent={<ErrorNote onRetry={load}>{error}</ErrorNote>}
+          ListHeaderComponent={(
+            <>
+              <ErrorNote onRetry={load}>{error}</ErrorNote>
+              {/* The unfinished one belongs with the others: this is where
+                  someone goes looking for "my postings". */}
+              {savedDraft ? (
+                <Pressable onPress={() => navigation.navigate('PostJob')} style={s.draftCard}>
+                  <Row gap={space.md}>
+                    <Ionicons name="document-text-outline" size={20} color={colors.orangeText} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={s.draftTitle}>{draftLabel(savedDraft, t)}</Text>
+                      <Small style={{ marginTop: 2 }}>
+                        {t('post.draftWaiting')} · {t('post.stepOf', { step: savedDraft.step || 1, total: 8 })}
+                      </Small>
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color={colors.muted} />
+                  </Row>
+                </Pressable>
+              ) : null}
+            </>
+          )}
           renderItem={({ item }) => (
             <Pressable
               style={({ pressed }) => [s.card, pressed && { opacity: 0.85 }]}
@@ -115,6 +149,11 @@ export default function MyJobs({ navigation }) {
 }
 
 const s = StyleSheet.create({
+  draftCard: {
+    marginBottom: space.md, padding: space.md, borderRadius: radius.lg,
+    borderWidth: 1.5, borderColor: '#FDE68A', backgroundColor: colors.orangeSoft,
+  },
+  draftTitle: { fontSize: 16, fontWeight: '800', color: colors.ink },
   fill: { flex: 1, backgroundColor: colors.bg },
   head: {
     paddingHorizontal: space.lg, paddingTop: space.sm, paddingBottom: space.md,

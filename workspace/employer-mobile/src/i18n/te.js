@@ -157,6 +157,9 @@ export default {
     needsAttention: 'మీ దృష్టి కావాలి', noAlerts: 'అంతా సరిగ్గా ఉంది',
   },
   post: {
+    draftWaiting: 'మీ పని ప్రకటన పూర్తి చేయండి',
+    stepOf: '{{total}}లో {{step}}వ అడుగు',
+    untitledDraft: 'ఇంకా పేరు పెట్టలేదు',
     title: 'పని పెట్టు', workerType: 'ఎలాంటి కార్మికుడు కావాలి?',
     workerTypeSub: 'దగ్గరగా ఉన్నది ఎంచుకోండి.',
     employmentType: 'ఎంతకాలం కావాలి?',

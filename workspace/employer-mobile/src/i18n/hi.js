@@ -157,6 +157,9 @@ export default {
     needsAttention: 'आपका ध्यान चाहिए', noAlerts: 'सब ठीक चल रहा है',
   },
   post: {
+    draftWaiting: 'अपनी नौकरी की सूचना पूरी करें',
+    stepOf: '{{total}} में से {{step}}वाँ चरण',
+    untitledDraft: 'अभी नाम नहीं दिया',
     title: 'काम डालें', workerType: 'किस तरह का आदमी चाहिए?',
     workerTypeSub: 'सबसे नज़दीकी चुनें।',
     employmentType: 'कितने समय के लिए चाहिए?',
