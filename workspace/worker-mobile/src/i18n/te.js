@@ -1,4 +1,12 @@
 export default {
+  address: {
+    search: 'వెతకండి', manual: 'నేనే టైప్ చేస్తా',
+    useMyLocation: 'నా ప్రస్తుత స్థలం వాడు', locating: 'మిమ్మల్ని కనుగొంటున్నాం…',
+    searchHint: 'షాపు పేరు, వీధి లేదా ఏరియా', searching: 'వెతుకుతోంది…',
+    doorNo: 'డోర్ / షాపు నంబరు', doorNoHint: 'ఉదా: 12-3/A, షాపు 4',
+    building: 'బిల్డింగ్ లేదా కాంప్లెక్స్', street: 'వీధి లేదా రోడ్డు',
+    locality: 'ఏరియా', city: 'ఊరు లేదా నగరం', pincode: 'పిన్ కోడ్',
+  },
   notif: {
     workName: 'మీ కోసం పని',
     workBody: 'దగ్గరలో కొత్త పనులు, మీరు అడిగిన పని గురించి సమాచారం.',

@@ -1,4 +1,12 @@
 export default {
+  address: {
+    search: 'खोजें', manual: 'खुद लिखें',
+    useMyLocation: 'मेरी अभी की जगह लें', locating: 'आपको ढूँढ रहे हैं…',
+    searchHint: 'दुकान का नाम, गली या इलाका', searching: 'खोज रहे हैं…',
+    doorNo: 'मकान / दुकान नंबर', doorNoHint: 'जैसे 12-3/A, दुकान 4',
+    building: 'इमारत या कॉम्प्लेक्स', street: 'गली या सड़क',
+    locality: 'इलाका', city: 'शहर या कस्बा', pincode: 'पिन कोड',
+  },
   notif: {
     workName: 'आपके लिए काम',
     workBody: 'पास के नए काम, और जहाँ आपने माँगा उसकी खबर।',

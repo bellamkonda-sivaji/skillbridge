@@ -1,4 +1,12 @@
 export default {
+  address: {
+    search: 'Search', manual: 'Type it in',
+    useMyLocation: 'Use my current location', locating: 'Finding you…',
+    searchHint: 'Shop name, street or area', searching: 'Searching…',
+    doorNo: 'Door / shop number', doorNoHint: 'e.g. 12-3/A, Shop 4',
+    building: 'Building or complex', street: 'Street or road',
+    locality: 'Area or locality', city: 'Town or city', pincode: 'PIN code',
+  },
   notif: {
     workName: 'Work for you',
     workBody: 'New jobs near you, and news about where you applied.',

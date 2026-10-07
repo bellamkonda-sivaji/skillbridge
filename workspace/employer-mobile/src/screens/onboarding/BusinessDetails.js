@@ -7,9 +7,10 @@ import {
 } from '../../ui'
 import { BUSINESS_TYPES } from '../../ui/catalog'
 import * as profileApi from '../../api/profile'
-import { currentLocation } from '../../location/current'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import AddressPicker from '../../ui/AddressPicker'
+import { emptyAddress, formatAddress } from '../../location/geocode'
 
 /**
  * The business, as a worker will see it.
@@ -27,18 +28,8 @@ export default function BusinessDetails({ navigation }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
-  const [coords, setCoords] = useState(null)
-  const [locating, setLocating] = useState(false)
+  const [address, setAddress] = useState(emptyAddress())
 
-  // Optional: a shop can register on address alone. But a worker browsing the
-  // map only sees businesses that have a real point to draw.
-  const locate = async () => {
-    setLocating(true); setError('')
-    const got = await currentLocation()
-    if (got.ok) setCoords({ latitude: got.latitude, longitude: got.longitude })
-    else setError(t(`business.loc_${got.reason}`))
-    setLocating(false)
-  }
 
   const set = (k) => (v) => {
     setForm((f) => ({ ...f, [k]: v }))
@@ -49,6 +40,11 @@ export default function BusinessDetails({ navigation }) {
     const errs = {}
     if (!form.businessName.trim()) errs.businessName = 'Please enter your business name'
     if (!form.businessType) errs.businessType = 'Choose the kind of business'
+    // The address is how a worker decides whether the job is reachable, so a
+    // bare city is not enough: ask for the locality or the PIN at least.
+    if (!address.locality && !address.pincode && !address.street) {
+      errs.address = 'Add the shop address'
+    }
     setFieldErrors(errs)
     if (Object.keys(errs).length) return
 
@@ -58,11 +54,12 @@ export default function BusinessDetails({ navigation }) {
         step: 'BUSINESS',
         businessName: form.businessName.trim(),
         businessType: form.businessType,
-        address: form.address.trim() || undefined,
+        address: formatAddress(address) || undefined,
+        pincode: address.pincode || undefined,
         city: form.city.trim(),
         area: form.area.trim() || undefined,
-        latitude: coords?.latitude,
-        longitude: coords?.longitude,
+        latitude: address.latitude ?? undefined,
+        longitude: address.longitude ?? undefined,
         contactPersonName: form.contactPersonName.trim() || undefined,
       })
       navigation.navigate('Verification')
@@ -101,31 +98,14 @@ export default function BusinessDetails({ navigation }) {
           </View>
         </Field>
 
-        <Field label={t('business.address')}>
-          <Input value={form.address} onChangeText={set('address')}
-            placeholder="Shop number, street" multiline
-            style={{ minHeight: 72, alignItems: 'flex-start' }} />
+        {/* One control for the whole address: search it, take it from the
+            phone, or type it. Before this, "use my location" stored two
+            numbers and showed nothing back, so nobody could tell whether it
+            had worked - and a worker deciding if a job is reachable needs the
+            street and the PIN code, not a city name. */}
+        <Field label={t('business.address')} error={fieldErrors.address}>
+          <AddressPicker value={address} onChange={setAddress} />
         </Field>
-
-        <View style={{ flexDirection: 'row', gap: space.md }}>
-          <Field label={t('business.city')} style={{ flex: 1 }}>
-            <Input value={form.city} onChangeText={set('city')} placeholder="Tirupati" />
-          </Field>
-          <Field label={t('business.area')} style={{ flex: 1 }}>
-            <Input value={form.area} onChangeText={set('area')} placeholder="Korlagunta" />
-          </Field>
-        </View>
-
-        <View style={s.mapBox}>
-          <Ionicons name={coords ? 'location' : 'map-outline'} size={28} color={colors.blue} />
-          <Small style={{ textAlign: 'center', marginTop: 6 }}>
-            {coords ? t('business.locPinned') : t('business.locWhy')}
-          </Small>
-          <Button title={coords ? t('business.locAgain') : t('business.useLocation')}
-            icon={coords ? 'checkmark' : 'locate-outline'} tone="outline"
-            size="sm" full={false} loading={locating} style={{ marginTop: space.md }}
-            onPress={locate} />
-        </View>
 
         <Field label={t('business.contactPerson')} hint={t('common.optional')}>
           <Input value={form.contactPersonName} onChangeText={set('contactPersonName')}
@@ -138,9 +118,4 @@ export default function BusinessDetails({ navigation }) {
 
 const s = StyleSheet.create({
   wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  mapBox: {
-    alignItems: 'center', justifyContent: 'center', padding: space.xl,
-    borderRadius: radius.lg, borderWidth: 1.5, borderStyle: 'dashed',
-    borderColor: colors.blueLine, backgroundColor: colors.blueSoft, marginBottom: space.lg,
-  },
 })
