@@ -10,6 +10,16 @@ import {
   SALARY_UNITS, SKILLS, WORKER_TYPES, splitPrice,
 } from '../../ui/catalog'
 import { colors, radius, space } from '../../theme'
+import DateField from '../../ui/DateField'
+
+/** The form keeps dates as DD/MM/YYYY text; the picker needs a real Date. */
+function dateOf(text) {
+  const parts = String(text || '').split(/[^0-9]+/).filter(Boolean)
+  if (parts.length !== 3) return undefined
+  const [d, m, y] = parts.map(Number)
+  const out = new Date(y, m - 1, d)
+  return Number.isNaN(out.getTime()) ? undefined : out
+}
 
 const Head = ({ title, sub }) => (
   <View style={{ marginBottom: space.lg }}>
@@ -154,9 +164,9 @@ export function StepSchedule({ draft, set, t }) {
       <Head title={t('post.scheduleTitle')} />
 
       {oneDay ? (
-        <Field label={t('post.workDate')} hint="DD / MM / YYYY">
-          <Input value={draft.workDate} onChangeText={(v) => set({ workDate: v })}
-            placeholder="22 / 04 / 2026" keyboardType="numbers-and-punctuation" />
+        <Field label={t('post.workDate')}>
+          <DateField value={draft.workDate} onChange={(v) => set({ workDate: v })}
+            placeholder={t('post.chooseDate')} />
         </Field>
       ) : (
         <>
@@ -192,12 +202,13 @@ export function StepSchedule({ draft, set, t }) {
           {draft.durationType === 'SPECIFIC' ? (
             <Row align="flex-start">
               <Field label={t('post.startDate')} style={{ flex: 1 }}>
-                <Input value={draft.startDate} onChangeText={(v) => set({ startDate: v })}
-                  placeholder="01 / 05 / 2026" keyboardType="numbers-and-punctuation" />
+                <DateField value={draft.startDate} onChange={(v) => set({ startDate: v })}
+                  placeholder={t('post.chooseDate')} />
               </Field>
               <Field label={t('post.endDate')} style={{ flex: 1 }}>
-                <Input value={draft.endDate} onChangeText={(v) => set({ endDate: v })}
-                  placeholder="31 / 05 / 2026" keyboardType="numbers-and-punctuation" />
+                {/* Cannot end before it starts, so the picker will not offer it. */}
+                <DateField value={draft.endDate} onChange={(v) => set({ endDate: v })}
+                  placeholder={t('post.chooseDate')} minimumDate={dateOf(draft.startDate)} />
               </Field>
             </Row>
           ) : null}
@@ -381,9 +392,9 @@ export function StepHiring({ draft, set, t }) {
       ))}
 
       <Field label={t('post.deadline')} hint={t('common.optional')} style={{ marginTop: space.lg }}>
-        <Input value={draft.applicationDeadline}
-          onChangeText={(v) => set({ applicationDeadline: v })}
-          placeholder="30 / 04 / 2026" keyboardType="numbers-and-punctuation" />
+        <DateField value={draft.applicationDeadline}
+          onChange={(v) => set({ applicationDeadline: v })}
+          placeholder={t('post.chooseDate')} />
       </Field>
 
       <CheckRow checked={draft.autoClose !== false} onToggle={() => set({ autoClose: draft.autoClose === false })}>

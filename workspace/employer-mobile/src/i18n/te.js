@@ -165,6 +165,7 @@ export default {
     needsAttention: 'మీ దృష్టి కావాలి', noAlerts: 'అంతా సరిగ్గా ఉంది',
   },
   post: {
+    chooseDate: 'తేదీ ఎంచుకోండి',
     fundNow: 'ఈ పనికి డబ్బు జమ చేయండి',
     draftWaiting: 'మీ పని ప్రకటన పూర్తి చేయండి',
     stepOf: '{{total}}లో {{step}}వ అడుగు',

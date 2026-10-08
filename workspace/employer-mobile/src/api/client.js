@@ -24,7 +24,16 @@ export function setUnauthorisedHandler(fn) { onUnauthorised = fn }
 client.interceptors.response.use(
   (r) => r,
   (error) => {
-    if (error?.response?.status === 401) { memoryToken = null; onUnauthorised?.() }
+    // A 401 from signing in means the password was wrong, not that an
+    // existing session died - treating it as both wipes the session of
+    // whoever was already logged in on a shared phone.
+    const url = error?.config?.url || ''
+    const fromAuth = url.includes('/auth/login') || url.includes('/auth/register')
+      || url.includes('/auth/otp')
+    if (error?.response?.status === 401 && !fromAuth) {
+      memoryToken = null
+      onUnauthorised?.()
+    }
     return Promise.reject(error)
   },
 )

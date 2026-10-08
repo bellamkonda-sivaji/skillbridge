@@ -34,7 +34,11 @@ skillbridge:
     # environment must set JWT_SECRET. The default exists only so a fresh
     # clone starts; it is public in the repository and worthless as a secret.
     secret: "${JWT_SECRET:SkillBridgeSecretKeyForJwtSigning2026!SecureEnoughForProductionUse}"
-    expiration-ms: 86400000
+    # Thirty days. A day was enough to sign someone out mid-shift, and the
+    # people using this are on cheap phones, often sharing them, and typing a
+    # password is the step where they give up. Shorten it when there is a
+    # refresh token to fall back on.
+    expiration-ms: ${JWT_EXPIRATION_MS:2592000000}
   pricing:
     # Platform fee on worker earnings, percent. Drives the schedule estimate and /api/config/pricing.
     platform-fee-percent: 5

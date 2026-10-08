@@ -165,6 +165,7 @@ export default {
     needsAttention: 'Needs your attention', noAlerts: 'Everything is on track',
   },
   post: {
+    chooseDate: 'Choose a date',
     fundNow: 'Add the money for this job',
     draftWaiting: 'Finish your job post',
     stepOf: 'Step {{step}} of {{total}}',
