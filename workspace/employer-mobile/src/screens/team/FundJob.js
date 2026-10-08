@@ -10,6 +10,8 @@ import * as teamApi from '../../api/team'
 import * as miscApi from '../../api/misc'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import RazorpayCheckout from 'react-native-razorpay'
+import { useSession } from '../../session/SessionProvider'
 
 /**
  * Putting money behind a job.
@@ -20,6 +22,7 @@ import { colors, radius, space } from '../../theme'
  * paid, you only pay for work that happened) is the whole argument.
  */
 export default function FundJob({ navigation, route }) {
+  const { user } = useSession()
   const { t } = useTranslation()
   const { jobId, jobTitle } = route?.params || {}
   const [escrow, setEscrow] = useState(null)
@@ -72,13 +75,47 @@ export default function FundJob({ navigation, route }) {
     try {
       if (fromWallet) {
         await teamApi.fundFromWallet(jobId, value)
-      } else {
-        // Without a configured gateway this comes back as 503; the message says so.
-        await teamApi.createEscrowOrder(jobId, value)
+        setDone(true)
+        return
       }
+
+      // The order is written down first, so a payment that succeeds while the
+      // app dies still arrives by webhook with something to match it to.
+      const order = await teamApi.createEscrowOrder(jobId, value)
+
+      // Razorpay's own checkout: cards, UPI, Google Pay, PhonePe, net banking.
+      // In test mode every one of those is real UI with test instruments
+      // behind it, which is the point - the flow is what needs testing, not
+      // the money.
+      const result = await RazorpayCheckout.open({
+        key: order.keyId,
+        order_id: order.providerOrderId,
+        amount: order.amountMinor,
+        currency: order.currency || 'INR',
+        name: 'JobOn',
+        description: jobTitle || 'Money for this job',
+        prefill: {
+          contact: user?.phone || '',
+          email: user?.email || '',
+        },
+        theme: { color: '#2563EB' },
+      })
+
+      // Verified on our server, never trusted from the phone: the signature is
+      // what proves the payment is real and not something typed into the app.
+      await teamApi.verifyEscrow(jobId, {
+        providerOrderId: result.razorpay_order_id,
+        providerPaymentId: result.razorpay_payment_id,
+        signature: result.razorpay_signature,
+      })
       setDone(true)
     } catch (err) {
-      setError(errorText(err, 'We could not take that payment.'))
+      // Closing the sheet is a choice, not a failure, and should not be
+      // reported as one.
+      const cancelled = err?.code === 0 || /cancel/i.test(err?.description || '')
+      if (!cancelled) {
+        setError(err?.description || errorText(err, 'We could not take that payment.'))
+      }
     } finally { setBusy(false) }
   }
 

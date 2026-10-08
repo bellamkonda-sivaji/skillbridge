@@ -134,9 +134,7 @@ export default function Dashboard({ navigation }) {
             {alerts.slice(0, 3).map((a, i) => (
               <Pressable
                 key={a.jobId ?? `alert-${i}`}
-                onPress={() => navigation.navigate('JobsTab', {
-                  screen: 'JobManagement', params: { jobId: a.jobId },
-                })}
+                onPress={() => navigation.navigate('JobManagement', { jobId: a.jobId })}
               >
                 <View style={[s.alert, a.verdict === 'STALLED' ? s.alertBad : s.alertWarn]}>
                   <View style={[s.alertIcon, a.verdict === 'STALLED' ? s.alertIconBad : s.alertIconWarn]}>
@@ -156,9 +154,13 @@ export default function Dashboard({ navigation }) {
                         size="sm"
                         full={false}
                         style={{ marginTop: space.md, alignSelf: 'flex-start' }}
-                        onPress={() => navigation.navigate('JobsTab', {
-                          screen: 'JobManagement',
-                          params: { jobId: a.jobId, raiseTo: a.suggestedSalary },
+                        // JobManagement is in this stack already. Hopping to
+                        // another tab to reach it relied on the nested
+                        // navigator picking up fresh params, which it does not
+                        // do once that screen is mounted - so the button did
+                        // nothing at all.
+                        onPress={() => navigation.navigate('JobManagement', {
+                          jobId: a.jobId, raiseTo: a.suggestedSalary,
                         })}
                       />
                     ) : null}
