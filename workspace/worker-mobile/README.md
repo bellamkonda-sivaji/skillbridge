@@ -1,87 +1,63 @@
-# JobOn — Worker app
+# jobon-worker
 
-The phone app for people looking for work: shop staff, drivers, cooks, cleaners,
-helpers and masons around Tirupati.
-
-Expo (SDK 57) / React Native. Standalone — it has its own API client, its own
-translations and its own theme, and shares no code with the employer app or the
-web front end.
-
-## Running it on a phone
+JobOn worker app — Expo / React Native.
 
 ```bash
 npm install
-npx expo run:android      # builds the native app and installs it
-npx expo run:ios          # needs Xcode, not just the command line tools
-npm run web               # react-native-web, handy for a quick look
+npm run dev:apk   # once: builds the debug app → install it on the phone
+npm run dev       # every time: start the dev server, edit, save
 ```
 
-Both apps have been built and run on a real Android build (SDK 57, NDK 27,
-new architecture). `npx expo-doctor` passes 21/21.
+## Two builds, two jobs
 
-**The map needs a Google Maps key.** Put it in `app.json` under
-`expo.android.config.googleMaps.apiKey`. Without one the app does not crash -
-the nearby screen lists the same jobs nearest-first and says why. Google Maps
-on Android throws from inside the native view when the key is missing, which
-React Native turns into a red screen, so the key is checked before a MapView
-is ever mounted.
+| | Debug app (`npm run dev:apk`) | Release APK (`npm run apk`) |
+|---|---|---|
+| For | Developing: changes appear as you save | Sharing: the link people download |
+| Code | Loaded from this computer over Wi-Fi | Packed inside the APK |
+| Needs this computer | Yes, on the same Wi-Fi | No |
+| File | `android/app/build/outputs/apk/debug/app-debug.apk` | `android/app/build/outputs/apk/release/app-release.apk` |
 
-**The emulator reaches the backend** at `10.0.2.2:8080`, which the app falls
-back to automatically. On a real phone, either set `expo.extra.apiUrl` or let
-it use the IP Expo is already serving the bundle from.
+Same package name, so installing one replaces the other on a phone.
 
-## What is in it
+## Live editing — changes show as you save
 
-| Flow | Screens |
-|---|---|
-| Getting in | Splash · Language · Account type · Create account · OTP · Log in |
-| Profile setup | About you · What work you can do · Skills · Where you are |
-| Finding work | Home · Find work · Filters · Map (list on web) · Job details · Business profile · Saved |
-| Applying | My applications · Application progress · Take back an application |
-| Talks | Talks and visits · Talk details (with reschedule and "I cannot come") |
-| Offers | Offers · Offer details · Accepted · Before you go |
-| Working | My work · Today's work (punch in and out) · Job details · My days |
-| Corrections | Raise a correction on any day, and track what you have raised |
-| Money | My money · Where to send my money (bank or UPI) |
-| Account | Profile · Alerts · What people said · Settings |
+The debug app holds no code of its own: it loads the JavaScript from Metro on
+this computer, and Metro pushes each saved file to the phone in a second or
+two. **Nothing is rebuilt**, so there is no eight-minute wait to see a change.
 
-Every screen in the worker web app has an equivalent here.
+1. **Once:** `npm run dev:apk`, then install `app-debug.apk` on the phone.
+2. Phone on the **same Wi-Fi** as this computer.
+3. `npm run dev`, then open the app.
+4. Edit anything under `src/` and save. The screen updates.
 
-## Two decisions worth knowing
+Shake the phone for the developer menu; `r` in the terminal reloads fully.
 
-**The pay shown is always the take-home.** The employer posts a price and the
-platform's commission comes out of it. `workerPay()` in `src/ui/format.js` reads
-both the card shape and the full job record, so no screen can show a worker a
-number they will not be paid.
+**Rebuild the debug app only for native changes** — a library with native
+code, or an edit to `app.json`, the icons, permissions or
+`google-services.json`. Everything else is live.
 
-**Language comes before the account.** Each option is written in its own script,
-because the English word "Telugu" is exactly what a Telugu-only reader cannot
-read. English, తెలుగు and हिन्दी are complete, including the tab bar.
+## This app owns port 8081
 
-## Layout
+The two JobOn apps use different Metro ports on purpose: employer-mobile (8082)
+uses the other one. Sharing a port makes the wrong bundle load — the symptom
+is this app opening with the other app's screens, which looks like a baffling
+bug and is not one. It cost us twice before the ports were split.
 
-```
-src/
-  api/        one module per area, all through a single axios client
-  i18n/       en / te / hi, plus the language picker list
-  session/    token in AsyncStorage, 401 signs out
-  ui/         the design system: Screen, Button, Card, Field, Chip, Steps…
-  navigation/ a stack per tab
-  screens/
+## Building the APK people download
+
+```bash
+npm run apk
 ```
 
-`NearbyJobs.web.js` sits beside `NearbyJobs.js`: `react-native-maps` has no web
-renderer, so on web the same jobs are listed nearest-first instead of showing an
-empty grey box. The native build keeps the real map.
+Published at `https://jobon.mindsyncos.com/dl/jobon-worker.apk`. Live editing never
+reaches anyone who installed that: they get changes from a new APK.
 
-## Pictures
+`npm run apk:fast` builds in about 30 seconds instead of 8 minutes, but for
+arm64 phones only — fine for your own testing, **not** for the download page,
+where an older handset would answer "app not installed".
 
-Most records carry no photograph. Rather than a wall of identical grey icons -
-which makes every job look the same, the one thing a list of jobs must not do -
-each kind of work has its own flat illustration in `assets/work/`. They are
-drawings, not photographs: they give a card weight without pretending to show
-a real person or a real shop.
+## Where the API is
 
-A real photo always wins. `Photo` falls back photo → drawing → icon, and the
-drawing is chosen from the job's category, or from its title when an older
-record has none.
+`app.json` names it (`extra.apiUrl`): the production server, so a debug
+build reads and writes real data. `npm run dev:local` points it at a backend
+running on this computer instead.
