@@ -43,7 +43,6 @@ public class ContactLog {
     @Column(nullable = false)
     private ContactOutcome outcome;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String note;
 

@@ -122,7 +122,6 @@ public class Employment {
     private List<DocumentType> documentsVerified = new ArrayList<>();
 
     /** A base64 data URL of the joining photo proof, so it needs a CLOB. */
-    @Lob
     @Column(name = "photo_proof_url", columnDefinition = "TEXT")
     private String photoProofUrl;
 

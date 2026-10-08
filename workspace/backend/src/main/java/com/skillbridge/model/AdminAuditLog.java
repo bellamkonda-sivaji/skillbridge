@@ -39,7 +39,6 @@ public class AdminAuditLog {
     @Column(name = "entity_id")
     private Long entityId;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String detail;
 

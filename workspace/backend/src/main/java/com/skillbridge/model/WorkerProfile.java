@@ -147,7 +147,6 @@ public class WorkerProfile {
     @Builder.Default
     @ElementCollection
     @CollectionTable(name = "worker_photos", joinColumns = @JoinColumn(name = "profile_id"))
-    @Lob
     @Column(name = "photo_url", columnDefinition = "TEXT")
     @OrderColumn(name = "position")
     private java.util.List<String> photos = new java.util.ArrayList<>();

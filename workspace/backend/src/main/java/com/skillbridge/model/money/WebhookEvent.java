@@ -30,7 +30,6 @@ public class WebhookEvent {
     @Column(name = "event_id", nullable = false, length = 160) private String eventId;
     @Column(name = "event_type", nullable = false, length = 80) private String eventType;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String payload;
 

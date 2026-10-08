@@ -35,7 +35,6 @@ public class Lead {
 
     private String name;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String message;
 
@@ -58,7 +57,6 @@ public class Lead {
     @Column(name = "assigned_admin_id")
     private Long assignedAdminId;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String note;
 

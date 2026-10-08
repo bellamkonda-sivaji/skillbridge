@@ -69,7 +69,6 @@ public class Attendance {
     private LocalDateTime approvedAt;
 
     /** Why it was approved or rejected, in the decider's own words. */
-    @Lob
     @Column(name = "decision_note", columnDefinition = "TEXT")
     private String decisionNote;
 

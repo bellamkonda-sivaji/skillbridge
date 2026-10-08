@@ -41,7 +41,6 @@ public class WorkerAccount implements Account {
     private boolean phoneVerified = false;
 
     /** Holds a base64 data URL, so it needs CLOB rather than a capped varchar. */
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String photoUrl;
 

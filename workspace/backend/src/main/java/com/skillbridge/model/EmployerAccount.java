@@ -35,7 +35,6 @@ public class EmployerAccount implements Account {
     @Column(nullable = false)
     private boolean phoneVerified = false;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String photoUrl;
 
