@@ -127,7 +127,10 @@ export default function PostJob({ navigation }) {
         genderPreference: draft.genderPreference,
         hiringMethod: draft.hiringMethod,
         applicationDeadline: isoFrom(draft.applicationDeadline),
-        benefits: (draft.benefits || []).map((b) => ({ benefitType: b })),
+        // jobBenefits is the structured field; `benefits` is a plain list of
+        // strings. Sending objects under the string field made Jackson reject
+        // the whole body, so a job with any benefit ticked could not be posted.
+        jobBenefits: (draft.benefits || []).map((b) => ({ benefitType: b })),
       }
       const job = await jobsApi.createJob(body)
       await clearDraft(user?.id)
