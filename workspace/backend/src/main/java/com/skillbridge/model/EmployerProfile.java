@@ -82,6 +82,15 @@ public class EmployerProfile {
     @Column(columnDefinition = "TEXT")
     private String registrationDocUrl;
 
+    /**
+     * The owner's own ID, kept apart from the business registration.
+     *
+     * There was nowhere to put this, so it was being written over the
+     * registration document: uploading three proofs left two.
+     */
+    @Column(columnDefinition = "TEXT")
+    private String ownerIdDocUrl;
+
     /** Base64 data URL of the business logo. */
     @Column(columnDefinition = "TEXT")
     private String logoUrl;

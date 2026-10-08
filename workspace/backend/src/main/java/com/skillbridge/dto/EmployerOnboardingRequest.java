@@ -40,6 +40,7 @@ public class EmployerOnboardingRequest {
 
     // ---- verification ----
     private String registrationDocUrl;
+    private String ownerIdDocUrl;
     private String logoUrl;
     private Boolean authorizedConfirmed;
 

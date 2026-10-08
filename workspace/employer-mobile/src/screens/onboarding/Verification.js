@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
@@ -7,6 +7,18 @@ import { AppBar, Body, Button, ErrorNote, H1, Screen, Small, Spacer, Steps } fro
 import { colors, radius, space } from '../../theme'
 import * as profileApi from '../../api/profile'
 import { useSession } from '../../session/SessionProvider'
+
+/**
+ * Where each proof is stored.
+ *
+ * One field each. Two of them shared a column before, so uploading all
+ * three left two - the owner's ID wrote over the registration certificate.
+ */
+const FIELD_OF = {
+  registration: 'registrationDocUrl',
+  shopProof: 'logoUrl',
+  ownerId: 'ownerIdDocUrl',
+}
 
 const DOCS = [
   { key: 'registration', icon: 'document-text-outline', titleKey: 'registration', subKey: 'registrationSub' },
@@ -27,6 +39,24 @@ export default function Verification({ navigation }) {
   const [uploaded, setUploaded] = useState({})
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+
+  // Load what is already on file. Without this the screen asks for all three
+  // again on every visit, and there is no way to tell an upload that failed
+  // from one that worked.
+  useEffect(() => {
+    let alive = true
+    profileApi.getProfile()
+      .then((p) => {
+        if (!alive || !p) return
+        const seen = {}
+        Object.entries(FIELD_OF).forEach(([key, field]) => {
+          if (p[field]) seen[key] = p[field]
+        })
+        setUploaded((u) => ({ ...seen, ...u }))
+      })
+      .catch(() => { /* nothing uploaded yet */ })
+    return () => { alive = false }
+  }, [])
 
   const pick = async (key) => {
     try {
@@ -55,7 +85,7 @@ export default function Verification({ navigation }) {
       try {
         // The shop front doubles as the business picture: it is the one image
         // an employer has that means anything to a worker looking at a job.
-        const field = key === 'shopProof' ? 'logoUrl' : 'registrationDocUrl'
+        const field = FIELD_OF[key]
         await profileApi.saveOnboardingStep({ step: 'VERIFICATION', [field]: dataUrl })
         if (field === 'logoUrl') updateUser({ photoUrl: dataUrl })
       } catch (err) {
@@ -98,17 +128,23 @@ export default function Verification({ navigation }) {
           return (
             <Pressable key={d.key} onPress={() => pick(d.key)}
               style={({ pressed }) => [s.doc, done && s.docDone, pressed && { opacity: 0.85 }]}>
-              <View style={[s.docIcon, done && { backgroundColor: colors.greenSoft }]}>
-                <Ionicons name={done ? 'checkmark' : d.icon} size={21}
-                  color={done ? colors.greenText : colors.blue} />
-              </View>
+              {/* The picture itself once there is one. A tick says something
+                  was uploaded; a thumbnail says which, which is what someone
+                  returning to this screen is actually checking. */}
+              {done ? (
+                <Image source={{ uri: uploaded[d.key] }} style={s.docThumb} />
+              ) : (
+                <View style={s.docIcon}>
+                  <Ionicons name={d.icon} size={21} color={colors.blue} />
+                </View>
+              )}
               <View style={{ flex: 1 }}>
                 <Text style={s.docTitle}>{t(`business.${d.titleKey}`)}</Text>
                 {d.subKey ? <Small style={{ marginTop: 2 }}>{t(`business.${d.subKey}`)}</Small> : null}
               </View>
               <View style={[s.uploadBtn, done && { backgroundColor: colors.greenSoft }]}>
                 <Text style={[s.uploadText, done && { color: colors.greenText }]}>
-                  {done ? t('business.uploaded') : t('business.upload')}
+                  {done ? t('business.change') : t('business.upload')}
                 </Text>
               </View>
             </Pressable>
@@ -128,6 +164,7 @@ export default function Verification({ navigation }) {
 }
 
 const s = StyleSheet.create({
+  docThumb: { width: 42, height: 42, borderRadius: radius.md, backgroundColor: colors.soft },
   skip: { fontSize: 14, fontWeight: '700', color: colors.blue },
   doc: {
     flexDirection: 'row', alignItems: 'center', gap: space.md,

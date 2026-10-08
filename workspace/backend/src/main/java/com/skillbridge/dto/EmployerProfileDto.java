@@ -36,6 +36,7 @@ public record EmployerProfileDto(
         String address,
         String pincode,
         String registrationDocUrl,
+        String ownerIdDocUrl,
         String logoUrl,
         boolean authorizedConfirmed,
         EmployerPlan plan,
@@ -50,7 +51,7 @@ public record EmployerProfileDto(
                 e.getWebsite(), e.getFounded(), e.getTeamSize(), e.isVerified(), List.copyOf(e.getPhotos()),
                 e.getAccount().getAvgRating(), e.getAccount().getRatingCount(), e.getCreatedAt(),
                 e.getEmployerKind(), e.getBusinessSize(), e.getAddress(), e.getPincode(),
-                e.getRegistrationDocUrl(), e.getLogoUrl(), e.isAuthorizedConfirmed(),
+                e.getRegistrationDocUrl(), e.getOwnerIdDocUrl(), e.getLogoUrl(), e.isAuthorizedConfirmed(),
                 e.getPlan(), e.getPaymentMethod(), e.isOnboardingCompleted());
     }
 }

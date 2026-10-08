@@ -423,6 +423,7 @@ public class EmployerService {
         }
         if (request.getRegistrationDocUrl() != null) profile.setRegistrationDocUrl(request.getRegistrationDocUrl());
         if (request.getLogoUrl() != null) profile.setLogoUrl(request.getLogoUrl());
+        if (request.getOwnerIdDocUrl() != null) profile.setOwnerIdDocUrl(request.getOwnerIdDocUrl());
         if (request.getAuthorizedConfirmed() != null) profile.setAuthorizedConfirmed(request.getAuthorizedConfirmed());
         if (request.getPlan() != null) profile.setPlan(request.getPlan());
         if (request.getPaymentMethod() != null) profile.setPaymentMethod(request.getPaymentMethod());

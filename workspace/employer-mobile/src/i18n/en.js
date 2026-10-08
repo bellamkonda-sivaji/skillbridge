@@ -135,6 +135,7 @@ export default {
     verify: 'Verify and continue', wrong: 'That code is not right. Try again.',
   },
   business: {
+    change: 'Change',
     title: 'Tell us about your business', sub: 'Workers see this before they apply.',
     name: 'Business name', namePlaceholder: 'Fresh Mart Supermarket',
     type: 'What kind of business?', address: 'Address', city: 'Town or city', area: 'Area',
