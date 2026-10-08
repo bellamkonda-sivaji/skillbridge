@@ -67,31 +67,74 @@ public class PlacesService {
     /* ----------------------------------------------------------- google -- */
 
     private List<Map<String, Object>> searchGoogle(String q, String near) throws Exception {
-        StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/place/textsearch/json")
-                .append("?query=").append(enc(q))
-                .append("&region=in")
-                .append("&key=").append(enc(googleKey));
+        // Places API (New). The legacy textsearch endpoint still exists but
+        // Google refuses it on projects that never used it: "You're calling a
+        // legacy API, which is not enabled for your project."
+        var body = mapper.createObjectNode();
+        body.put("textQuery", q);
+        body.put("regionCode", "IN");
+        body.put("maxResultCount", 8);
         // Biasing to where the person is makes "Fish Market" mean the one down
         // the road rather than one in another state.
         if (near != null && near.matches("-?\\d+(\\.\\d+)?,-?\\d+(\\.\\d+)?")) {
-            url.append("&location=").append(near).append("&radius=30000");
+            String[] parts = near.split(",");
+            var circle = body.putObject("locationBias").putObject("circle");
+            var centre = circle.putObject("center");
+            centre.put("latitude", Double.parseDouble(parts[0]));
+            centre.put("longitude", Double.parseDouble(parts[1]));
+            circle.put("radius", 30000.0);
         }
-        JsonNode root = getJson(url.toString());
+
+        HttpRequest req = HttpRequest.newBuilder(URI.create("https://places.googleapis.com/v1/places:searchText"))
+                .header("Content-Type", "application/json")
+                .header("X-Goog-Api-Key", googleKey)
+                // Billing is per field group, so ask for exactly what is shown.
+                .header("X-Goog-FieldMask",
+                        "places.id,places.displayName,places.formattedAddress,"
+                                + "places.location,places.addressComponents")
+                .timeout(Duration.ofSeconds(12))
+                .POST(HttpRequest.BodyPublishers.ofString(
+                        mapper.writeValueAsString(body), StandardCharsets.UTF_8))
+                .build();
+        HttpResponse<String> res = http.send(req, HttpResponse.BodyHandlers.ofString());
+        JsonNode root = mapper.readTree(res.body());
+        if (root.has("error")) {
+            log.warn("Google Places refused the search: {}",
+                    root.path("error").path("message").asText());
+            // Falling back keeps address entry working on a misconfigured key
+            // instead of leaving the employer with an empty list and no reason.
+            return searchOsm(q);
+        }
+
         List<Map<String, Object>> out = new ArrayList<>();
-        for (JsonNode r : root.path("results")) {
+        for (JsonNode p : root.path("places")) {
             Map<String, Object> row = new LinkedHashMap<>();
-            row.put("id", r.path("place_id").asText());
-            row.put("name", r.path("name").asText(""));
-            row.put("label", r.path("formatted_address").asText(""));
-            row.put("latitude", r.path("geometry").path("location").path("lat").asDouble());
-            row.put("longitude", r.path("geometry").path("location").path("lng").asDouble());
-            // Text search does not break the address into parts, so the PIN is
-            // pulled out of the formatted line - in India it is six digits.
-            row.put("pincode", firstPin(r.path("formatted_address").asText("")));
+            row.put("id", p.path("id").asText());
+            row.put("name", p.path("displayName").path("text").asText(""));
+            row.put("label", p.path("formattedAddress").asText(""));
+            row.put("latitude", p.path("location").path("latitude").asDouble());
+            row.put("longitude", p.path("location").path("longitude").asDouble());
+            row.put("pincode", component(p, "postal_code"));
+            row.put("street", component(p, "route"));
+            row.put("doorNo", component(p, "street_number"));
+            row.put("locality", firstNonBlank(component(p, "sublocality_level_1"),
+                    component(p, "sublocality"), component(p, "neighborhood")));
+            row.put("city", firstNonBlank(component(p, "locality"),
+                    component(p, "administrative_area_level_2")));
+            row.put("state", component(p, "administrative_area_level_1"));
             out.add(row);
-            if (out.size() >= 8) break;
         }
         return out;
+    }
+
+    /** One address component by type, which is where the PIN and street live. */
+    private static String component(JsonNode place, String type) {
+        for (JsonNode c : place.path("addressComponents")) {
+            for (JsonNode t : c.path("types")) {
+                if (type.equals(t.asText())) return c.path("longText").asText("");
+            }
+        }
+        return "";
     }
 
     /* -------------------------------------------------------------- osm -- */
