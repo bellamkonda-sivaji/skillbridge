@@ -38,6 +38,13 @@ skillbridge:
   pricing:
     # Platform fee on worker earnings, percent. Drives the schedule estimate and /api/config/pricing.
     platform-fee-percent: 5
+  places:
+    # Google Places for address lookup. Without it the server falls back to
+    # OpenStreetMap, which knows roads and localities well but is thin on
+    # small Indian shops by name - which is what an employer actually types.
+    # The key lives here, never in an APK: an app ships to phones that can be
+    # unpacked, a server does not.
+    google-key: "${GOOGLE_PLACES_KEY:}"
   fcm:
     # Path to the Firebase service account JSON. Blank by default: with no key
     # the server stores device tokens but never sends, which is what we want in

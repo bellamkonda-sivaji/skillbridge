@@ -83,7 +83,7 @@ export default function Dashboard({ navigation }) {
             accessibilityLabel={t('tabs.profile')}
             style={({ pressed }) => (pressed ? { opacity: 0.7 } : null)}
           >
-            <Avatar name={data?.businessName || user?.name} uri={user?.photoUrl} size={44} />
+            <Avatar name={data?.businessName || user?.name} uri={data?.logoUrl || user?.photoUrl} size={44} />
           </Pressable>
         </Row>
 

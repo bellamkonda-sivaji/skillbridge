@@ -44,7 +44,9 @@ export default function Profile({ navigation }) {
     <Screen padded={false}>
       <View style={s.header}>
         <Row>
-          <Avatar name={name} size={64} />
+          {/* The shop front, if one was uploaded during verification. It is
+              the one picture a business has that means anything to a worker. */}
+          <Avatar name={name} uri={profile?.logoUrl || profile?.photoUrl} size={64} />
           <View style={{ flex: 1 }}>
             <H2>{name}</H2>
             {profile?.businessType ? <Small style={{ marginTop: 2 }}>{profile.businessType}</Small> : null}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
@@ -29,6 +29,39 @@ export default function BusinessDetails({ navigation }) {
   const [error, setError] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const [address, setAddress] = useState(emptyAddress())
+  const [loading, setLoading] = useState(true)
+
+  // This screen is reached twice: once during onboarding, and again from
+  // Profile -> My business to edit. It never read what was already saved, so
+  // the second visit showed an empty form and asked for everything again -
+  // the details were in the database the whole time.
+  useEffect(() => {
+    let alive = true
+    profileApi.getProfile()
+      .then((p) => {
+        if (!alive || !p) return
+        setForm((f) => ({
+          ...f,
+          businessName: p.businessName || f.businessName,
+          businessType: p.businessType || f.businessType,
+          contactPersonName: p.contactPersonName || f.contactPersonName,
+        }))
+        setAddress((a) => ({
+          ...a,
+          // The stored address is one line; the picker keeps it in the street
+          // field so it stays visible and editable rather than disappearing.
+          street: p.address || a.street,
+          city: p.city || a.city,
+          locality: p.area || a.locality,
+          pincode: p.pincode || a.pincode,
+          latitude: p.latitude ?? a.latitude,
+          longitude: p.longitude ?? a.longitude,
+        }))
+      })
+      .catch(() => { /* a first-time business has no profile yet */ })
+      .finally(() => { if (alive) setLoading(false) })
+    return () => { alive = false }
+  }, [])
 
 
   const set = (k) => (v) => {

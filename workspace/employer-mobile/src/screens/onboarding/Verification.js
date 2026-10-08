@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons'
 import * as ImagePicker from 'expo-image-picker'
 import { AppBar, Body, Button, ErrorNote, H1, Screen, Small, Spacer, Steps } from '../../ui'
 import { colors, radius, space } from '../../theme'
+import * as profileApi from '../../api/profile'
+import { useSession } from '../../session/SessionProvider'
 
 const DOCS = [
   { key: 'registration', icon: 'document-text-outline', titleKey: 'registration', subKey: 'registrationSub' },
@@ -20,16 +22,48 @@ const DOCS = [
  * is blocked without it. Nothing here is required.
  */
 export default function Verification({ navigation }) {
+  const { updateUser } = useSession()
   const { t } = useTranslation()
   const [uploaded, setUploaded] = useState({})
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
 
   const pick = async (key) => {
     try {
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync()
       if (!perm.granted) { setError('We need permission to open your photos.'); return }
-      const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.6 })
-      if (!result.canceled) setUploaded((u) => ({ ...u, [key]: result.assets[0].uri }))
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        // Stored as a base64 data URL inside the JSON body, so quality is
+        // kept low: a full-size phone photo is megabytes of text for a
+        // document nobody views larger than a phone screen.
+        quality: 0.4,
+        base64: true,
+      })
+      if (result.canceled) return
+      const asset = result.assets[0]
+      const dataUrl = asset.base64
+        ? `data:${asset.mimeType || 'image/jpeg'};base64,${asset.base64}`
+        : null
+      setUploaded((u) => ({ ...u, [key]: asset.uri }))
+      if (!dataUrl) return
+
+      // Saved as it is picked, not on Continue. Uploading three documents and
+      // losing them because the last screen was skipped is the behaviour this
+      // replaces - nothing here was ever sent to the server.
+      setSaving(true)
+      try {
+        // The shop front doubles as the business picture: it is the one image
+        // an employer has that means anything to a worker looking at a job.
+        const field = key === 'shopProof' ? 'logoUrl' : 'registrationDocUrl'
+        await profileApi.saveOnboardingStep({ step: 'VERIFICATION', [field]: dataUrl })
+        if (field === 'logoUrl') updateUser({ photoUrl: dataUrl })
+      } catch (err) {
+        setError(errorText(err, 'We could not save that photo. Please try again.'))
+        setUploaded((u) => ({ ...u, [key]: undefined }))
+      } finally {
+        setSaving(false)
+      }
     } catch {
       setError('We could not open your photos.')
     }
@@ -40,7 +74,7 @@ export default function Verification({ navigation }) {
       padded={false}
       bg={colors.white}
       footer={(
-        <Button title={t('common.continue')} iconRight="arrow-forward"
+        <Button title={t('common.continue')} iconRight="arrow-forward" loading={saving}
           onPress={() => navigation.navigate('PlanPricing')} />
       )}
     >

@@ -41,12 +41,14 @@ export default function AddressPicker({ value, onChange, error }) {
       const ctrl = new AbortController()
       abort.current = ctrl
       setSearching(true)
-      const rows = await searchAddress(query, ctrl.signal)
+      const near = Number.isFinite(a.latitude) && Number.isFinite(a.longitude)
+        ? `${a.latitude},${a.longitude}` : undefined
+      const rows = await searchAddress(query, ctrl.signal, near)
       setSearching(false)
       setResults(rows)
     }, 600)
     return () => clearTimeout(id)
-  }, [query, mode])
+  }, [query, mode, a.latitude, a.longitude])
 
   const useHere = async () => {
     setLocating(true); setLocErr('')
@@ -127,7 +129,7 @@ export default function AddressPicker({ value, onChange, error }) {
                   <Ionicons name="location-outline" size={17} color={colors.blue} />
                   <View style={{ flex: 1 }}>
                     <Text style={s.resultMain} numberOfLines={1}>
-                      {r.street || r.locality || r.city}
+                      {r.name || r.street || r.locality || r.city}
                     </Text>
                     <Small numberOfLines={2}>{r.label}</Small>
                     {r.pincode ? <Small style={s.pin}>PIN {r.pincode}</Small> : null}

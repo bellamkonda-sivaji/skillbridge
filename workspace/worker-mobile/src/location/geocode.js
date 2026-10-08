@@ -1,3 +1,4 @@
+import client from '../api/client'
 import * as Location from 'expo-location'
 
 /**
@@ -8,17 +9,15 @@ import * as Location from 'expo-location'
  * answer when the question is which street. So we want the door number, the
  * locality and the PIN code, not a city name.
  *
- * Nominatim for search because it is the same OpenStreetMap data the maps
- * already use - no API key, no billing account. Their policy requires a real
- * User-Agent identifying the app, which the native HTTP client already sets.
- * One request per keystroke would breach it, so callers debounce.
+ * Search goes through our own backend, not a maps provider directly. The key
+ * then lives on one server instead of inside every APK, the provider can be
+ * swapped without shipping a new app, and the provider's usage policy is one
+ * server's problem rather than every handset's. Callers still debounce.
  *
  * Reverse geocoding goes through expo-location, which uses the platform
  * geocoder on the phone: no network round trip, and it already has the
  * permission we asked for.
  */
-
-const NOMINATIM = 'https://nominatim.openstreetmap.org'
 
 /** The shape every screen uses, whichever source filled it in. */
 export const emptyAddress = () => ({
@@ -66,31 +65,31 @@ export async function addressFromCoords(latitude, longitude) {
  * a display string and nothing structured, and the whole point here is the
  * structure.
  */
-export async function searchAddress(query, signal) {
+export async function searchAddress(query, signal, near) {
   const q = String(query || '').trim()
   if (q.length < 3) return []
   try {
-    const url = `${NOMINATIM}/search?format=jsonv2&addressdetails=1&limit=8`
-      + `&countrycodes=in&q=${encodeURIComponent(q)}`
-    const res = await fetch(url, { signal, headers: { Accept: 'application/json' } })
-    if (!res.ok) return []
-    const rows = await res.json()
-    return (Array.isArray(rows) ? rows : []).map((r) => {
-      const a = r.address || {}
-      return {
-        id: String(r.place_id),
-        label: r.display_name,
-        doorNo: a.house_number || '',
-        building: a.building || '',
-        street: a.road || '',
-        locality: a.suburb || a.neighbourhood || a.village || a.town || '',
-        city: a.city || a.town || a.village || a.state_district || '',
-        state: a.state || '',
-        pincode: a.postcode || '',
-        latitude: Number(r.lat),
-        longitude: Number(r.lon),
-      }
+    const res = await client.get('/places/search', {
+      params: { q, near: near || undefined },
+      signal,
     })
+    const rows = res?.data?.results
+    return (Array.isArray(rows) ? rows : []).map((r) => ({
+      id: String(r.id),
+      // The shop's own name when the provider knows it - which is the whole
+      // reason for going through a places API rather than a street gazetteer.
+      name: r.name || '',
+      label: r.label || '',
+      doorNo: r.doorNo || '',
+      building: r.building || '',
+      street: r.street || '',
+      locality: r.locality || '',
+      city: r.city || '',
+      state: r.state || '',
+      pincode: r.pincode || '',
+      latitude: Number(r.latitude),
+      longitude: Number(r.longitude),
+    }))
   } catch {
     // An aborted request is the normal case while someone is still typing.
     return []
