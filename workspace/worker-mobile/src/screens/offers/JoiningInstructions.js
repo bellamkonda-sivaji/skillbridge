@@ -7,6 +7,7 @@ import {
 } from '../../ui'
 import * as offersApi from '../../api/offers'
 import { colors, radius, space } from '../../theme'
+import AskForCall from '../../ui/AskForCall'
 
 /**
  * What to do before the first day.
@@ -97,18 +98,9 @@ export default function JoiningInstructions({ navigation, route }) {
                 <View style={{ flex: 1 }}>
                   <Text style={s.biz}>{offer.contactPersonName || offer.employerName || 'Owner'}</Text>
                   <Small style={{ marginTop: 2 }}>
-                    {offer.contactPersonPhone || offer.employerPhone}
                   </Small>
                 </View>
-                <Button
-                  title=""
-                  icon="call"
-                  tone="success"
-                  full={false}
-                  size="sm"
-                  style={{ paddingHorizontal: space.lg }}
-                  onPress={() => Linking.openURL(`tel:${offer.contactPersonPhone || offer.employerPhone}`)}
-                />
+                <AskForCall about={`Please arrange a call about joining ${offer?.businessName || offer?.employerName || 'this job'}.`} tone="success" size="sm" />
               </Row>
             </Card>
           </>

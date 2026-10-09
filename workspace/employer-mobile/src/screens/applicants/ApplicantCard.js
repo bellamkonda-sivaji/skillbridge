@@ -51,13 +51,10 @@ export default function ApplicantCard({ item, onPress, onCall, selected, onToggl
           </Row>
         </View>
 
-        {onCall && item.phone ? (
-          <Pressable onPress={() => Linking.openURL(`tel:${item.phone}`)} style={s.call} hitSlop={8}>
-            <Ionicons name="call" size={17} color={colors.white} />
-          </Pressable>
-        ) : (
-          <Ionicons name="chevron-forward" size={19} color={colors.muted} />
-        )}
+        {/* No dial button on a list row. Asking the office to arrange a call
+            is a deliberate act about one person, not something to tap by
+            accident while scrolling - and the number is not sent here anyway. */}
+        <Ionicons name="chevron-forward" size={19} color={colors.muted} />
       </Row>
     </Pressable>
   )

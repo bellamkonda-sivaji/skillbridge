@@ -1,4 +1,12 @@
 export default {
+  callRequest: {
+    ask: 'Ask us to arrange a call',
+    sent: 'We will call you',
+    sentTitle: 'We will arrange it',
+    sentBody: 'Someone from our office will ring you and set up the call.',
+    failedTitle: 'That did not go through',
+    failedBody: 'Please try again, or use Help.',
+  },
   address: {
     search: 'Search', manual: 'Type it in',
     useMyLocation: 'Use my current location', locating: 'Finding you…',

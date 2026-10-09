@@ -80,12 +80,8 @@ export default function MyTeam({ navigation }) {
                     {item.salary ? <Small style={{ fontWeight: '700' }}>{money(item.salary)}</Small> : null}
                   </Row>
                 </View>
-                {item.workerPhone ? (
-                  <Pressable style={s.call}
-                    onPress={() => Linking.openURL(`tel:${item.workerPhone}`)}>
-                    <Ionicons name="call" size={17} color={colors.white} />
-                  </Pressable>
-                ) : null}
+                {/* No dial button on a list row: the office puts the two
+                    sides in touch, and the number is not sent here anyway. */}
               </Row>
             </View>
           )}

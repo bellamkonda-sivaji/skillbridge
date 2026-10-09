@@ -1,5 +1,7 @@
 package com.skillbridge.dto;
 
+import com.skillbridge.security.Privacy;
+import com.skillbridge.model.AccountType;
 import com.skillbridge.model.EmploymentType;
 import com.skillbridge.model.JobOffer;
 import com.skillbridge.model.OfferStatus;
@@ -68,7 +70,8 @@ public record OfferDto(
                 o.getJoiningDate(), o.getWorkLocation(), o.getStatus(), o.getSentAt(),
                 o.getApplication().getWorker().getId(),
                 o.getApplication().getWorker().getName(),
-                o.getApplication().getWorker().getPhone(),
+                Privacy.contactFor(o.getApplication().getWorker().getPhone(),
+                        AccountType.WORKER, o.getApplication().getWorker().getId()),
                 o.getApplication().getJob().getId(),
                 offerType, offerLabel(offerType),
                 o.getRespondedAt(), o.getExpiresAt(), o.getWorkDate(), o.getProbationMonths(),

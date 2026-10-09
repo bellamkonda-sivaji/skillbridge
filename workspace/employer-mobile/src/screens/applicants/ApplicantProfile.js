@@ -10,6 +10,7 @@ import Photo from '../../ui/Photo'
 import * as applicantsApi from '../../api/applicants'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import AskForCall from '../../ui/AskForCall'
 
 /**
  * One worker, in full - including where they have worked before and what the
@@ -105,13 +106,7 @@ export default function ApplicantProfile({ navigation, route }) {
         </Row>
 
         {worker.phone ? (
-          <Button
-            title={`${t('applicants.call')} ${worker.name}`}
-            icon="call"
-            tone="success"
-            style={{ marginTop: space.lg }}
-            onPress={() => Linking.openURL(`tel:${worker.phone}`)}
-          />
+          <AskForCall about={`Please arrange a call with ${worker?.name || "this worker"}.`} tone="success" style={{ flex: 1 }} />
         ) : null}
 
         <Spacer h={space.lg} />

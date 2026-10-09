@@ -10,6 +10,7 @@ import * as offersApi from '../../api/offers'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 import { word } from '../../ui/words'
+import AskForCall from '../../ui/AskForCall'
 
 const TONE = { PENDING: 'orange', SENT: 'orange', ACCEPTED: 'green', DECLINED: 'red', CANCELLED: 'grey' }
 
@@ -86,8 +87,7 @@ export default function OfferStatusDetail({ navigation, route }) {
       footer={(
         <Row>
           {offer.workerPhone ? (
-            <Button title={t('applicants.call')} icon="call" tone="success" style={{ flex: 1 }}
-              onPress={() => Linking.openURL(`tel:${offer.workerPhone}`)} />
+            <AskForCall about={`Please arrange a call with ${offer?.workerName || "this worker"} about "${offer?.jobTitle || "this job"}".`} tone="success" style={{ flex: 1 }} />
           ) : null}
           {open ? (
             <Button title={t('offers.cancelOffer')} tone="dangerQuiet" style={{ flex: 1 }}

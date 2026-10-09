@@ -1,5 +1,7 @@
 package com.skillbridge.dto;
 
+import com.skillbridge.security.Privacy;
+import com.skillbridge.model.AccountType;
 import com.skillbridge.model.Attendance;
 import com.skillbridge.model.AttendanceApproval;
 import com.skillbridge.model.AttendanceStatus;
@@ -68,7 +70,8 @@ public record AttendanceDto(
                 e == null ? null : e.getId(),
                 e == null ? null : e.getWorker().getId(),
                 e == null ? null : e.getWorker().getName(),
-                e == null ? null : e.getWorker().getPhone(),
+                e == null ? null : Privacy.contactFor(e.getWorker().getPhone(),
+                        AccountType.WORKER, e.getWorker().getId()),
                 e == null ? null : e.getJob().getId(),
                 e == null ? null : e.getJob().getTitle(),
                 a.getWorkDate(),

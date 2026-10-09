@@ -1,5 +1,6 @@
 package com.skillbridge.service;
 
+import com.skillbridge.security.Privacy;
 import com.skillbridge.dto.AttendanceDto;
 import com.skillbridge.dto.EmploymentDetailDto;
 import com.skillbridge.dto.EmploymentDto;
@@ -186,7 +187,8 @@ public class EmploymentService {
                 shift != null ? shift.getBreakEnd() : null,
                 employment.getWorkLocation(),
                 employment.getContactPersonName(),
-                employment.getContactPersonPhone(),
+                Privacy.contactFor(employment.getContactPersonPhone(),
+                        AccountType.EMPLOYER, employment.getEmployer().getId()),
                 latitude(employment, profile),
                 longitude(employment, profile),
                 status,
@@ -518,7 +520,9 @@ public class EmploymentService {
                 e.getSalary(), e.getSalaryUnit(),
                 new ArrayList<>(e.getJob().getWorkingDays()),
                 shiftLabel(e.getJob()), e.getWorkLocation(), e.isCurrent(),
-                e.getReportingTime(), e.getContactPersonName(), e.getContactPersonPhone(),
+                e.getReportingTime(), e.getContactPersonName(),
+                Privacy.contactFor(e.getContactPersonPhone(),
+                        AccountType.EMPLOYER, e.getEmployer().getId()),
                 e.getDressCode(), new ArrayList<>(e.getDocumentsToCarry()),
                 e.getJoiningAcknowledgedAt() != null,
                 latitude(e, profile), longitude(e, profile),

@@ -1,4 +1,12 @@
 export default {
+  callRequest: {
+    ask: 'बात कराने के लिए कहें',
+    sent: 'हम आपको फोन करेंगे',
+    sentTitle: 'हम इंतज़ाम करेंगे',
+    sentBody: 'हमारे दफ्तर से कोई आपको फोन करके बात कराएगा।',
+    failedTitle: 'यह नहीं गया',
+    failedBody: 'फिर कोशिश करें, या मदद लें।',
+  },
   address: {
     search: 'खोजें', manual: 'खुद लिखें',
     useMyLocation: 'मेरी अभी की जगह लें', locating: 'आपको ढूँढ रहे हैं…',

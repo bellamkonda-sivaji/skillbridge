@@ -12,6 +12,7 @@ import * as attendanceApi from '../../api/attendance'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 import Stamp, { milestoneFor } from '../../ui/Stamp'
+import AskForCall from '../../ui/AskForCall'
 
 /**
  * Starting and finishing work.
@@ -135,12 +136,13 @@ function PunchCard({ row, busy, onPunch, t }) {
             <Small>{hhmm(row.shiftStart)} – {hhmm(row.shiftEnd)}</Small>
           </Row>
         ) : null}
-        {row.employerPhone ? (
-          <Pressable style={s.call} onPress={() => Linking.openURL(`tel:${row.employerPhone}`)}>
-            <Ionicons name="call" size={13} color={colors.blueDark} />
-            <Text style={s.callText}>Call</Text>
-          </Pressable>
-        ) : null}
+        {/* The office arranges the call. Numbers are not exchanged. */}
+        <AskForCall
+          about={`Please arrange a call about my shift at ${row.employerName || 'this job'}.`}
+          topic="WORK"
+          size="sm"
+          style={{ marginTop: space.sm }}
+        />
       </View>
       {row.location ? (
         <Row gap={5} style={{ marginTop: 6 }} align="flex-start">

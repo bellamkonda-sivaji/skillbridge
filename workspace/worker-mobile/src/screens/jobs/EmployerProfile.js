@@ -11,6 +11,7 @@ import Photo from '../../ui/Photo'
 import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import AskForCall from '../../ui/AskForCall'
 
 /** Who you would be working for, before you agree to work for them. */
 export default function EmployerProfile({ navigation, route }) {
@@ -105,15 +106,10 @@ export default function EmployerProfile({ navigation, route }) {
               </>
             ) : null}
 
-            {data.phone ? (
-              <Button
-                title={t('employer.contact')}
-                icon="call-outline"
-                tone="outline"
-                style={{ marginTop: space.lg }}
-                onPress={() => Linking.openURL(`tel:${data.phone}`)}
-              />
-            ) : null}
+            <AskForCall
+              about={`Please arrange a call with ${data?.businessName || data?.name || 'this business'}.`}
+              style={{ marginTop: space.lg }}
+            />
           </>
         ) : null}
 

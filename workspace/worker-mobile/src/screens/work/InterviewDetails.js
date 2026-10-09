@@ -11,6 +11,7 @@ import * as appsApi from '../../api/applications'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 import { word } from '../../ui/words'
+import AskForCall from '../../ui/AskForCall'
 
 /** One talk or visit, with the two things a worker may need to do about it. */
 export default function InterviewDetails({ navigation, route }) {
@@ -127,12 +128,9 @@ export default function InterviewDetails({ navigation, route }) {
                     {item.contactPersonName || item.employerName || 'Owner'}
                   </Text>
                   <Small style={{ marginTop: 2 }}>
-                    {item.contactPersonPhone || item.employerPhone}
                   </Small>
                 </View>
-                <Button title="" icon="call" tone="success" full={false} size="sm"
-                  style={{ paddingHorizontal: space.lg }}
-                  onPress={() => Linking.openURL(`tel:${item.contactPersonPhone || item.employerPhone}`)} />
+                <AskForCall about={`Please arrange a call about my interview at ${item?.employerName || 'this job'}.`} tone="success" size="sm" />
               </Row>
             </Card>
           </>
