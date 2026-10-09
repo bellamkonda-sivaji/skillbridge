@@ -166,6 +166,8 @@ export default {
     needsAttention: 'Needs your attention', noAlerts: 'Everything is on track',
   },
   post: {
+    spanDays: '{{days}} days of work',
+    tooLongForShort: 'Longer than a month. Choose Monthly instead.',
     chooseDate: 'Choose a date',
     fundNow: 'Add the money for this job',
     draftWaiting: 'Finish your job post',

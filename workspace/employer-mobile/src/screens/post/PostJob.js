@@ -6,6 +6,8 @@ import { AppBar, Button, ErrorNote, Row, Small, Steps } from '../../ui'
 import {
   StepWorkerType, StepEmployment, StepDetails, StepSchedule, StepSalary,
   StepRequirements, StepHiring, StepReview,
+  MAX_SHORT_DAYS,
+  daysBetween,
 } from './steps'
 import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
@@ -89,8 +91,25 @@ export default function PostJob({ navigation }) {
     if (step === 2 && !draft.engagementModel) return 'Choose how long you need them'
     if (step === 3 && !String(draft.title).trim()) return 'Give the job a name'
     if (step === 4) {
+      const shortTerm = draft.engagementModel === 'FEW_DAYS'
+        || draft.engagementModel === 'FEW_WEEKS'
       if (draft.engagementModel === 'ONE_DAY' && !isoFrom(draft.workDate)) return 'Choose the day of work'
-      if (draft.engagementModel !== 'ONE_DAY' && !(draft.workingDays || []).length) return 'Choose the working days'
+      if (shortTerm) {
+        // Dates are not optional here. A worker taking a few days' work needs
+        // to know which days, and the employer is the only one who knows.
+        if (!isoFrom(draft.startDate)) return 'Choose the first day of work'
+        if (!isoFrom(draft.endDate)) return 'Choose the last day of work'
+        const span = daysBetween(draft.startDate, draft.endDate)
+        if (span <= 0) return 'The last day cannot be before the first'
+        // Past a month this is monthly work, and should carry monthly rules:
+        // a salary rather than a day rate, paid on a cycle.
+        if (span > MAX_SHORT_DAYS) {
+          return `That is ${span} days. For more than a month, choose Monthly instead.`
+        }
+      }
+      if (draft.engagementModel !== 'ONE_DAY' && !(draft.workingDays || []).length) {
+        return 'Choose which days of the week they work'
+      }
       if (!draft.startTime || !draft.endTime) return 'Add the shift time'
     }
     if (step === 5 && !(Number(draft.salary) > 0)) return 'Enter what you will pay'

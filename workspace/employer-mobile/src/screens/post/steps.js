@@ -72,6 +72,11 @@ export function StepEmployment({ draft, set, lang, t }) {
           selected={draft.engagementModel === m.value}
           onPress={() => set({
             engagementModel: m.value,
+            // A few days or weeks always runs between two dates; only monthly
+            // work can be open-ended. Carrying "ongoing" across from the
+            // default left short work with no dates at all.
+            durationType: (m.value === 'FEW_DAYS' || m.value === 'FEW_WEEKS')
+              ? 'SPECIFIC' : draft.durationType,
             // Keep the pay basis valid for the length chosen - a monthly salary
             // on a one-day job is not a thing.
             salaryUnit: m.defaultUnit,
@@ -158,6 +163,12 @@ export function StepSchedule({ draft, set, t }) {
   const toggleDay = (d) =>
     set({ workingDays: days.includes(d) ? days.filter((x) => x !== d) : [...days, d] })
   const oneDay = draft.engagementModel === 'ONE_DAY'
+  // A few days and a few weeks both run between two dates. "Ongoing" is a
+  // contradiction for them, and without dates a worker cannot tell which days
+  // they are being asked to turn up - which is the whole point of the answer.
+  const shortTerm = draft.engagementModel === 'FEW_DAYS'
+    || draft.engagementModel === 'FEW_WEEKS'
+  const span = daysBetween(draft.startDate, draft.endDate)
 
   return (
     <View>
@@ -184,22 +195,25 @@ export function StepSchedule({ draft, set, t }) {
             </View>
           </Field>
 
-          <Field label={t('post.duration')}>
-            <ChoiceCard
-              selected={draft.durationType === 'ONGOING'}
-              onPress={() => set({ durationType: 'ONGOING' })}
-              icon="infinite-outline"
-              title={t('post.ongoing')}
-            />
-            <ChoiceCard
-              selected={draft.durationType === 'SPECIFIC'}
-              onPress={() => set({ durationType: 'SPECIFIC' })}
-              icon="calendar-outline"
-              title={t('post.specificPeriod')}
-            />
-          </Field>
+          {/* Only work measured in months can be open-ended. */}
+          {shortTerm ? null : (
+            <Field label={t('post.duration')}>
+              <ChoiceCard
+                selected={draft.durationType === 'ONGOING'}
+                onPress={() => set({ durationType: 'ONGOING' })}
+                icon="infinite-outline"
+                title={t('post.ongoing')}
+              />
+              <ChoiceCard
+                selected={draft.durationType === 'SPECIFIC'}
+                onPress={() => set({ durationType: 'SPECIFIC' })}
+                icon="calendar-outline"
+                title={t('post.specificPeriod')}
+              />
+            </Field>
+          )}
 
-          {draft.durationType === 'SPECIFIC' ? (
+          {shortTerm || draft.durationType === 'SPECIFIC' ? (
             <Row align="flex-start">
               <Field label={t('post.startDate')} style={{ flex: 1 }}>
                 <DateField value={draft.startDate} onChange={(v) => set({ startDate: v })}
@@ -208,9 +222,19 @@ export function StepSchedule({ draft, set, t }) {
               <Field label={t('post.endDate')} style={{ flex: 1 }}>
                 {/* Cannot end before it starts, so the picker will not offer it. */}
                 <DateField value={draft.endDate} onChange={(v) => set({ endDate: v })}
-                  placeholder={t('post.chooseDate')} minimumDate={dateOf(draft.startDate)} />
+                  placeholder={t('post.chooseDate')} minimumDate={dateOf(draft.startDate)}
+                  maximumDate={shortTerm ? lastAllowed(draft.startDate) : undefined} />
               </Field>
             </Row>
+          ) : null}
+
+          {/* Said while they are choosing, not after they press Continue. */}
+          {shortTerm && span > 0 ? (
+            <Small style={{ marginTop: -space.sm, marginBottom: space.md }}>
+              {span > MAX_SHORT_DAYS
+                ? t('post.tooLongForShort')
+                : t('post.spanDays', { days: span })}
+            </Small>
           ) : null}
         </>
       )}
