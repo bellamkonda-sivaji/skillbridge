@@ -62,6 +62,25 @@ public class JobPost {
 
     private String pincode;
 
+
+    /**
+
+     * Which of the employer's places this work is at.
+
+     *
+
+     * Null on jobs posted before shops existed; those fall back to the
+
+     * employer's profile address, which is what they always used.
+
+     */
+
+    @ManyToOne(fetch = FetchType.LAZY)
+
+    @JoinColumn(name = "shop_id")
+
+    private Shop shop;
+
     private double latitude;
 
     private double longitude;

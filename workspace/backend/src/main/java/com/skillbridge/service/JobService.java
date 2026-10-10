@@ -29,6 +29,8 @@ import java.util.stream.Collectors;
 public class JobService {
 
     private final JobPostRepository jobRepository;
+
+    private final ShopService shopService;
     private final WorkerProfileRepository workerProfileRepository;
     private final EmployerProfileRepository employerProfileRepository;
     private final MatchRepository matchRepository;
@@ -44,7 +46,9 @@ public class JobService {
                       EmployerProfileRepository employerProfileRepository, MatchRepository matchRepository,
                       GeoService geoService, SkillLexicon lexicon, MatchingService matchingService,
                       ScheduleCalculator scheduleCalculator, PricingService pricingService,
-                      JobPriceChangeRepository priceChangeRepository, JobDemandService demandService) {
+                      JobPriceChangeRepository priceChangeRepository, JobDemandService demandService,
+                      ShopService shopService) {
+        this.shopService = shopService;
         this.pricingService = pricingService;
         this.priceChangeRepository = priceChangeRepository;
         this.demandService = demandService;
@@ -93,9 +97,17 @@ public class JobService {
             throw ApiException.badRequest("Title, at least one required skill and a salary are required");
         }
 
-        String city = request.city() != null && !request.city().isBlank()
-                ? request.city().trim()
-                : (profile.getCity() != null && !profile.getCity().isBlank() ? profile.getCity() : "Tirupati");
+        // Which of the employer's places this work is at. The shop is the
+        // authority on where the job is: an employer with two branches posting
+        // for the second one should not have the first one's address attached,
+        // which is what inheriting from the profile always did.
+        Shop shop = request.shopId() == null ? null : shopService.require(employer, request.shopId());
+
+        String city = firstPresent(
+                request.city(),
+                shop == null ? null : shop.getCity(),
+                profile.getCity(),
+                "Tirupati");
 
         JobPost job = JobPost.builder()
                 .employer(employer)
@@ -112,10 +124,13 @@ public class JobService {
                 // Inherited from the business, like the coordinates above: the
                 // work is almost always at the shop, and a job with no PIN
                 // scores nothing on locality when a worker is matched to it.
-                .pincode(request.pincode() != null && !request.pincode().isBlank()
-                        ? request.pincode() : profile.getPincode())
-                .latitude(request.latitude() != 0 ? request.latitude() : profile.getLatitude())
-                .longitude(request.longitude() != 0 ? request.longitude() : profile.getLongitude())
+                .shop(shop)
+                .pincode(firstPresent(request.pincode(),
+                        shop == null ? null : shop.getPincode(), profile.getPincode(), null))
+                .latitude(firstCoord(request.latitude(),
+                        shop == null ? 0 : shop.getLatitude(), profile.getLatitude()))
+                .longitude(firstCoord(request.longitude(),
+                        shop == null ? 0 : shop.getLongitude(), profile.getLongitude()))
                 .minExperienceYears(Math.max(0, request.minExperienceYears()))
                 .language(request.language())
                 .workersNeeded(Math.max(1, request.workersNeeded()))
@@ -224,6 +239,22 @@ public class JobService {
         if (request.applicationDeadline() != null) job.setApplicationDeadline(request.applicationDeadline());
         if (request.autoCloseWhenFilled() != null) job.setAutoCloseWhenFilled(request.autoCloseWhenFilled());
         applyEngagementRules(job, request);
+    }
+
+    /** The first value that is actually set: the request, then the shop, then the profile. */
+    private static String firstPresent(String... values) {
+        for (String v : values) {
+            if (v != null && !v.isBlank()) return v.trim();
+        }
+        return null;
+    }
+
+    /** Same order for coordinates, where "unset" is zero rather than null. */
+    private static double firstCoord(double... values) {
+        for (double v : values) {
+            if (v != 0) return v;
+        }
+        return 0;
     }
 
     /** Jobs are funded through SkillBridge - CASH survives only for rows written before this rule. */

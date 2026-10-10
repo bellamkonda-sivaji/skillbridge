@@ -34,6 +34,7 @@ public record JobRequest(
         String city,
         String area,
         String pincode,
+        Long shopId,
         double latitude,
         double longitude,
         int minExperienceYears,

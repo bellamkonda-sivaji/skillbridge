@@ -48,6 +48,9 @@ public record JobDto(
         double workerSalary,
         double platformFee,
         double feePercent,
+        /** Which of the employer's places the work is at, for grouping by branch. */
+        Long shopId,
+        String shopName,
         String city,
         String area,
         double latitude,
@@ -139,6 +142,8 @@ public record JobDto(
                 j.getTitle(), j.getDescription(), j.getRequiredSkills(), j.getWorkType(),
                 j.getEmploymentType(), visibleSalary(j), j.getSalaryUnit(),
                 visibleWorkerSalary(j), adminOnly(j.getPlatformFee()), adminOnly(j.getFeePercent()),
+                j.getShop() == null ? null : j.getShop().getId(),
+                j.getShop() == null ? null : j.getShop().getName(),
                 j.getCity(), j.getArea(),
                 j.getLatitude(), j.getLongitude(), j.getMinExperienceYears(), j.getLanguage(),
                 j.getWorkersNeeded(), j.isUrgent(), j.getStatus(), j.getPostedAt(), j.getExpiresAt(),
