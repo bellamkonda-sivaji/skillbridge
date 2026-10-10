@@ -42,6 +42,13 @@ skillbridge:
   pricing:
     # Platform fee on worker earnings, percent. Drives the schedule estimate and /api/config/pricing.
     platform-fee-percent: 5
+  gemini:
+    # Judgement on the uncertain middle of a match: whether a cashier suits a
+    # store-helper job, which no keyword comparison can answer. Blank and the
+    # score decides alone, which is how this worked before - matching must
+    # never depend on a third party being up.
+    api-key: "${GEMINI_API_KEY:}"
+    model: "${GEMINI_MODEL:gemini-flash-lite-latest}"
   places:
     # Google Places for address lookup. Without it the server falls back to
     # OpenStreetMap, which knows roads and localities well but is thin on

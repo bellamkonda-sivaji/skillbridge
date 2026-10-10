@@ -133,6 +133,14 @@ public class WorkerService {
         if (req.quickFilter() == QuickFilter.NEARBY && maxDistanceKm == null) {
             maxDistanceKm = NEARBY_RADIUS_KM;
         }
+        // Otherwise the worker's own travel limit decides. Someone who said
+        // they will go 3 km was being shown work across the district and had
+        // to read past all of it; the limit they set is the answer to "which
+        // jobs are worth my attention", and nothing was using it.
+        if (maxDistanceKm == null && profile != null
+                && profile.getPreferredRadiusKm() != null && profile.getPreferredRadiusKm() > 0) {
+            maxDistanceKm = profile.getPreferredRadiusKm().doubleValue();
+        }
 
         List<JobPost> candidates = new ArrayList<>();
         for (JobPost job : jobRepository.findByStatusOrderByPostedAtDesc(JobStatus.OPEN)) {

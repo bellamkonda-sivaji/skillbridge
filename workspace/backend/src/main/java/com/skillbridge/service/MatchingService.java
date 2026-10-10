@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The intelligent matching engine. Computes a 0-100 compatibility score between
@@ -24,6 +25,8 @@ import java.util.List;
 public class MatchingService {
 
     private final WorkerProfileRepository workerRepository;
+
+    private final GeminiMatchAdvisor advisor;
     private final JobPostRepository jobRepository;
     private final MatchRepository matchRepository;
     private final NotificationService notificationService;
@@ -37,11 +40,26 @@ public class MatchingService {
     private static final double WEIGHT_SALARY = 0.15;
     private static final double WEIGHT_RATING = 0.05;
 
-    public static final double MATCH_THRESHOLD = 60.0;
+    /**
+     * Clearly worth telling them about, no further thought needed.
+     *
+     * Was 60, which only ever notified near-perfect matches - a worker two
+     * streets away who could plainly do the job heard nothing because their
+     * listed skills used different words.
+     */
+    public static final double MATCH_THRESHOLD = 65.0;
+
+    /** Below this, not worth anyone's attention however the words line up. */
+    public static final double MATCH_FLOOR = 40.0;
+
+    /** How far a worker will travel when they have not said. */
+    public static final double DEFAULT_RADIUS_KM = 20.0;
 
     public MatchingService(WorkerProfileRepository workerRepository, JobPostRepository jobRepository,
                            MatchRepository matchRepository, NotificationService notificationService,
-                           GeoService geoService, SkillLexicon lexicon) {
+                           GeoService geoService, SkillLexicon lexicon,
+                          GeminiMatchAdvisor advisor) {
+        this.advisor = advisor;
         this.workerRepository = workerRepository;
         this.jobRepository = jobRepository;
         this.matchRepository = matchRepository;
@@ -240,13 +258,59 @@ public class MatchingService {
     public List<MatchDto> generateMatchesForJob(JobPost job) {
         List<WorkerProfile> workers = workerRepository.findAll();
         List<Match> created = new ArrayList<>();
+
+        // Everyone the job could reach, scored. Out of range is dropped here
+        // and never reconsidered: no judgement makes a job reachable.
+        List<WorkerProfile> inRange = new ArrayList<>();
+        List<GeminiMatchAdvisor.Candidate> band = new ArrayList<>();
         for (WorkerProfile worker : workers) {
-            Match match = evaluateAndSave(worker, job);
-            if (match != null) {
-                created.add(match);
+            if (!withinTravel(worker, job)) continue;
+            ScoreBreakdown b = evaluate(worker, job);
+            if (b.score() < MATCH_FLOOR) continue;
+            inRange.add(worker);
+            if (b.score() < MATCH_THRESHOLD) {
+                band.add(new GeminiMatchAdvisor.Candidate(
+                        worker.getAccount().getId(), worker.getAccount().getName(),
+                        worker.getJobTitle(), worker.getSkills(),
+                        worker.getExperienceYears(), b.distanceKm(), b.score()));
             }
         }
+
+        // One call for the whole uncertain band, not one per worker.
+        Map<Long, GeminiMatchAdvisor.Verdict> verdicts = advisor.judge(job, band);
+
+        for (WorkerProfile worker : inRange) {
+            ScoreBreakdown b = evaluate(worker, job);
+            GeminiMatchAdvisor.Verdict v = verdicts.get(worker.getAccount().getId());
+            boolean tell = b.score() >= MATCH_THRESHOLD
+                    || (v != null ? v.shouldNotify() : b.score() >= MATCH_FLOOR);
+            if (!tell) continue;
+            Match match = saveMatch(worker, job, b, v == null ? null : v.reason());
+            if (match != null) created.add(match);
+        }
         return created.stream().map(MatchDto::from).toList();
+    }
+
+    /**
+     * Whether the job is inside the distance this worker said they would go.
+     *
+     * Their own limit, not ours. Someone who walks will have said 2 km and
+     * should not be told about work across the city; someone with a bike says
+     * 25 and should hear about all of it.
+     */
+    private boolean withinTravel(WorkerProfile worker, JobPost job) {
+        double radius = worker.getPreferredRadiusKm() != null && worker.getPreferredRadiusKm() > 0
+                ? worker.getPreferredRadiusKm()
+                : DEFAULT_RADIUS_KM;
+        Double km = geoService.distanceKmOrNull(worker.getLatitude(), worker.getLongitude(),
+                job.getLatitude(), job.getLongitude());
+        if (km == null) {
+            // No coordinates on one side or the other. Fall back to the PIN or
+            // town, so a worker who typed an address still hears about work
+            // next door rather than nothing at all.
+            return computeLocalityScore(worker, job) > 0;
+        }
+        return km <= radius;
     }
 
     @Transactional
@@ -267,6 +331,19 @@ public class MatchingService {
         if (job.getStatus() != JobStatus.OPEN) return null;
         ScoreBreakdown b = evaluate(worker, job);
         if (b.score() < MATCH_THRESHOLD) return null;
+        return saveMatch(worker, job, b, null);
+    }
+
+    /**
+     * Records the match and tells the worker once.
+     *
+     * @param reason the model's own words when it judged this one, so the
+     *               notification says something true about why rather than
+     *               a percentage nobody can act on.
+     */
+    @Transactional
+    protected Match saveMatch(WorkerProfile worker, JobPost job, ScoreBreakdown b, String reason) {
+        if (job.getStatus() != JobStatus.OPEN) return null;
         Match match = matchRepository.findByWorkerAndJob(worker.getAccount(), job).orElseGet(() ->
                 Match.builder().worker(worker.getAccount()).job(job).build());
         match.setScore(b.score());
@@ -281,9 +358,14 @@ public class MatchingService {
         if (!match.isNotified()) {
             match.setNotified(true);
             matchRepository.save(match);
+            // The title says what the work is, not how well a formula scored
+            // it. "New job match (72%)" tells a worker nothing they can use.
+            String where = job.getArea() != null && !job.getArea().isBlank()
+                    ? job.getArea() : job.getCity();
             notificationService.notify(worker.getAccount(),
-                    "New job match (" + String.format("%.0f%%", b.score()) + ")",
-                    b.summary(), NotificationType.JOB_MATCH, "/jobs/" + job.getId());
+                    job.getTitle() + (where == null ? "" : " in " + where),
+                    reason != null && !reason.isBlank() ? reason : b.summary(),
+                    NotificationType.JOB_MATCH, "/jobs/" + job.getId());
         }
         return match;
     }
