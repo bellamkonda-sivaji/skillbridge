@@ -4,6 +4,7 @@ import com.skillbridge.dto.MatchDto;
 import com.skillbridge.exception.ApiException;
 import com.skillbridge.model.*;
 import com.skillbridge.repository.*;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,8 +26,6 @@ import java.util.Map;
 public class MatchingService {
 
     private final WorkerProfileRepository workerRepository;
-
-    private final GeminiMatchAdvisor advisor;
     private final JobPostRepository jobRepository;
     private final MatchRepository matchRepository;
     private final NotificationService notificationService;
@@ -57,9 +56,7 @@ public class MatchingService {
 
     public MatchingService(WorkerProfileRepository workerRepository, JobPostRepository jobRepository,
                            MatchRepository matchRepository, NotificationService notificationService,
-                           GeoService geoService, SkillLexicon lexicon,
-                          GeminiMatchAdvisor advisor) {
-        this.advisor = advisor;
+                           GeoService geoService, SkillLexicon lexicon) {
         this.workerRepository = workerRepository;
         this.jobRepository = jobRepository;
         this.matchRepository = matchRepository;
@@ -73,7 +70,12 @@ public class MatchingService {
                                  double ratingScore, String summary) {}
 
     public ScoreBreakdown evaluate(WorkerProfile worker, JobPost job) {
-        double skillScore = computeSkillScore(worker.getSkills(), job.getRequiredSkills());
+        // Skill words first; where they miss, how closely the two kinds of
+        // work are related. "Cashier" and "Store Helper" share no word and
+        // are the same shop floor, and that used to score zero.
+        double wordScore = computeSkillScore(worker.getSkills(), job.getRequiredSkills());
+        double kinship = WorkKinship.between(workerCategoryOf(worker), job.getWorkerCategory());
+        double skillScore = Math.max(wordScore, kinship * 0.9);
         double distanceKm = geoService.distanceKm(worker.getLatitude(), worker.getLongitude(),
                 job.getLatitude(), job.getLongitude());
         // A shared PIN or area rescues the match when coordinates are poor.
@@ -102,6 +104,24 @@ public class MatchingService {
                 distanceScore, experienceScore, availabilityScore, salaryScore, ratingScore, summary);
     }
 
+    /**
+     * The kind of work this person does.
+     *
+     * Taken from their stated job title, since the worker profile has no
+     * category of its own - "Cashier", "Driver / Delivery Rider". Falls back
+     * to OTHER, which the table treats as neutral rather than unsuited.
+     */
+    private WorkerCategory workerCategoryOf(WorkerProfile worker) {
+        String title = worker.getJobTitle();
+        if (title == null || title.isBlank()) return WorkerCategory.OTHER;
+        for (WorkerCategory c : WorkerCategory.values()) {
+            if (c == WorkerCategory.OTHER) continue;
+            String name = c.name().replace('_', ' ');
+            if (WorkKinship.sameFamily(title, name)) return c;
+        }
+        return WorkerCategory.OTHER;
+    }
+
     private double computeSkillScore(List<String> workerSkills, List<String> requiredSkills) {
         if (requiredSkills == null || requiredSkills.isEmpty()) {
             return 70.0;
@@ -120,6 +140,8 @@ public class MatchingService {
         }
         int matched = 0;
         double partialBonus = 0.0;
+        // Families catch the same task written differently: a worker who put
+        // "Billing" against a job asking for "Cash Handling".
         for (String req : requiredSkills) {
             List<String> reqVariants = lexicon.expand(req);
             String reqNorm = lexicon.normalize(req);
@@ -254,38 +276,26 @@ public class MatchingService {
         return sb.toString();
     }
 
+    /**
+     * Everyone worth telling about this job.
+     *
+     * Runs on its own thread: it was inside job creation, so an employer
+     * pressing "post" waited while every worker was scored and notified.
+     * Nothing the employer sees depends on the result.
+     */
+    @Async
     @Transactional
     public List<MatchDto> generateMatchesForJob(JobPost job) {
         List<WorkerProfile> workers = workerRepository.findAll();
         List<Match> created = new ArrayList<>();
 
-        // Everyone the job could reach, scored. Out of range is dropped here
-        // and never reconsidered: no judgement makes a job reachable.
-        List<WorkerProfile> inRange = new ArrayList<>();
-        List<GeminiMatchAdvisor.Candidate> band = new ArrayList<>();
+        // Out of travel range is dropped first and never reconsidered: no
+        // amount of skill makes a job reachable.
         for (WorkerProfile worker : workers) {
             if (!withinTravel(worker, job)) continue;
             ScoreBreakdown b = evaluate(worker, job);
             if (b.score() < MATCH_FLOOR) continue;
-            inRange.add(worker);
-            if (b.score() < MATCH_THRESHOLD) {
-                band.add(new GeminiMatchAdvisor.Candidate(
-                        worker.getAccount().getId(), worker.getAccount().getName(),
-                        worker.getJobTitle(), worker.getSkills(),
-                        worker.getExperienceYears(), b.distanceKm(), b.score()));
-            }
-        }
-
-        // One call for the whole uncertain band, not one per worker.
-        Map<Long, GeminiMatchAdvisor.Verdict> verdicts = advisor.judge(job, band);
-
-        for (WorkerProfile worker : inRange) {
-            ScoreBreakdown b = evaluate(worker, job);
-            GeminiMatchAdvisor.Verdict v = verdicts.get(worker.getAccount().getId());
-            boolean tell = b.score() >= MATCH_THRESHOLD
-                    || (v != null ? v.shouldNotify() : b.score() >= MATCH_FLOOR);
-            if (!tell) continue;
-            Match match = saveMatch(worker, job, b, v == null ? null : v.reason());
+            Match match = saveMatch(worker, job, b, null);
             if (match != null) created.add(match);
         }
         return created.stream().map(MatchDto::from).toList();
