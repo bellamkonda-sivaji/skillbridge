@@ -120,7 +120,8 @@ public class JobService {
                 .salary(request.salary())
                 .salaryUnit(request.salaryUnit())
                 .city(city)
-                .area(request.area())
+                // The branch's locality, when the posting did not name one.
+                .area(firstPresent(request.area(), shop == null ? null : shop.getArea(), null))
                 // Inherited from the business, like the coordinates above: the
                 // work is almost always at the shop, and a job with no PIN
                 // scores nothing on locality when a worker is matched to it.
