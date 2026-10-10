@@ -1,0 +1,23 @@
+
+/* ---- choosing which shop a job is at -------------------------------- */
+/* One account can have several places of work, and the job belongs to one
+   of them. With a single shop this is one pre-selected row and costs the
+   employer no thought. */
+.emp-shoplist { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.emp-shop {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px; border: 1.5px solid var(--line, #E2E8F0);
+  border-radius: 12px; cursor: pointer; background: #fff;
+}
+.emp-shop.on { border-color: var(--blue, #2563EB); background: #EFF6FF; }
+.emp-shop input { margin-top: 3px; }
+.emp-shop strong { display: block; font-size: 15px; }
+.emp-shop small { display: block; color: var(--muted, #64748B); margin-top: 2px; }
+.emp-shopadd {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 14px; border: 1.5px solid #DBEAFE; border-radius: 12px; background: #F8FAFC;
+}
+.emp-shoprow { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.emp-shopbtns { display: flex; gap: 8px; justify-content: flex-end; }
+.emp-error { color: #B91C1C; font-size: 14px; margin: 0; }
+@media (max-width: 560px) { .emp-shoprow { grid-template-columns: 1fr; } }

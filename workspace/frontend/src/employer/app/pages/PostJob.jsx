@@ -4,7 +4,7 @@ import Icon from '../../../marketing/icons'
 import { useDocumentTitle } from '../../../marketing/components'
 import { ErrorNote } from '../../../worker/components'
 import { Stepper } from '../../../onboarding/components'
-import { createJob, updateJob, getJob, timeLabel } from '../api'
+import { createJob, updateJob, getJob, timeLabel, listShops, addShop } from '../api'
 import {
   WORKER_CATEGORIES, EXPERIENCE_LEVELS, LANGUAGE_OPTIONS, GENDER_PREFS,
   AGE_RANGES, RESPONSIBILITY_SUGGESTIONS, SKILL_SUGGESTIONS, WIZARD_STEPS, EMPTY_JOB,
@@ -234,6 +234,127 @@ function StepCategory({ job, set }) {
 
 
 /* ---------- 4. job details ---------- */
+/**
+ * Which of the employer's places this work is at.
+ *
+ * Adding one here saves it to the account, so the next posting offers both.
+ * An employer with none is asked for one rather than posting into nowhere.
+ */
+function ShopChooser({ value, onChange }) {
+  const [shops, setShops] = useState(null)
+  const [adding, setAdding] = useState(false)
+  const [form, setForm] = useState({ name: '', address: '', city: '', area: '', pincode: '' })
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const load = async () => {
+    try {
+      const rows = await listShops()
+      setShops(rows)
+      if (!value && rows.length) onChange((rows.find((r) => r.primaryShop) || rows[0]).id)
+      if (!rows.length) setAdding(true)
+    } catch {
+      setShops([])
+      setAdding(true)
+    }
+  }
+  useEffect(() => { load() }, [])
+
+  const save = async (e) => {
+    e.preventDefault()
+    setBusy(true); setError('')
+    try {
+      const created = await addShop(form)
+      setForm({ name: '', address: '', city: '', area: '', pincode: '' })
+      setAdding(false)
+      const rows = await listShops()
+      setShops(rows)
+      onChange(created.id)
+    } catch (err) {
+      setError(err?.response?.data?.message || 'We could not save this place.')
+    } finally { setBusy(false) }
+  }
+
+  if (shops === null) return <p className="wk-sub">Loading your places…</p>
+
+  return (
+    <div className="emp-field">
+      <label className="emp-label">Where is this work?</label>
+      <div className="emp-shoplist">
+        {shops.map((s) => (
+          <label key={s.id} className={`emp-shop ${s.id === value ? 'on' : ''}`}>
+            <input
+              type="radio"
+              name="shop"
+              checked={s.id === value}
+              onChange={() => onChange(s.id)}
+            />
+            <span>
+              <strong>{s.name}</strong>
+              {s.address || s.pincode ? (
+                <small>{[s.address, s.pincode].filter(Boolean).join(' · ')}</small>
+              ) : null}
+            </span>
+          </label>
+        ))}
+      </div>
+
+      {adding ? (
+        <div className="emp-shopadd">
+          <input
+            className="emp-input"
+            placeholder="Name of this place, e.g. Fresh Mart, Gandhi Road"
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+          />
+          <input
+            className="emp-input"
+            placeholder="Address"
+            value={form.address}
+            onChange={(e) => setForm({ ...form, address: e.target.value })}
+          />
+          <div className="emp-shoprow">
+            <input
+              className="emp-input"
+              placeholder="Town or city"
+              value={form.city}
+              onChange={(e) => setForm({ ...form, city: e.target.value })}
+            />
+            <input
+              className="emp-input"
+              placeholder="Area"
+              value={form.area}
+              onChange={(e) => setForm({ ...form, area: e.target.value })}
+            />
+            <input
+              className="emp-input"
+              placeholder="PIN code"
+              maxLength={6}
+              value={form.pincode}
+              onChange={(e) => setForm({ ...form, pincode: e.target.value.replace(/\D/g, '') })}
+            />
+          </div>
+          {error ? <p className="emp-error">{error}</p> : null}
+          <div className="emp-shopbtns">
+            {shops.length ? (
+              <button type="button" className="btn ghost" onClick={() => setAdding(false)}>
+                Cancel
+              </button>
+            ) : null}
+            <button type="button" className="btn" disabled={busy} onClick={save}>
+              {busy ? 'Saving…' : 'Save this place'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button type="button" className="btn ghost" onClick={() => setAdding(true)}>
+          + Add another place
+        </button>
+      )}
+    </div>
+  )
+}
+
 function StepDetails({ job, set }) {
   const [draft, setDraft] = useState('')
   const suggestions = (RESPONSIBILITY_SUGGESTIONS[job.workerCategory] || [])
@@ -248,6 +369,10 @@ function StepDetails({ job, set }) {
 
   return (
     <Section title="Job details" sub="Provide basic information about the job.">
+      {/* Where the work is, before anything else about it. With one shop it
+          is already chosen; the question only becomes real for the second
+          branch, and then it decides whether a worker can get there. */}
+      <ShopChooser value={job.shopId} onChange={(id) => set({ shopId: id })} />
       <div className="emp-two">
         <div className="wk-field">
           <label htmlFor="pj-title">Job Title</label>

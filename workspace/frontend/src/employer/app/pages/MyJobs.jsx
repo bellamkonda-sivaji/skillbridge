@@ -3,10 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Icon from '../../../marketing/icons'
 import { useDocumentTitle } from '../../../marketing/components'
 import { JobArt, Loading, Empty, ErrorNote, PillTabs } from '../../../worker/components'
-import {
-  listJobs, setJobStatus, deleteJob, pay, timeAgo,
-  JOB_STATUS_LABEL, JOB_STATUS_TONE, EMPLOYMENT_LABEL,
-} from '../api'
+import { EMPLOYMENT_LABEL, JOB_STATUS_LABEL, JOB_STATUS_TONE, deleteJob, listJobs, listShops, pay, setJobStatus, timeAgo } from '../api'
 
 const TABS = [
   { value: 'ALL', label: 'All' },
@@ -26,6 +23,16 @@ export default function MyJobs() {
   const [error, setError] = useState('')
   const [q, setQ] = useState('')
   const [menuFor, setMenuFor] = useState(null)
+  const [shops, setShops] = useState([])
+  const [shopId, setShopId] = useState('ALL')
+
+  // Only worth showing once there is something to choose between: a filter
+  // with one option in it is noise on the page.
+  useEffect(() => {
+    let alive = true
+    listShops().then((rows) => { if (alive) setShops(rows || []) }).catch(() => {})
+    return () => { alive = false }
+  }, [])
 
   const load = useCallback(() => {
     setJobs(null); setError('')
@@ -49,12 +56,15 @@ export default function MyJobs() {
     if (!jobs) return []
     const term = q.trim().toLowerCase()
     return jobs.filter((j) => {
+      // Jobs posted before shops existed have no branch, so a branch filter
+      // would hide them entirely. They stay under "All places".
+      if (shopId !== 'ALL' && String(j.shopId) !== String(shopId)) return false
       if (status === 'ACTIVE' && !(j.status === 'OPEN' || j.status === 'ACTIVE')) return false
       if (status !== 'ALL' && status !== 'ACTIVE' && j.status !== status) return false
-      if (term && ![j.title, j.city, j.area].join(' ').toLowerCase().includes(term)) return false
+      if (term && ![j.title, j.city, j.area, j.shopName].join(' ').toLowerCase().includes(term)) return false
       return true
     })
-  }, [jobs, status, q])
+  }, [jobs, status, q, shopId])
 
   const act = async (job, next) => {
     setMenuFor(null)
@@ -93,6 +103,23 @@ export default function MyJobs() {
           <Icon name="search" size={16} style={{ color: '#64748b', flexShrink: 0 }} />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search jobs…" aria-label="Search jobs" />
         </div>
+
+        {/* Only once there is a second branch: a filter with one option is
+            noise, and most employers have exactly one shop. */}
+        {shops.length > 1 ? (
+          <select
+            className="emp-input"
+            style={{ maxWidth: 220 }}
+            value={shopId}
+            onChange={(e) => setShopId(e.target.value)}
+            aria-label="Filter by place of work"
+          >
+            <option value="ALL">All places</option>
+            {shops.map((sh) => (
+              <option key={sh.id} value={sh.id}>{sh.name}</option>
+            ))}
+          </select>
+        ) : null}
       </div>
 
       <ErrorNote onRetry={load}>{error}</ErrorNote>

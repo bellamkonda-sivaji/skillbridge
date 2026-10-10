@@ -191,3 +191,10 @@ export function durationLabel(days) {
 
 export const timeRange = (from, to) =>
   [timeLabel(from), timeLabel(to)].filter(Boolean).join(' – ')
+
+/* ------------------------------------------------------------------ shops */
+/** The places this employer hires for. Seeds the first from their profile. */
+export const listShops = () => api.get('/employer/shops').then((r) => r.data)
+export const addShop = (body) => api.post('/employer/shops', body).then((r) => r.data)
+export const updateShop = (id, body) => api.put(`/employer/shops/${id}`, body).then((r) => r.data)
+export const closeShop = (id) => api.delete(`/employer/shops/${id}`).then((r) => r.data)
