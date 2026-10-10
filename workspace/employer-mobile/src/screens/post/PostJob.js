@@ -46,6 +46,7 @@ export default function PostJob({ navigation }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [draft, setDraft] = useState({
+    shopId: null,
     workerCategory: '', engagementModel: '', title: '', workersNeeded: 1,
     description: '', responsibilities: [], workingDays: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
     durationType: 'ONGOING', startTime: '09:00', endTime: '18:00', breakMinutes: 0,
@@ -89,7 +90,11 @@ export default function PostJob({ navigation }) {
   const blocked = useMemo(() => {
     if (step === 1 && !draft.workerCategory) return 'Choose the kind of worker'
     if (step === 2 && !draft.engagementModel) return 'Choose how long you need them'
-    if (step === 3 && !String(draft.title).trim()) return 'Give the job a name'
+    if (step === 3) {
+      // A job with no place cannot tell a worker whether they can get there.
+      if (!draft.shopId) return 'Choose where this work is'
+      if (!String(draft.title).trim()) return 'Give the job a name'
+    }
     if (step === 4) {
       const shortTerm = draft.engagementModel === 'FEW_DAYS'
         || draft.engagementModel === 'FEW_WEEKS'
@@ -120,6 +125,7 @@ export default function PostJob({ navigation }) {
     setBusy(true); setError('')
     try {
       const body = {
+        shopId: draft.shopId || undefined,
         title: String(draft.title).trim(),
         description: draft.description || undefined,
         workerCategory: draft.workerCategory,

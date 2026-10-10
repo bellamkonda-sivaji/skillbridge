@@ -25,3 +25,10 @@ export const changePrice = (jobId, salary, reason) =>
 // ---- demand advice: whether a live job is going to fill
 export const jobDemand = (jobId) => client.get(`/employer/jobs/${jobId}/demand`).then((r) => r.data)
 export const demandAlerts = () => client.get('/employer/demand-alerts').then((r) => r.data)
+
+/* ------------------------------------------------------------------ shops */
+/** Every place this employer hires for. Seeds the first from the profile. */
+export const shops = () => client.get('/employer/shops').then((r) => r.data)
+export const addShop = (body) => client.post('/employer/shops', body).then((r) => r.data)
+export const updateShop = (id, body) => client.put(`/employer/shops/${id}`, body).then((r) => r.data)
+export const closeShop = (id) => client.delete(`/employer/shops/${id}`).then((r) => r.data)

@@ -1,4 +1,15 @@
 export default {
+  shops: {
+    allPlaces: 'All places',
+    whichPlace: 'Where is this work?',
+    name: 'Name of this place',
+    nameHint: 'e.g. Fresh Mart, Gandhi Road',
+    where: 'Address',
+    addAnother: 'Add another place',
+    save: 'Save this place',
+    title: 'My shops',
+    sub: 'The places you hire for',
+  },
   callRequest: {
     ask: 'Ask us to arrange a call',
     sent: 'We will call you',

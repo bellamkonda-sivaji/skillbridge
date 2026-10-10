@@ -1,4 +1,15 @@
 export default {
+  shops: {
+    allPlaces: 'सभी जगहें',
+    whichPlace: 'यह काम कहाँ है?',
+    name: 'इस जगह का नाम',
+    nameHint: 'जैसे फ्रेश मार्ट, गांधी रोड',
+    where: 'पता',
+    addAnother: 'दूसरी जगह जोड़ें',
+    save: 'यह जगह सेव करें',
+    title: 'मेरी दुकानें',
+    sub: 'जहाँ आप काम देते हैं',
+  },
   callRequest: {
     ask: 'बात कराने के लिए कहें',
     sent: 'हम आपको फोन करेंगे',

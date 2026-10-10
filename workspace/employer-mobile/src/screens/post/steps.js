@@ -11,6 +11,7 @@ import {
 } from '../../ui/catalog'
 import { colors, radius, space } from '../../theme'
 import DateField from '../../ui/DateField'
+import ShopPicker from './ShopPicker'
 
 /** The form keeps dates as DD/MM/YYYY text; the picker needs a real Date. */
 function dateOf(text) {
@@ -103,6 +104,15 @@ export function StepDetails({ draft, set, t }) {
   return (
     <View>
       <Head title={t('post.detailsTitle')} />
+
+      {/* Where the work is, before anything else about it. Most employers
+          have one shop and it is already chosen; the question only becomes
+          real for the second branch, and then it is the most important one
+          on the form - a job at the wrong address sends workers to the wrong
+          town. */}
+      <Field label={t('shops.whichPlace')}>
+        <ShopPicker value={draft.shopId} onChange={(id) => set({ shopId: id })} />
+      </Field>
 
       <Field label={t('post.jobTitle')}>
         <Input value={draft.title} onChangeText={(v) => set({ title: v })}
