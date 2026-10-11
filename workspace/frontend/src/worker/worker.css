@@ -59,8 +59,8 @@
   border: 1px solid var(--line); border-radius: 999px;
   background: #fff; cursor: pointer; font-family: inherit;
 }
-.wk-me .nm { font-size: 13px; font-weight: 700; color: var(--ink); line-height: 1.15; }
-.wk-me .rl { font-size: 11px; color: var(--muted); line-height: 1.15; }
+.wk-me .nm { font-size: 14.5px; font-weight: 700; color: var(--ink); line-height: 1.15; }
+.wk-me .rl { font-size: 12.5px; color: var(--muted); line-height: 1.15; }
 .wk-me .txt { display: none; text-align: left; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (min-width: 640px) { .wk-me .txt { display: block; } }
 
@@ -89,7 +89,10 @@
   padding: 10px 12px;
   border-radius: 10px;
   color: var(--body);
-  font-size: 14px; font-weight: 500;
+  /* Matches the body text beside it. At 14px against 16px content the
+     navigation read as a footnote, and the back office is used all day by
+     people who are not looking for small print. */
+  font-size: 16px; font-weight: 500;
 }
 .wk-nav a:hover { background: var(--soft); color: var(--ink); }
 .wk-nav a.active { background: var(--blue-50); color: var(--blue-dark); font-weight: 600; }

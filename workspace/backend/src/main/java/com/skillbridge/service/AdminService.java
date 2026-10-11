@@ -1,5 +1,9 @@
 package com.skillbridge.service;
 
+import java.util.Comparator;
+import com.skillbridge.repository.ShopRepository;
+import com.skillbridge.model.EmployerProfile;
+import com.skillbridge.dto.EmployerVerificationDto;
 import com.skillbridge.dto.AccountDto;
 import com.skillbridge.dto.AdminAnalyticsDto;
 import com.skillbridge.dto.EmployerProfileDto;
@@ -25,6 +29,8 @@ import java.util.stream.Collectors;
 public class AdminService {
 
     private final WorkerAccountRepository workerAccountRepository;
+
+    private final ShopRepository shopRepository;
     private final EmployerAccountRepository employerAccountRepository;
     private final AdminAccountRepository adminAccountRepository;
     private final WorkerProfileRepository workerProfileRepository;
@@ -43,7 +49,9 @@ public class AdminService {
                         JobPostRepository jobRepository, JobApplicationRepository applicationRepository,
                         MatchRepository matchRepository, InterviewRepository interviewRepository,
                         ReviewRepository reviewRepository, EmployerProfileRepository employerProfileRepository,
-                        ReviewService reviewService) {
+                        ReviewService reviewService,
+                        ShopRepository shopRepository) {
+        this.shopRepository = shopRepository;
         this.workerAccountRepository = workerAccountRepository;
         this.employerAccountRepository = employerAccountRepository;
         this.adminAccountRepository = adminAccountRepository;
@@ -183,6 +191,23 @@ public class AdminService {
         return workerProfileRepository.findAll().stream()
                 .filter(w -> w.getVerificationStatus() == VerificationStatus.PENDING)
                 .map(WorkerProfileDto::from).toList();
+    }
+
+    /**
+     * Businesses to check, those with something to look at first.
+     *
+     * Unverified ones lead because they are the queue; a verified business is
+     * listed so staff can re-open one when something looks wrong later.
+     */
+    public List<EmployerVerificationDto> employerVerifications() {
+        return employerProfileRepository.findAll().stream()
+                .map(p -> EmployerVerificationDto.from(p,
+                        (int) shopRepository.countByEmployer(p.getAccount())))
+                .sorted(Comparator
+                        .comparing(EmployerVerificationDto::verified)
+                        .thenComparing(d -> d.registrationDocUrl() == null
+                                && d.ownerIdDocUrl() == null && d.logoUrl() == null))
+                .toList();
     }
 
     public List<JobDto> allJobs() {

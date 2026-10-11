@@ -333,3 +333,10 @@ export const SUPPORT_TOPIC_LABEL = {
   MONEY: 'Money', WORK: 'Work', OFFER: 'Job offer', ATTENDANCE: 'Attendance',
   DOCUMENTS: 'Papers', ACCOUNT: 'Account', OTHER: 'Something else',
 }
+
+/** Businesses waiting to be checked, with the proof they uploaded. */
+export const getEmployerVerifications = () =>
+  api.get('/admin/verifications/employers').then((r) => r.data)
+/** Marks a business checked, or puts it back in the queue. */
+export const setEmployerVerified = (employerAccountId, verified) =>
+  api.patch(`/admin/employers/${employerAccountId}/verify`, { approved: verified }).then((r) => r.data)

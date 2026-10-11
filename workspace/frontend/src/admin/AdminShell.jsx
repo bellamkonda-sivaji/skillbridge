@@ -27,7 +27,10 @@ const NAV = [
   { to: '/admin/interviews', icon: 'calendar', label: 'Calls & visits' },
   { to: '/admin/payments', icon: 'wallet', label: 'Payments', perm: 'VIEW_PAYMENTS' },
   { to: '/admin/finance', icon: 'rupee', label: 'Finance', perm: 'VIEW_PAYMENTS' },
-  { to: '/admin/verifications', icon: 'shield', label: 'Verifications', perm: 'VERIFY_ACCOUNTS' },
+  { to: '/admin/verifications', icon: 'shield', label: 'Worker checks', perm: 'VERIFY_ACCOUNTS' },
+  // Separate entry rather than a tab: the two queues are worked by
+  // different people and a business check means looking at paperwork.
+  { to: '/admin/verifications/businesses', icon: 'building', label: 'Business checks', perm: 'VERIFY_ACCOUNTS' },
   { to: '/admin/reports', icon: 'trending', label: 'Daily Report' },
   { to: '/admin/team', icon: 'users', label: 'Admin Team', superOnly: true },
   { to: '/admin/audit', icon: 'eye', label: 'Audit Log' },

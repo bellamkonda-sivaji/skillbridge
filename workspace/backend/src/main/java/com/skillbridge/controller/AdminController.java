@@ -1,5 +1,6 @@
 package com.skillbridge.controller;
 
+import com.skillbridge.dto.EmployerVerificationDto;
 import com.skillbridge.dto.AccountDto;
 import com.skillbridge.dto.AdminAnalyticsDto;
 import com.skillbridge.dto.EmployerProfileDto;
@@ -70,6 +71,18 @@ public class AdminController {
     @GetMapping("/verifications")
     public List<WorkerProfileDto> pendingVerifications() {
         return adminService.pendingVerifications();
+    }
+
+    /**
+     * Businesses and the proof they sent.
+     *
+     * The upload side of verification existed and the reviewing side did
+     * not: an employer could send a registration certificate, a shop photo
+     * and the owner's ID, and nothing showed them to anyone.
+     */
+    @GetMapping("/verifications/employers")
+    public List<EmployerVerificationDto> employerVerifications() {
+        return adminService.employerVerifications();
     }
 
     @PatchMapping("/verifications/{workerAccountId}")

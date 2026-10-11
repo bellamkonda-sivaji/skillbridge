@@ -59,6 +59,7 @@ import AdminDailyReport from './admin/pages/DailyReport'
 import AdminTeam from './admin/pages/Team'
 import AdminAudit from './admin/pages/Audit'
 import AdminVerifications from './admin/pages/Verifications'
+import AdminEmployerVerifications from './admin/pages/EmployerVerifications'
 import AdminAnalytics from './admin/pages/Analytics'
 import AdminFinance from './admin/pages/Finance'
 import AdminCallQueue from './admin/pages/CallQueue'
@@ -322,6 +323,7 @@ export default function App() {
         <Route path="interviews" element={<AdminInterviews />} />
         <Route path="payments" element={<RequirePermission permission="VIEW_PAYMENTS"><AdminPayments /></RequirePermission>} />
         <Route path="verifications" element={<AdminVerifications />} />
+        <Route path="verifications/businesses" element={<AdminEmployerVerifications />} />
         <Route path="reports" element={<AdminDailyReport />} />
         <Route path="team" element={<RequirePermission superOnly><AdminTeam /></RequirePermission>} />
         <Route path="audit" element={<AdminAudit />} />
