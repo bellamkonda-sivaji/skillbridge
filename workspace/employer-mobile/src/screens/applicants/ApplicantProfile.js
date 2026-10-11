@@ -127,7 +127,9 @@ export default function ApplicantProfile({ navigation, route }) {
             <Card>
               {worker.age ? <KV k="Age" v={`${worker.age} years`} /> : null}
               <KV k={t('applicants.profileExperience')}
-                v={worker.experienceYears != null ? `${worker.experienceYears} years` : '—'} />
+                v={worker.fresher || worker.experienceYears === 0
+                  ? 'Fresher'
+                  : (worker.experienceYears != null ? `${worker.experienceYears} years` : '—')} />
               <KV k={t('post.languages')} v={(worker.languages || []).join(', ') || '—'} />
               <KV k={t('applicants.distanceAway')} v={distance(worker.distanceKm) || '—'} />
               <KV k={t('applicants.expectedPay')}

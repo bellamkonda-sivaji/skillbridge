@@ -25,13 +25,26 @@ export const emptyAddress = () => ({
   city: '', state: '', pincode: '', latitude: null, longitude: null,
 })
 
-/** Joins the parts that are present, so no screen prints ", , Tirupati". */
+/**
+ * Joins the parts that are present, so no screen prints ", , Tirupati".
+ *
+ * A part already contained in what has been written is skipped. The stored
+ * address is one line, and editing a saved place puts that whole line back
+ * into the street field - so appending the locality, town and PIN again
+ * grew the address every time it was saved, until it read
+ * "…Tirupati, 560102, Naidupeta, Tirupati, 560102, Naidupeta, Tirupati".
+ */
 export function formatAddress(a) {
   if (!a) return ''
-  return [a.doorNo, a.building, a.street, a.locality, a.city, a.pincode]
-    .map((x) => String(x || '').trim())
-    .filter(Boolean)
-    .join(', ')
+  const out = []
+  for (const part of [a.doorNo, a.building, a.street, a.locality, a.city, a.pincode]) {
+    const v = String(part || '').trim()
+    if (!v) continue
+    const seen = out.join(', ').toLowerCase()
+    if (seen.includes(v.toLowerCase())) continue
+    out.push(v)
+  }
+  return out.join(', ')
 }
 
 /** Where the phone is, as an address rather than two numbers. */

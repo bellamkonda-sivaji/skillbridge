@@ -6,6 +6,21 @@ import { colors, radius, space } from '../../theme'
 import { word } from '../../ui/words'
 
 /** One applicant, as they appear in every list on this side of the product. */
+/**
+ * Experience in words.
+ *
+ * "Fresher" rather than "0 yr exp": one is a person starting out, the other
+ * reads like a missing value, and an employer skims past the second.
+ */
+function experienceLabel(item) {
+  const fresher = item.fresher ?? item.workerFresher
+  const years = item.experienceYears ?? item.workerExperienceYears
+  if (fresher) return 'Fresher'
+  if (years == null) return null
+  if (years === 0) return 'Fresher'
+  return `${years} yr exp`
+}
+
 export default function ApplicantCard({ item, onPress, onCall, selected, onToggleSelect, t }) {
   const name = item.workerName || item.name
   return (
@@ -25,8 +40,14 @@ export default function ApplicantCard({ item, onPress, onCall, selected, onToggl
             {item.verified ? <Ionicons name="checkmark-circle" size={15} color={colors.green} /> : null}
           </Row>
           <Small numberOfLines={1} style={{ marginTop: 2 }}>
-            {[item.gender, item.age ? `${item.age} yr` : null,
-              item.experienceYears != null ? `${item.experienceYears} yr exp` : null]
+            {/* Two shapes reach this card: the recommended list, which has
+                experienceYears, and the applications list, which names it
+                workerExperienceYears. It read only the first, so applicants
+                showed no experience at all. */}
+            {[item.jobTitle || item.workerJobTitle,
+              item.gender,
+              item.age ? `${item.age} yr` : null,
+              experienceLabel(item)]
               .filter(Boolean).join(' · ')}
           </Small>
           <Row gap={space.md} style={{ marginTop: 6, flexWrap: 'wrap' }}>

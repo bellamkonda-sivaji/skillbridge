@@ -22,6 +22,30 @@ function dateOf(text) {
   return Number.isNaN(out.getTime()) ? undefined : out
 }
 
+/**
+ * The longest "a few days" or "a few weeks" may run.
+ *
+ * Past a month it is monthly work, and the rules that follow from that - a
+ * salary rather than a day rate, paid on a cycle, attendance that does not
+ * need confirming one day at a time - are the ones that should apply.
+ */
+export const MAX_SHORT_DAYS = 31
+
+/** Inclusive, so Monday to Monday is eight days of work, not seven. */
+export function daysBetween(startText, endText) {
+  const a = dateOf(startText)
+  const b = dateOf(endText)
+  if (!a || !b) return 0
+  return Math.round((b - a) / 86400000) + 1
+}
+
+/** The latest end date the picker will offer for short work. */
+export function lastAllowed(startText) {
+  const a = dateOf(startText)
+  if (!a) return undefined
+  return new Date(a.getTime() + (MAX_SHORT_DAYS - 1) * 86400000)
+}
+
 const Head = ({ title, sub }) => (
   <View style={{ marginBottom: space.lg }}>
     <H2>{title}</H2>
