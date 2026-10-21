@@ -111,7 +111,9 @@ public class OtpService {
                     "Please wait " + Math.max(wait, 1) + " seconds before requesting another OTP");
         }
 
-        String reviewCode = reviewCodes.get(lastTen(key));
+        // Not every key is a phone (password reset keys by account), and Map.copyOf rejects null lookups.
+        String number = lastTen(key);
+        String reviewCode = number == null ? null : reviewCodes.get(number);
         String fixed = reviewCode != null ? reviewCode : fixedCode;
         String code = fixed != null ? fixed : generateCode();
         challenges.put(key, new Challenge(code, now.plusSeconds(ttlSeconds), now));

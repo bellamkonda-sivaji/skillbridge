@@ -98,6 +98,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Internal Server Error", "message", ex.getMessage()));
+                // Map.of rejects nulls, and plenty of exceptions (an NPE, for one) carry no message.
+                .body(Map.of("error", "Internal Server Error",
+                        "message", ex.getMessage() != null ? ex.getMessage() : "Something went wrong"));
     }
 }

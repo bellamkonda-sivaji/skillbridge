@@ -55,4 +55,12 @@ class OtpServiceReviewLoginTest {
         assertEquals(1, sent.size());
         assertThrows(ApiException.class, () -> otp.verify("9876543210", "112233"));
     }
+
+    @Test
+    void nonPhoneKeysStillWorkWithReviewNumbersConfigured() {
+        // Password reset keys challenges by account, not by phone number.
+        OtpService otp = new OtpService(sender, 6, 300, 30, 5, false, "9000000001:246810", "112233");
+        otp.request("reset:WORKER:42");
+        assertDoesNotThrow(() -> otp.verify("reset:WORKER:42", "112233"));
+    }
 }
