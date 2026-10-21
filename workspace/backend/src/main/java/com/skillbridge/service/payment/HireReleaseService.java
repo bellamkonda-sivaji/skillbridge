@@ -19,7 +19,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * The last mile of a hire: the shop owner says the work is done, JobOn checks it, and only
+ * The last mile of a hire: the shop owner says the work is done, LocalWork checks it, and only
  * then does the worker's money become theirs.
  *
  * Completion used to release the money on the owner's word alone. Now it is held, the admins
@@ -74,7 +74,7 @@ public class HireReleaseService {
         String business = businessName(e);
         long net = earning.getGrossMinor() - earning.getFeeMinor();
         notifications.notify(e.getWorker(), "Work marked complete",
-                business + " has marked \"" + e.getJob().getTitle() + "\" as done. JobOn is checking it and will"
+                business + " has marked \"" + e.getJob().getTitle() + "\" as done. LocalWork is checking it and will"
                         + " release your " + Money.inr(net) + " soon.",
                 NotificationType.APPLICATION, "/worker/work");
         for (AdminAccount admin : admins.findAllByOrderByCreatedAtAsc()) {
@@ -116,8 +116,8 @@ public class HireReleaseService {
                         + Money.inr(net) + " has been released to your account. You can withdraw it now.",
                 NotificationType.SYSTEM, "/worker/earnings");
         notifications.notify(e.getEmployer(), "Payment released to " + e.getWorker().getName(),
-                "JobOn released " + Money.inr(net) + " to " + e.getWorker().getName() + " for \""
-                        + e.getJob().getTitle() + "\". Thank you for hiring on JobOn.",
+                "LocalWork released " + Money.inr(net) + " to " + e.getWorker().getName() + " for \""
+                        + e.getJob().getTitle() + "\". Thank you for hiring on LocalWork.",
                 NotificationType.SYSTEM, "/employer/billing");
         return toDto(e);
     }

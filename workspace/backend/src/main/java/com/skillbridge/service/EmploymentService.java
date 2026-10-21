@@ -263,7 +263,7 @@ public class EmploymentService {
         attendance.setApprovalStatus(approval);
         if (approval == AttendanceApproval.AUTO_APPROVED) {
             attendance.setApprovedByType(AttendanceActor.SYSTEM);
-            attendance.setApprovedByName("JobOn");
+            attendance.setApprovedByName("LocalWork");
             attendance.setApprovedAt(now);
         }
         attendanceRepository.save(attendance);
@@ -509,7 +509,9 @@ public class EmploymentService {
                 e.getSalary(), e.getSalaryUnit(),
                 new ArrayList<>(e.getJob().getWorkingDays()),
                 shiftLabel(e.getJob()), e.getWorkLocation(), e.isCurrent(),
-                pricing.takeHome(e.getSalary()));
+                pricing.takeHome(e.getSalary()),
+                e.getWorker().getId(), e.getWorker().getName(), e.getWorker().getPhotoUrl(),
+                e.getActualJoiningDate());
     }
 
     private EmploymentDetailDto toDetail(Employment e) {

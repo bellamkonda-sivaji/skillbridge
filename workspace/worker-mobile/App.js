@@ -8,7 +8,7 @@ import { DialogHost } from './src/ui/Dialog'
 import RootNavigator from './src/navigation'
 
 /**
- * JobOn for Workers.
+ * LocalWork for Workers.
  *
  * Find work near home, apply with one tap, mark attendance and get paid -
  * built for shop workers, drivers, cooks, cleaners and masons around Tirupati.

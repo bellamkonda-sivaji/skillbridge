@@ -38,7 +38,7 @@ export default {
     halfYearTitle: 'Half a year',
     halfYearBody: '180 days. Shop owners trust a record like this.',
     yearTitle: 'One full year',
-    yearBody: '365 days of work with JobOn. Thank you.',
+    yearBody: '365 days of work with LocalWork. Thank you.',
   },
   perm: {
     heading: 'Before we start',
@@ -119,7 +119,7 @@ export default {
     somethingWrong: 'Something went wrong. Please try again.',
   },
   splash: {
-    tagline: 'Local Jobs • Local Workers • Growing Together',
+    tagline: 'Local Work • Local People • Growing Together',
     headline: 'Find work near your home',
     sub: 'Shops, hotels, delivery, driving and building work — all close to you.',
     getStarted: 'Get started',
@@ -259,7 +259,7 @@ export default {
     personal: 'My details', skills: 'What I can do', experience: 'Where I worked',
     location: 'Where I live', documents: 'My papers', documentsSub: 'Aadhaar, ID',
     availability: 'When I can work', languagePref: 'Language',
-    logout: 'Log out', logoutAsk: 'Log out of JobOn?',
+    logout: 'Log out', logoutAsk: 'Log out of LocalWork?',
   },
   messages: { title: 'Messages', none: 'No messages yet', typeHere: 'Write here…' },
   interviews: {
@@ -303,7 +303,7 @@ export default {
     title: 'Settings', language: 'Language', notifications: 'Alerts',
     jobAlerts: 'New work near me', applicationAlerts: 'News about my applications',
     payAlerts: 'Money', account: 'My account', editProfile: 'Edit my details',
-    payoutMethods: 'Where to send my money', help: 'Help', about: 'About JobOn',
+    payoutMethods: 'Where to send my money', help: 'Help', about: 'About LocalWork',
     version: 'Version', logout: 'Log out',
   },
   notifications: { title: 'Alerts', markAll: 'Mark all read', none: 'Nothing new' },

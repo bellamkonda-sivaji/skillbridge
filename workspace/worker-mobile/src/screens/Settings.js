@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native'
+import { Linking, Pressable, StyleSheet, Switch, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import Constants from 'expo-constants'
@@ -10,6 +10,10 @@ import { LANGUAGES, setLanguage } from '../i18n'
 import { useSession } from '../session/SessionProvider'
 import { colors, radius, space } from '../theme'
 import { Dialog } from '../ui/Dialog'
+import client, { errorText } from '../api/client'
+
+// The policies live on the website; Play asks that they can be reached from the app.
+const WEBSITE = 'https://jobon.mindsyncos.com'
 
 /**
  * Settings.
@@ -20,6 +24,35 @@ import { Dialog } from '../ui/Dialog'
 export default function Settings({ navigation }) {
   const { t, i18n } = useTranslation()
   const { signOut } = useSession()
+
+  // Play requires deleting the account from inside the app. Asked twice: it cannot be undone.
+  const deleteAccount = () => {
+    Dialog.alert('Delete your account?',
+      'Your name, phone number, photo, address, documents and payment details are removed and you are signed out. This cannot be undone.',
+      [
+        { text: 'Keep my account', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => Dialog.alert('Are you sure?', 'Your account will be deleted right now.', [
+            { text: 'No, go back', style: 'cancel' },
+            {
+              text: 'Yes, delete it',
+              style: 'destructive',
+              onPress: async () => {
+                try {
+                  await client.delete('/worker/account')
+                  Dialog.alert('Account deleted', 'Your account and personal details have been removed. Thank you for using LocalWork.',
+                    [{ text: 'OK', onPress: signOut }], { tone: 'success' })
+                } catch (err) {
+                  Dialog.alert('We could not delete it yet', errorText(err, 'Please try again.'))
+                }
+              },
+            },
+          ]),
+        },
+      ])
+  }
   const [alerts, setAlerts] = useState({ jobs: true, applications: true, pay: true })
 
   const toggle = (k) => setAlerts((a) => ({ ...a, [k]: !a[k] }))
@@ -81,6 +114,17 @@ export default function Settings({ navigation }) {
           <View style={s.divider} />
           <ListRow icon="star-outline" title={t('reviews.title')}
             onPress={() => navigation.navigate('Reviews')} />
+        </Card>
+
+        <Card style={{ marginTop: space.xl, paddingHorizontal: space.lg }} padded={false}>
+          <ListRow icon="document-text-outline" title="Terms of Service"
+            onPress={() => Linking.openURL(`${WEBSITE}/legal/terms`)} />
+          <View style={s.divider} />
+          <ListRow icon="shield-checkmark-outline" title="Privacy Policy"
+            onPress={() => Linking.openURL(`${WEBSITE}/legal/privacy`)} />
+          <View style={s.divider} />
+          <ListRow icon="trash-outline" tone={colors.redText} title="Delete my account"
+            sub="Remove your account and personal details" right={null} onPress={deleteAccount} />
         </Card>
 
         <Card style={{ marginTop: space.xl, paddingHorizontal: space.lg }} padded={false}>

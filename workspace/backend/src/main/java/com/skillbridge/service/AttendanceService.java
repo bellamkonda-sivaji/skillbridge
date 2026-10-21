@@ -516,12 +516,12 @@ public class AttendanceService {
                 e.getWorker().getName() + " · " + a.getWorkDate() + " · " + a.getStatus()
                         + "/" + AttendanceRules.approvalOf(a)
                         + (in.note() == null ? "" : " · " + in.note()));
-        String body2 = "JobOn corrected " + a.getWorkDate() + " on \""
+        String body2 = "LocalWork corrected " + a.getWorkDate() + " on \""
                 + e.getJob().getTitle() + "\": " + AttendanceRules.approvalOf(a).label()
                 + (in.note() == null || in.note().isBlank() ? "" : " - " + in.note());
         notifications.notify(e.getWorker(), "Your attendance was corrected", body2,
                 NotificationType.SYSTEM, "/worker/attendance");
-        notifications.notify(e.getEmployer(), "Attendance corrected by JobOn",
+        notifications.notify(e.getEmployer(), "Attendance corrected by LocalWork",
                 e.getWorker().getName() + " · " + body2,
                 NotificationType.SYSTEM, "/employer/attendance");
         return AttendanceDto.from(a, hasOpenRequest(e.getId(), a.getWorkDate()));
@@ -597,7 +597,7 @@ public class AttendanceService {
                         + (in.note() == null || in.note().isBlank() ? "" : " - " + in.note()),
                 NotificationType.SYSTEM, "/worker/attendance");
         if (byAdmin) {
-            notifications.notify(e.getEmployer(), "JobOn answered an attendance question",
+            notifications.notify(e.getEmployer(), "LocalWork answered an attendance question",
                     req.getWorkerName() + " · " + req.getWorkDate() + " · "
                             + (approve ? "fixed" : "not accepted"),
                     NotificationType.SYSTEM, "/employer/attendance/requests");

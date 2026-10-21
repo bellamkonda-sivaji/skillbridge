@@ -94,7 +94,7 @@ export default function FundJob({ navigation, route }) {
         order_id: order.providerOrderId,
         amount: order.amountMinor,
         currency: order.currency || 'INR',
-        name: 'JobOn',
+        name: 'LocalWork',
         description: jobTitle || 'Money for this job',
         prefill: {
           contact: user?.phone || '',

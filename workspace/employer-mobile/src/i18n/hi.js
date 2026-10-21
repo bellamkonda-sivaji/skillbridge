@@ -49,7 +49,7 @@ export default {
     halfYearTitle: 'आधा साल',
     halfYearBody: '180 दिन। ऐसे रिकॉर्ड पर दुकानदार भरोसा करते हैं।',
     yearTitle: 'पूरा एक साल',
-    yearBody: 'JobOn के साथ 365 दिन का काम। धन्यवाद।',
+    yearBody: 'LocalWork के साथ 365 दिन का काम। धन्यवाद।',
   },
   perm: {
     heading: 'शुरू करने से पहले',
@@ -276,9 +276,9 @@ export default {
     actualJoining: 'जुड़ने का दिन', reportingTime: 'आने का समय',
     photoProof: 'फ़ोटो (ज़रूरी नहीं)', notes: 'बात',
     confirmJoining: 'जुड़ने की पुष्टि करें', markCompleted: 'काम पूरा दर्ज करें',
-    shortJob: 'छोटा काम', longJob: 'लंबा काम', waitingRelease: 'JobOn काम देखकर पैसे जारी करेगा। भुगतान होने पर आपको और वर्कर को बताया जाएगा।',
-    completedTitle: 'काम पूरा हुआ!', releasedNote: 'JobOn काम देखकर वर्कर के पैसे जारी करता है। भुगतान होने पर दोनों को बताया जाएगा।',
-    releaseWarning: 'इसे पूरा बताने पर यह JobOn के पास जाएगा। हम देखकर वर्कर को पैसे जारी करेंगे।',
+    shortJob: 'छोटा काम', longJob: 'लंबा काम', waitingRelease: 'LocalWork काम देखकर पैसे जारी करेगा। भुगतान होने पर आपको और वर्कर को बताया जाएगा।',
+    completedTitle: 'काम पूरा हुआ!', releasedNote: 'LocalWork काम देखकर वर्कर के पैसे जारी करता है। भुगतान होने पर दोनों को बताया जाएगा।',
+    releaseWarning: 'इसे पूरा बताने पर यह LocalWork के पास जाएगा। हम देखकर वर्कर को पैसे जारी करेंगे।',
     markCompleted: 'काम पूरा दर्ज करें', employeeId: 'कर्मचारी ID',
     cancelOffer: 'प्रस्ताव रद्द करें', cancelAsk: 'मज़दूर को बता दिया जाएगा कि अब खुला नहीं है।',
     stepSent: 'प्रस्ताव भेजा', stepViewed: 'मज़दूर ने खोला', stepAccepted: 'मान लिया',
@@ -296,7 +296,7 @@ export default {
   },
   profile: {
     title: 'मेरा काम-धंधा', edit: 'बदलें', plan: 'प्लान', billing: 'भुगतान',
-    languagePref: 'भाषा', logout: 'लॉग आउट', logoutAsk: 'JobOn से बाहर जाएं?',
+    languagePref: 'भाषा', logout: 'लॉग आउट', logoutAsk: 'LocalWork से बाहर जाएं?',
   },
   shortlist: {
     title: 'चुने गए लोग', sub: 'इस काम के लिए आप जिन्हें देख रहे हैं।',
@@ -324,7 +324,7 @@ export default {
     needed: 'इस काम के लिए चाहिए', inEscrow: 'पहले से रखा है', toAdd: 'कितना जोड़ें?',
     walletBalance: 'आपका वॉलेट', payNow: 'अभी भुगतान करें', fromWallet: 'मेरा वॉलेट लें',
     funded: 'पैसा आ गया। आपके मज़दूरों को पैसा मिल सकता है।',
-    whyTitle: 'हम इसे क्यों रखते हैं', whyBody: 'काम पूरा होने तक पैसा JobOn के पास रहता है। मज़दूर को पता होता है कि पैसा मिलेगा, और आप उसी काम का देते हैं जो सच में हुआ।',
+    whyTitle: 'हम इसे क्यों रखते हैं', whyBody: 'काम पूरा होने तक पैसा LocalWork के पास रहता है। मज़दूर को पता होता है कि पैसा मिलेगा, और आप उसी काम का देते हैं जो सच में हुआ।',
   },
   findWorkers: {
     title: 'मज़दूर खोजें', sub: 'पास के सब रजिस्टर लोग, चाहे उन्होंने आवेदन किया हो या नहीं।',
@@ -342,7 +342,7 @@ export default {
     applicationAlerts: 'नए आवेदन', attendanceAlerts: 'हाज़िरी',
     payAlerts: 'भुगतान', business: 'मेरा काम-धंधा', editBusiness: 'मेरी जानकारी बदलें',
     verifyBusiness: 'काम-धंधा जाँचवाएं', plan: 'प्लान और फ़ीस',
-    help: 'मदद', about: 'JobOn के बारे में', version: 'वर्ज़न', logout: 'लॉग आउट',
+    help: 'मदद', about: 'LocalWork के बारे में', version: 'वर्ज़न', logout: 'लॉग आउट',
   },
   notifications: { title: 'सूचनाएं', markAll: 'सब पढ़ा हुआ', none: 'कुछ नया नहीं' },
   offerPreview: {

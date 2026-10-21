@@ -13,7 +13,7 @@ export default function JobPublished({ navigation, route }) {
 
   const share = () => {
     Share.share({
-      message: `We are hiring: ${job.title} at ${job.businessName || 'our shop'}. Apply on JobOn.`,
+      message: `We are hiring: ${job.title} at ${job.businessName || 'our shop'}. Apply on LocalWork.`,
     }).catch(() => { /* the sheet was dismissed */ })
   }
 

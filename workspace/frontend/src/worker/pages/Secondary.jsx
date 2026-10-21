@@ -77,7 +77,7 @@ export function Earnings() {
 
   return (
     <>
-      <PageHead title="Earnings" sub="What you have earned through JobOn" />
+      <PageHead title="Earnings" sub="What you have earned through LocalWork" />
       <ErrorNote onRetry={load}>{error}</ErrorNote>
       {!wallet && !error ? <Loading rows={2} /> : wallet && (
         <>

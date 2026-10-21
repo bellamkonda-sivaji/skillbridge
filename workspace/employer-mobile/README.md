@@ -1,6 +1,6 @@
-# jobon-employer
+# LocalWork for Shops (employer app)
 
-JobOn employer app — Expo / React Native.
+LocalWork employer app — Expo / React Native.
 
 ```bash
 npm install
@@ -38,7 +38,7 @@ code, or an edit to `app.json`, the icons, permissions or
 
 ## This app owns port 8082
 
-The two JobOn apps use different Metro ports on purpose: worker-mobile (8081)
+The two LocalWork apps use different Metro ports on purpose: worker-mobile (8081)
 uses the other one. Sharing a port makes the wrong bundle load — the symptom
 is this app opening with the other app's screens, which looks like a baffling
 bug and is not one. It cost us twice before the ports were split.

@@ -198,7 +198,7 @@ public class AdminOnBehalfService {
                     + " has already applied to this job - open the existing application instead");
         }
         String note = request.note() == null || request.note().isBlank()
-                ? "Applied by the JobOn team on " + worker.getName() + "'s behalf"
+                ? "Applied by the LocalWork team on " + worker.getName() + "'s behalf"
                 : request.note().trim();
         applicationService.apply(worker, request.jobId(), note);
 

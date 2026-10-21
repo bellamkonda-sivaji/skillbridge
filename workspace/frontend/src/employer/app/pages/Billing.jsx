@@ -64,7 +64,7 @@ export default function Billing() {
           <div><div className="k">Funded into jobs</div><div className="v">{money(data.totalFundedMinor)}</div></div>
           <div><div className="k">Held for workers</div><div className="v">{money(data.totalReservedMinor)}</div></div>
           <div><div className="k">Paid out</div><div className="v">{money(data.totalReleasedMinor)}</div></div>
-          <div><div className="k">JobOn fees</div><div className="v">{money(data.platformFeesMinor)}</div></div>
+          <div><div className="k">LocalWork fees</div><div className="v">{money(data.platformFeesMinor)}</div></div>
         </div>
       </div>
 
@@ -199,7 +199,7 @@ export function FundJob() {
       <div className="wk-card pad-lg" style={{ marginTop: 14 }}>
         <h2 className="wk-h2" style={{ marginBottom: 6 }}>How much do you want to add?</h2>
         <p className="wk-sub" style={{ marginTop: 0, marginBottom: 14 }}>
-          The money is held by JobOn and only reaches a worker once the work is done.
+          The money is held by LocalWork and only reaches a worker once the work is done.
           Anything unused comes back to you.
         </p>
 

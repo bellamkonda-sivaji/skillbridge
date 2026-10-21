@@ -1,5 +1,5 @@
 /**
- * The JobOn look, in one place.
+ * The LocalWork look, in one place.
  *
  * Sizes lean large on purpose. The people using this app are shop workers,
  * drivers, cooks and masons reading a cheap phone in daylight, often without

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   JobOn — public marketing site
+   LocalWork — public marketing site
    Scoped under .mk so it never collides with the logged-in app styles.
    Mobile-first: base rules target phones, media queries add up from there.
    ========================================================================== */
@@ -7,7 +7,7 @@
 .mk {
   --blue: #2563eb;
   --blue-dark: #1d4ed8;
-  /* JobOn's second brand colour — the "On" in the wordmark and the worker in
+  /* LocalWork's second brand colour — the "On" in the wordmark and the worker in
      the mark. Used as an accent; the blue stays the primary. */
   --brand-orange: #f59105;
   --brand-orange-dark: #d97706;
@@ -777,7 +777,7 @@
 }
 
 /* ==========================================================================
-   JobOn brand mark
+   LocalWork brand mark
    ========================================================================== */
 .jo-logo { display: inline-flex; align-items: center; gap: 8px; line-height: 1; }
 .jo-mark { display: block; object-fit: contain; flex-shrink: 0; }
@@ -1010,3 +1010,7 @@
   .sc-tap, .sc-ring span { animation: none !important; opacity: .35; }
   .film-dot .bar { animation: none !important; }
 }
+
+/* The LocalWork artwork (icon + wordmark) in headers; never stretched, never wider than its bar. */
+.jo-artwork { display: block; max-width: 100%; height: auto; object-fit: contain; }
+.jo-lockup .jo-artwork { margin: 0 auto; }

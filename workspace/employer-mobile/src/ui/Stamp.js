@@ -85,7 +85,7 @@ export default function Stamp({ milestone, daysWorked, onClose }) {
               <View style={s.ringInner}>
                 {/* Arched text is not worth a font hack here: the curve costs
                     legibility at this size, and the ring already says "stamp". */}
-                <Text style={s.brandTop}>JOBON</Text>
+                <Text style={s.brandTop}>LOCALWORK</Text>
                 <View style={s.markRow}>
                   <Ionicons name="checkmark-sharp" size={30} color={colors.blue} />
                 </View>
@@ -131,7 +131,7 @@ const s = StyleSheet.create({
     borderWidth: 2, borderColor: INK,
     alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10,
   },
-  brandTop: { fontSize: 17, fontWeight: '900', letterSpacing: 3, color: INK },
+  brandTop: { fontSize: 14, fontWeight: '900', letterSpacing: 1.5, color: INK },
   markRow: { marginTop: 2 },
   days: { fontSize: 15, fontWeight: '800', color: INK, textAlign: 'center' },
   rule: { width: 86, height: 2, backgroundColor: INK, marginVertical: 5 },

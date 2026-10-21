@@ -70,7 +70,7 @@ export default function AdminRegister() {
 
           <label className="ad-field">
             <span>Email</span>
-            <input className="ad-input" type="email" autoComplete="email" value={form.email} onChange={(e) => set('email')(e.target.value)} placeholder="name@skillbridge.in" />
+            <input className="ad-input" type="email" autoComplete="email" value={form.email} onChange={(e) => set('email')(e.target.value)} placeholder="name@localworkapp.com" />
           </label>
 
           <label className="ad-field">

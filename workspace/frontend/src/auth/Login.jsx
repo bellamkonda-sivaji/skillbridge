@@ -10,7 +10,7 @@ const DEMO = import.meta.env.DEV
   ? {
       WORKER: 'Demo: 9000000007 or john.kamau@mail.com / pass1234',
       EMPLOYER: 'Demo: 9000000002 or james@safiriconstruction.com / pass1234',
-      ADMIN: 'Demo: admin@skillbridge.com / admin123',
+      ADMIN: 'Demo: 9000000001 / admin123',
     }
   : {}
 
@@ -39,7 +39,7 @@ const CONFIG = {
   },
   ADMIN: {
     title: 'Operations login',
-    sub: 'JobOn staff only.',
+    sub: 'LocalWork staff only.',
     icon: 'shield',
     home: '/admin',
     signup: null,
@@ -144,7 +144,7 @@ export function ChooseLogin() {
   return (
     <ObShell>
       <ObCard>
-        <ObHead title="Log in to JobOn" sub="Which kind of account do you have?" />
+        <ObHead title="Log in to LocalWork" sub="Which kind of account do you have?" />
         <div style={{ display: 'grid', gap: 12 }}>
           <Link to="/worker/login" className="ob-choice">
             <span className="ob-choice-art" aria-hidden="true"><Icon name="user" size={26} /></span>

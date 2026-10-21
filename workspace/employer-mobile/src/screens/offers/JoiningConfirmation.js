@@ -214,7 +214,7 @@ export default function JoiningConfirmation({ navigation, route }) {
             multiline maxLength={300} style={{ minHeight: 76, alignItems: 'flex-start' }} />
         </Field>
 
-        {/* Payment is JobOn's step: the owner waits here rather than pressing a button. */}
+        {/* Payment is LocalWork's step: the owner waits here rather than pressing a button. */}
         {next?.key === 'PAYMENT' ? (
           <View style={[s.releaseNote, { backgroundColor: colors.orangeSoft }]}>
             <Ionicons name="time-outline" size={18} color={colors.orangeText} />

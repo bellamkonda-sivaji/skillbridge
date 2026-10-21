@@ -48,7 +48,7 @@ export default function AccountType({ navigation }) {
           <View style={{ flex: 1 }}>
             <Body style={{ fontWeight: '700', color: colors.ink }}>Are you hiring?</Body>
             <Small style={{ marginTop: 2 }}>
-              Business owners use the JobOn for Employers app to post work and hire.
+              Business owners use the LocalWork for Employers app to post work and hire.
             </Small>
           </View>
         </View>

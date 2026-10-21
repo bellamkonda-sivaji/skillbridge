@@ -299,7 +299,7 @@ public class PayoutService {
             JsonNode res = razorpay.createPayout(destination.getProviderFundAccountId(),
                     payout.getAmountMinor(), payout.getCurrency(),
                     RazorpayClient.payoutModeFor(destination.getKind().name()),
-                    "payout-" + payout.getId(), "JobOn earnings - " + workerName,
+                    "payout-" + payout.getId(), "LocalWork earnings - " + workerName,
                     payout.getIdempotencyKey());
             payout.setProviderPayoutId(res.path("id").asText(null));
             payout.setStatus(mapStatus(res.path("status").asText("processing")));

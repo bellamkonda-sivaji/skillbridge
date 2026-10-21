@@ -119,7 +119,7 @@ export default {
     somethingWrong: 'ఏదో తప్పు జరిగింది. మళ్లీ ప్రయత్నించండి.',
   },
   splash: {
-    tagline: 'స్థానిక పనులు • స్థానిక కార్మికులు • కలిసి ఎదుగుదాం',
+    tagline: 'స్థానిక పని • స్థానిక ప్రజలు • కలిసి ఎదుగుదాం',
     headline: 'మీ ఇంటి దగ్గర పని వెతకండి',
     sub: 'షాపులు, హోటళ్లు, డెలివరీ, డ్రైవింగ్, మేస్త్రీ పని — అన్నీ మీ దగ్గరే.',
     getStarted: 'మొదలుపెట్టు',
@@ -257,7 +257,7 @@ export default {
     personal: 'నా వివరాలు', skills: 'నాకు వచ్చేవి', experience: 'పనిచేసిన చోట్లు',
     location: 'నేను ఉండేది', documents: 'నా పత్రాలు', documentsSub: 'ఆధార్, ID',
     availability: 'ఎప్పుడు పని చేయగలను', languagePref: 'భాష',
-    logout: 'లాగ్ అవుట్', logoutAsk: 'JobOn నుంచి బయటకు వెళ్లాలా?',
+    logout: 'లాగ్ అవుట్', logoutAsk: 'LocalWork నుంచి బయటకు వెళ్లాలా?',
   },
   messages: { title: 'సందేశాలు', none: 'ఇంకా సందేశాలు లేవు', typeHere: 'ఇక్కడ రాయండి…' },
   interviews: {
@@ -301,7 +301,7 @@ export default {
     title: 'సెట్టింగ్స్', language: 'భాష', notifications: 'సూచనలు',
     jobAlerts: 'దగ్గరలో కొత్త పని', applicationAlerts: 'నా దరఖాస్తుల సమాచారం',
     payAlerts: 'డబ్బు', account: 'నా ఖాతా', editProfile: 'నా వివరాలు మార్చు',
-    payoutMethods: 'డబ్బు ఎక్కడికి పంపాలి', help: 'సహాయం', about: 'JobOn గురించి',
+    payoutMethods: 'డబ్బు ఎక్కడికి పంపాలి', help: 'సహాయం', about: 'LocalWork గురించి',
     version: 'వెర్షన్', logout: 'లాగ్ అవుట్',
   },
   notifications: { title: 'సూచనలు', markAll: 'అన్నీ చదివినట్టు', none: 'కొత్తవి ఏమీ లేవు' },

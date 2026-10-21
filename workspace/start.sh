@@ -1,5 +1,5 @@
 #!/bin/bash
-# Start both backend and frontend for SkillBridge
+# Start both backend and frontend for LocalWork
 # The frontend (port 5173) is the exposed preview port and proxies /api + /ws to the backend.
 
 set -e

@@ -58,6 +58,7 @@ public class SecurityConfig {
                         // has no login: a shared secret header is the whole of the security,
                         // and it is checked inside the handler.
                         .requestMatchers(HttpMethod.POST, "/api/leads/inbound").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/public/account-deletion").permitAll()
                         // --- role walls, enforced by the framework rather than by hand ---
                         .requestMatchers("/api/worker/**").hasRole("WORKER")
                         .requestMatchers("/api/employer/**").hasRole("EMPLOYER")

@@ -15,7 +15,7 @@
     <artifactId>skillbridge-backend</artifactId>
     <version>1.0.0</version>
     <name>skillbridge-backend</name>
-    <description>SkillBridge - AI driven skill worker hiring platform</description>
+    <description>LocalWork - AI driven skill worker hiring platform</description>
 
     <properties>
         <java.version>17</java.version>

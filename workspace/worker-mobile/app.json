@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "JobOn",
+    "name": "LocalWork",
     "slug": "jobon-worker",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,11 +9,11 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.jobon.worker",
+      "bundleIdentifier": "com.localworkapp.worker",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "JobOn needs your photos so you can add a profile picture.",
-        "NSCameraUsageDescription": "JobOn uses the camera so you can take a profile picture.",
-        "NSLocationWhenInUseUsageDescription": "JobOn uses your location to show work near you."
+        "NSPhotoLibraryUsageDescription": "LocalWork needs your photos so you can add a profile picture.",
+        "NSCameraUsageDescription": "LocalWork uses the camera so you can take a profile picture.",
+        "NSLocationWhenInUseUsageDescription": "LocalWork uses your location to show work near you."
       }
     },
     "android": {
@@ -23,7 +23,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.jobon.worker",
+      "package": "com.localworkapp.worker",
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -35,7 +35,8 @@
           "apiKey": ""
         }
       },
-      "googleServicesFile": "./google-services.json"
+      "googleServicesFile": "./google-services.json",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -45,7 +46,7 @@
       [
         "./plugins/withTileUserAgent",
         {
-          "userAgent": "JobOn-Worker/1.0 (+https://jobon.in; hello@jobon.in)"
+          "userAgent": "LocalWork-Worker/1.0 (+https://localworkapp.com; hello@localworkapp.com)"
         }
       ],
       "expo-location",
@@ -60,8 +61,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "JobOn needs your photos so you can add a profile picture.",
-          "cameraPermission": "JobOn uses the camera so you can take a profile picture."
+          "photosPermission": "LocalWork needs your photos so you can add a profile picture.",
+          "cameraPermission": "LocalWork uses the camera so you can take a profile picture."
         }
       ],
       "expo-font",
@@ -70,6 +71,12 @@
         {
           "color": "#2563EB",
           "defaultChannel": "office.v1"
+        }
+      ],
+      [
+        "./plugins/withReleaseSigning",
+        {
+          "prefix": "LOCALWORK_WORKER"
         }
       ]
     ],

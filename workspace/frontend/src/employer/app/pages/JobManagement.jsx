@@ -130,7 +130,7 @@ export default function JobManagement() {
                 <KV k="Worker gets" v={<>
                   <strong>{pay(pricing.workerSalary, job.salaryUnit)}</strong>
                   <div className="wk-sub" style={{ marginTop: 2 }}>
-                    after the {pricing.feePercent}% JobOn fee
+                    after the {pricing.feePercent}% LocalWork fee
                   </div>
                 </>} />
               )}
@@ -251,7 +251,7 @@ export default function JobManagement() {
             <div className="emp-kv-grid">
               <KV k="Auto-close when filled" v={job.autoCloseWhenFilled ? 'Yes' : 'No'} />
               <KV k="Interview type" v={job.interviewType || 'NONE'} />
-              <KV k="Payment" v={job.paymentMode === 'CASH' ? 'Cash / Direct' : 'Through JobOn'} />
+              <KV k="Payment" v={job.paymentMode === 'CASH' ? 'Cash / Direct' : 'Through LocalWork'} />
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 18 }}>
               <Link className="mk-btn mk-btn-outline mk-btn-sm" to={`/employer/post-job?edit=${job.id}`}>

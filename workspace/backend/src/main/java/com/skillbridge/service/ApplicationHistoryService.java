@@ -218,7 +218,7 @@ public class ApplicationHistoryService {
             entries.add(new TimelineEntry(employment.getCreatedAt(), "JOINED", "Hire created",
                     "Joining date " + employment.getJoiningDate()
                             + " at " + nullSafe(employment.getWorkLocation()),
-                    "SYSTEM", "JobOn"));
+                    "SYSTEM", "LocalWork"));
             if (employment.getJoiningAcknowledgedAt() != null) {
                 entries.add(new TimelineEntry(employment.getJoiningAcknowledgedAt(), "JOINED",
                         "Worker confirmed joining", null, "WORKER", workerName));
@@ -230,7 +230,7 @@ public class ApplicationHistoryService {
             if (employment.getEndedAt() != null) {
                 entries.add(new TimelineEntry(employment.getEndedAt(), "COMPLETED",
                         "Engagement completed", "Status " + employment.getStatus(),
-                        "SYSTEM", "JobOn"));
+                        "SYSTEM", "LocalWork"));
             }
         }
 
@@ -254,7 +254,7 @@ public class ApplicationHistoryService {
             entries.add(new TimelineEntry(payment.getCreatedAt(), "PAID", "Payment released",
                     (long) payment.getAmount() + " credited to " + workerName
                             + (fee == null ? "" : " (platform fee " + fee + ")"),
-                    "SYSTEM", "JobOn"));
+                    "SYSTEM", "LocalWork"));
         }
 
         // ---- terminal application states that nothing above covers

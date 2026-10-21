@@ -171,7 +171,7 @@ public class PlacesService {
         HttpRequest req = HttpRequest.newBuilder(URI.create(url))
                 // Nominatim's policy requires an identifying agent; Google
                 // ignores it. One header keeps both happy.
-                .header("User-Agent", "JobOn/1.0 (+https://jobon.mindsyncos.com)")
+                .header("User-Agent", "LocalWork/1.0 (+https://jobon.mindsyncos.com)")
                 .header("Accept", "application/json")
                 .timeout(Duration.ofSeconds(12))
                 .GET().build();

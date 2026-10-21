@@ -67,10 +67,10 @@ export default function HowItWorksFilm() {
   const label = (suffix) => t(`film.${step.k}.${suffix}`, FALLBACK[step.k]?.[suffix] || '')
 
   return (
-    <section className="film" aria-label={t('film.title', 'How JobOn works')}>
+    <section className="film" aria-label={t('film.title', 'How LocalWork works')}>
       <div className="mk-container">
         <header className="film-head">
-          <h2 className="mk-h2">{t('film.title', 'How JobOn works')}</h2>
+          <h2 className="mk-h2">{t('film.title', 'How LocalWork works')}</h2>
           <p className="mk-lede">{t('film.sub', 'Watch it in under a minute. No signing up to look.')}</p>
 
           <div className="film-switch" role="tablist">
@@ -249,7 +249,7 @@ const FALLBACK = {
   apply:    { t: 'Tap once to apply', d: 'See the pay and how far away it is before you decide.' },
   call:     { t: 'The shop owner rings you', d: 'No interview. You talk, you agree, you go.' },
   punch:    { t: 'Press start when you reach', d: 'One button when you start, one when you finish.' },
-  paid:     { t: 'Money reaches your account', d: 'JobOn holds the money from day one, so you always get paid.' },
+  paid:     { t: 'Money reaches your account', d: 'LocalWork holds the money from day one, so you always get paid.' },
   post:     { t: 'Post what you need', d: 'Pick the work, set the wage and the days. Two minutes.' },
   matched:  { t: 'Nearby workers appear', d: 'Ranked by skill, distance and how they have worked before.' },
   callEmp:  { t: 'Ring them yourself', d: 'One tap to call. Agree it on the phone, the way you always have.' },

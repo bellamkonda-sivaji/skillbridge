@@ -39,7 +39,7 @@ public class AdminFinanceController {
         return hireRelease.list();
     }
 
-    /** The owner said the work is done; this is JobOn agreeing, and paying the worker. */
+    /** The owner said the work is done; this is LocalWork agreeing, and paying the worker. */
     @PostMapping("/finance/hires/{employmentId}/release")
     public com.skillbridge.service.payment.HireReleaseService.HireDto release(@PathVariable Long employmentId) {
         var admin = guard.require(AdminPermission.MANAGE_PAYMENTS);

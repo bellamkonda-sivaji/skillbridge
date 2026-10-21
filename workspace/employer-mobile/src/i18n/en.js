@@ -49,7 +49,7 @@ export default {
     halfYearTitle: 'Half a year',
     halfYearBody: '180 days. Shop owners trust a record like this.',
     yearTitle: 'One full year',
-    yearBody: '365 days of work with JobOn. Thank you.',
+    yearBody: '365 days of work with LocalWork. Thank you.',
   },
   perm: {
     heading: 'Before we start',
@@ -130,7 +130,7 @@ export default {
     somethingWrong: 'Something went wrong. Please try again.',
   },
   splash: {
-    tagline: 'Local Jobs • Local Workers • Growing Together',
+    tagline: 'Local Work • Local People • Growing Together',
     headline: 'Hire local people, fast',
     sub: 'Post the work, see who is nearby, ring them and fill the job today.',
     getStarted: 'Get started', haveAccount: 'Already have an account?', logIn: 'Log in',
@@ -275,9 +275,9 @@ export default {
     actualJoining: 'Day they joined', reportingTime: 'Time they came',
     photoProof: 'Photo (optional)', notes: 'Notes',
     confirmJoining: 'Confirm they joined', markCompleted: 'Mark the work done',
-    shortJob: 'Short job', longJob: 'Long-term job', waitingRelease: 'Waiting for JobOn to check the work and release the payment. You and the worker will be told when it is paid.',
-    completedTitle: 'Work completed!', releasedNote: 'JobOn checks the work and releases the worker\'s money. You will both be told when it is paid.',
-    releaseWarning: 'Marking this done sends it to JobOn. We check it and release the money to the worker.',
+    shortJob: 'Short job', longJob: 'Long-term job', waitingRelease: 'Waiting for LocalWork to check the work and release the payment. You and the worker will be told when it is paid.',
+    completedTitle: 'Work completed!', releasedNote: 'LocalWork checks the work and releases the worker\'s money. You will both be told when it is paid.',
+    releaseWarning: 'Marking this done sends it to LocalWork. We check it and release the money to the worker.',
     markCompleted: 'Mark the work done', employeeId: 'Employee ID',
     cancelOffer: 'Cancel the offer', cancelAsk: 'The worker will be told it is no longer open.',
     stepSent: 'Offer sent', stepViewed: 'Worker opened it', stepAccepted: 'Accepted',
@@ -295,7 +295,7 @@ export default {
   },
   profile: {
     title: 'My business', edit: 'Edit', plan: 'Plan', billing: 'Payments',
-    languagePref: 'Language', logout: 'Log out', logoutAsk: 'Log out of JobOn?',
+    languagePref: 'Language', logout: 'Log out', logoutAsk: 'Log out of LocalWork?',
   },
   shortlist: {
     title: 'Shortlisted people', sub: 'The people you are considering for this job.',
@@ -323,7 +323,7 @@ export default {
     needed: 'Needed for this job', inEscrow: 'Already put in', toAdd: 'Add how much?',
     walletBalance: 'Your wallet', payNow: 'Pay now', fromWallet: 'Use my wallet',
     funded: 'Money is in. Your workers can be paid.',
-    whyTitle: 'Why we hold it', whyBody: 'The money sits with JobOn until the work is done. The worker knows they will be paid, and you only pay for work that actually happened.',
+    whyTitle: 'Why we hold it', whyBody: 'The money sits with LocalWork until the work is done. The worker knows they will be paid, and you only pay for work that actually happened.',
   },
   findWorkers: {
     title: 'Find workers', sub: 'Everyone registered near you, whether they applied or not.',
@@ -341,7 +341,7 @@ export default {
     applicationAlerts: 'New applications', attendanceAlerts: 'Attendance',
     payAlerts: 'Payments', business: 'My business', editBusiness: 'Edit my details',
     verifyBusiness: 'Verify my business', plan: 'Plan and fees',
-    help: 'Help', about: 'About JobOn', version: 'Version', logout: 'Log out',
+    help: 'Help', about: 'About LocalWork', version: 'Version', logout: 'Log out',
   },
   notifications: { title: 'Alerts', markAll: 'Mark all read', none: 'Nothing new' },
   offerPreview: {

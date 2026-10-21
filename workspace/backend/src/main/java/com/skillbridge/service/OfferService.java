@@ -459,7 +459,7 @@ public class OfferService {
         // already PAYABLE and does nothing. Releasing twice is impossible by construction,
         // not by the caller remembering.
         if (employment.getStatus() == EmploymentStatus.COMPLETED) {
-            // Held for JobOn to check, not released on the owner's word alone. An admin
+            // Held for LocalWork to check, not released on the owner's word alone. An admin
             // releases it from Hires & payouts, which is when the worker is told they are paid.
             hireReleaseService.holdForApproval(employment);
         }
@@ -504,7 +504,7 @@ public class OfferService {
                     employment.setStatus(EmploymentStatus.ACTIVE);
                 }
             }
-            case PAYMENT -> throw ApiException.badRequest("JobOn releases the payment once it has "
+            case PAYMENT -> throw ApiException.badRequest("LocalWork releases the payment once it has "
                     + "checked the work. You will be told when it is done.");
             case COMPLETE -> {
                 if (employment.getWorkProgressAt() == null) {
@@ -527,7 +527,7 @@ public class OfferService {
                 acceptedAt,
                 employment == null ? null : employment.getStartedAt(),
                 employment == null ? null : employment.getWorkProgressAt(),
-                // Payment is JobOn's step, done when an admin releases the money - not a
+                // Payment is LocalWork's step, done when an admin releases the money - not a
                 // box the owner ticks. Longer jobs end on the owner's own COMPLETE step.
                 employment == null ? null
                         : shortJob ? escrowService.releasedAt(employment.getId()) : employment.getSettledAt()

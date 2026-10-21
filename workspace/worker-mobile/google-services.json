@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:5247485439:android:3effd0d2991140d65a13ca",
+        "mobilesdk_app_id": "1:5247485439:android:b8691bbb61f4f61c5a13ca",
         "android_client_info": {
-          "package_name": "com.jobon.worker"
+          "package_name": "com.localworkapp.worker"
         }
       },
       "oauth_client": [],

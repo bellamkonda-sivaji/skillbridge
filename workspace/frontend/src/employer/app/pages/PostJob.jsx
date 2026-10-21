@@ -578,7 +578,7 @@ function StepReview({ job, onEdit, feePercent }) {
           <>
             <strong style={{ color: 'var(--blue-dark)' }}>{money(cost.total)}</strong>
             <div className="wk-sub" style={{ marginTop: 2 }}>
-              Worker gets {money(cost.workerPay)} · JobOn fee {cost.percent}% {money(cost.fee)}
+              Worker gets {money(cost.workerPay)} · LocalWork fee {cost.percent}% {money(cost.fee)}
             </div>
           </>
         } />
@@ -590,8 +590,8 @@ function StepReview({ job, onEdit, feePercent }) {
         <Row k="Experience" v={EXPERIENCE_LEVELS.find((x) => x.value === job.minExperienceYears)?.label || 'No experience needed'} />
         <Row k="Hiring" v={HIRING_METHODS[job.hiringMethod]?.label || '—'} />
         <Row k="Payment" v={model?.payroll === 'MONTHLY'
-          ? 'Monthly payroll through JobOn'
-          : 'Through JobOn, after the work is confirmed'} />
+          ? 'Monthly payroll through LocalWork'
+          : 'Through LocalWork, after the work is confirmed'} />
       </div>
 
       <div className="wk-card" style={{ marginTop: 18 }}>

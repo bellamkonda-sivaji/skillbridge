@@ -8,7 +8,7 @@ import { DialogHost } from './src/ui/Dialog'
 import RootNavigator from './src/navigation'
 
 /**
- * JobOn for Employers.
+ * LocalWork for Employers.
  *
  * Post work, see who is nearby, ring them, hire and track attendance and pay -
  * built for the supermarkets, restaurants, shops and building sites around

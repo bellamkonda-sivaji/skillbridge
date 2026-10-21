@@ -5,10 +5,10 @@
  */
 
 export const SITE = {
-  name: 'JobOn',
-  tagline: 'Local Jobs · Local Workers · Growing Together',
+  name: 'LocalWork',
+  tagline: 'Local Work · Local People · Growing Together',
   promise: 'Employment infrastructure for local work.',
-  email: 'support@skillbridge.com',
+  email: 'support@localworkapp.com',
   phone: '+91 98765 43210',
   office: 'Tirupati, Andhra Pradesh, India',
   hours: 'Mon – Sat, 9:00 AM – 6:00 PM',
@@ -56,7 +56,7 @@ export const STEPS = {
     { icon: 'user', title: 'Create Profile', text: 'Sign up with your mobile number and add your skills, area and availability.' },
     { icon: 'search', title: 'Find Jobs', text: 'Get matched with local opportunities within the distance you choose.' },
     { icon: 'chat', title: 'Apply & Talk', text: 'Apply in one tap, then talk to the employer and agree when to start.' },
-    { icon: 'wallet', title: 'Work & Earn', text: 'Complete the work, mark attendance and receive payment through JobOn.' },
+    { icon: 'wallet', title: 'Work & Earn', text: 'Complete the work, mark attendance and receive payment through LocalWork.' },
   ],
   employer: [
     { icon: 'briefcase', title: 'Post a Requirement', text: 'Pick a category, set the wage and duration, and publish in under two minutes.' },
@@ -70,9 +70,9 @@ export const WORKER_BENEFITS = [
   { title: 'Jobs near your home', text: 'Choose a working radius of 1, 3, 5 or 10 km and only see work you can actually reach.' },
   { title: 'Daily, weekly or permanent', text: 'Take a single shift, a few days, or a full-time role — your choice, every time.' },
   { title: 'Verified employers', text: 'Every business is checked before it can post, so you know who you are working for.' },
-  { title: 'Payment through the platform', text: 'Wages are released through JobOn after your work is confirmed. No chasing.' },
+  { title: 'Payment through the platform', text: 'Wages are released through LocalWork after your work is confirmed. No chasing.' },
   { title: 'Your work history, saved', text: 'Every completed job builds a record you can show the next employer.' },
-  { title: 'In your language', text: 'Use JobOn in the language you are most comfortable with.' },
+  { title: 'In your language', text: 'Use LocalWork in the language you are most comfortable with.' },
 ]
 
 export const EMPLOYER_BENEFITS = [
@@ -87,11 +87,11 @@ export const EMPLOYER_BENEFITS = [
 export const HIGHLIGHTS = [
   { icon: 'clock', tone: '', title: 'Flexible Work', text: 'Daily, weekly, monthly and permanent roles' },
   { icon: 'grid', tone: 'violet', title: 'Multiple Categories', text: '50+ local job types across the city' },
-  { icon: 'lock', tone: 'green', title: 'Secure Payments', text: 'Wages released through JobOn' },
+  { icon: 'lock', tone: 'green', title: 'Secure Payments', text: 'Wages released through LocalWork' },
 ]
 
 export const TESTIMONIALS = [
-  { quote: 'I got a job near my home within 2 days. JobOn is really helpful.', name: 'Ramesh', role: 'Store Helper', rating: 5 },
+  { quote: 'I got a job near my home within 2 days. LocalWork is really helpful.', name: 'Ramesh', role: 'Store Helper', rating: 5 },
   { quote: 'I found a part-time job near my home. The process was very simple and secure. I got paid on time.', name: 'Suresh', role: 'Delivery Partner', rating: 5 },
   { quote: 'We hired 5 staff members for our restaurant within a week. Very easy to use.', name: 'Priya', role: 'Restaurant Owner', rating: 5 },
   { quote: 'Earlier I waited at the labour chowk every morning. Now the work comes to my phone.', name: 'Lakshmi', role: 'Housekeeping Staff', rating: 5 },
@@ -140,7 +140,7 @@ export const SAFETY = [
     icon: 'shield',
     tone: 'green',
     title: 'Identity Verification',
-    text: 'Workers and employers verify their mobile number and identity before they can transact on JobOn.',
+    text: 'Workers and employers verify their mobile number and identity before they can transact on LocalWork.',
   },
   {
     icon: 'doc',
@@ -152,7 +152,7 @@ export const SAFETY = [
     icon: 'lock',
     tone: 'amber',
     title: 'Secure Payments',
-    text: 'Wages move through JobOn and are released once work and attendance are confirmed.',
+    text: 'Wages move through LocalWork and are released once work and attendance are confirmed.',
   },
 ]
 
@@ -179,9 +179,9 @@ export const VALUES = [
 ]
 
 export const ABOUT_STORY = [
-  'JobOn was created with a simple belief — everyone deserves access to good work, and every business deserves access to reliable talent.',
+  'LocalWork was created with a simple belief — everyone deserves access to good work, and every business deserves access to reliable talent.',
   'Most hiring platforms were built for corporate careers. The people who run our supermarkets, kitchens, pharmacies, warehouses and salons were left with notice boards, word of mouth and the labour chowk. Good work went unfilled and good workers went unseen.',
-  'We started JobOn to close that gap. Not just to list jobs, but to carry the whole employment relationship: finding the right person nearby, verifying both sides, making the call, recording attendance, releasing the wage, and turning all of it into a work history the worker owns and can carry to the next job.',
+  'We started LocalWork to close that gap. Not just to list jobs, but to carry the whole employment relationship: finding the right person nearby, verifying both sides, making the call, recording attendance, releasing the wage, and turning all of it into a work history the worker owns and can carry to the next job.',
 ]
 
 export const ABOUT_FACTS = [
@@ -269,7 +269,7 @@ export const POSTS = [
 /** Article bodies, keyed by post id. Kept separate so the card list stays light. */
 export const POST_BODIES = {
   'get-hired-faster': [
-    'Employers on JobOn do not read résumés. They look at a card that shows your skills, how far away you are, when you are free and what you have completed before. Getting hired faster is mostly about making that card easy to say yes to.',
+    'Employers on LocalWork do not read résumés. They look at a card that shows your skills, how far away you are, when you are free and what you have completed before. Getting hired faster is mostly about making that card easy to say yes to.',
     'Pick your skills from the list rather than typing your own words. When an employer searches for a “store helper”, the system matches the shared term — a profile that says “shop work” will not surface.',
     'Set your location pin accurately and choose an honest radius. A worker who says they will travel 10 km and then declines jobs 8 km away gets fewer invitations over time than one who sets 3 km and accepts.',
     'Keep your availability current. “Immediate” tells employers hiring for tomorrow that you are worth calling; leaving it stale after you have taken a full-time role wastes everyone’s time.',
@@ -291,7 +291,7 @@ export const POST_BODIES = {
   ],
   'daily-wage-rights': [
     'Knowing what you are owed is the first step to being paid it. This is a plain-language guide, not legal advice — but it covers what most daily-wage workers should expect.',
-    'Agree the wage before the work. On JobOn the wage is fixed in the job post and cannot be changed after you are confirmed, which removes the most common source of dispute.',
+    'Agree the wage before the work. On LocalWork the wage is fixed in the job post and cannot be changed after you are confirmed, which removes the most common source of dispute.',
     'Understand the unit. A ₹700 daily wage for a ten-hour shift is not the same as ₹700 for a six-hour one. The hours are in the post — read them before you accept.',
     'Payment should follow completed work, not a promise. The platform holds the employer’s funds from the moment you are confirmed, so the money exists before your first hour.',
     'If a payment is delayed, raise it in the app rather than in person. There is a record of your attendance and the agreed amount, and our team can see both.',
@@ -321,12 +321,12 @@ export const HELP_TOPICS = [
 
 export const FAQS = [
   {
-    q: 'Is JobOn free for workers?',
+    q: 'Is LocalWork free for workers?',
     a: 'Yes. Creating a profile, applying to jobs, chatting with employers and receiving payments are free for workers. We never charge a worker a placement fee.',
   },
   {
     q: 'How do I get paid?',
-    a: 'The employer funds the job through JobOn before the work begins. Once your attendance and work completion are confirmed, the wage is released to you and appears in your Earnings tab with a receipt.',
+    a: 'The employer funds the job through LocalWork before the work begins. Once your attendance and work completion are confirmed, the wage is released to you and appears in your Earnings tab with a receipt.',
   },
   {
     q: 'How far away are the jobs shown to me?',
@@ -338,7 +338,7 @@ export const FAQS = [
   },
   {
     q: 'How does an employer verify a worker?',
-    a: 'Every profile shows what JobOn has actually checked: mobile number, identity, documents and completed work history. Employers see verification badges, ratings and attendance record before inviting anyone.',
+    a: 'Every profile shows what LocalWork has actually checked: mobile number, identity, documents and completed work history. Employers see verification badges, ratings and attendance record before inviting anyone.',
   },
   {
     q: 'Can I hire someone for just one day?',
@@ -349,7 +349,7 @@ export const FAQS = [
     a: 'Report it from the job screen. Because payment is confirmed up front and attendance is recorded, our operations team can see what happened and resolve it. Repeated failures affect that account’s rating and access.',
   },
   {
-    q: 'Which languages does JobOn support?',
+    q: 'Which languages does LocalWork support?',
     a: 'The app is being built multilingual from the start. English is live today, with Telugu, Hindi, Kannada, Tamil, Malayalam and Marathi rolling out as we expand city by city.',
   },
 ]
@@ -365,21 +365,21 @@ export const CONTACT_SUBJECTS = [
 
 /**
  * Plain-language policy drafts. These are written to be understandable by the
- * people who use JobOn — they still need review by counsel before launch,
+ * people who use LocalWork — they still need review by counsel before launch,
  * which is why every page carries the draft notice.
  */
 export const LEGAL_DOCS = [
   {
     id: 'terms',
     title: 'Terms of Service',
-    summary: 'The rules for using JobOn as a worker or an employer.',
+    summary: 'The rules for using LocalWork as a worker or an employer.',
     updated: 'April 1, 2026',
     sections: [
-      { h: 'Who can use JobOn', p: 'You must be of legal working age in your state and able to enter a binding agreement. Employers must represent a real, operating business and give accurate details about it.' },
-      { h: 'What JobOn does', p: 'We connect local businesses with local workers and support the employment relationship — matching, calls and visits, verification, attendance and payment records. The employment contract itself is between the worker and the employer.' },
+      { h: 'Who can use LocalWork', p: 'You must be of legal working age in your state and able to enter a binding agreement. Employers must represent a real, operating business and give accurate details about it.' },
+      { h: 'What LocalWork does', p: 'We connect local businesses with local workers and support the employment relationship — matching, calls and visits, verification, attendance and payment records. The employment contract itself is between the worker and the employer.' },
       { h: 'Your account', p: 'Keep your login details private and your profile truthful. You are responsible for activity on your account. Misrepresenting identity, skills or business details can lead to suspension.' },
       { h: 'Acceptable use', p: 'Do not post illegal work, discriminatory requirements, jobs for minors, or requirements that demand payment from a worker. Do not harass other users or take conversations off-platform to avoid wage protection.' },
-      { h: 'Fees', p: 'JobOn is free for workers. Employers may be charged for posting, hiring or premium features; any fee is shown before you confirm.' },
+      { h: 'Fees', p: 'LocalWork is free for workers. Employers may be charged for posting, hiring or premium features; any fee is shown before you confirm.' },
       { h: 'Ending your use', p: 'You can close your account at any time. We may suspend accounts that break these terms or put other users at risk, and will tell you why where we lawfully can.' },
     ],
   },
@@ -387,12 +387,20 @@ export const LEGAL_DOCS = [
     id: 'privacy',
     title: 'Privacy Policy',
     summary: 'What we collect, why we collect it, and the choices you have.',
-    updated: 'April 1, 2026',
+    updated: 'October 21, 2026',
     sections: [
       { h: 'What we collect', p: 'Account details such as your name, mobile number and language; profile details such as skills, experience, availability and working area; and platform activity such as applications, attendance and payment records.' },
       { h: 'Location', p: 'We use your saved location to show jobs near you and to calculate distance. You control the precision, and exact addresses are shared only once a hire is confirmed.' },
       { h: 'Identity documents', p: 'Identity documents are collected only where a job or the law requires them, are used solely for verification, and are handled according to applicable UIDAI and data-protection requirements. We do not display document numbers to other users.' },
       { h: 'What we never share', p: 'We do not sell personal data. Your past wages are private and are not disclosed to a future employer unless you choose to share them.' },
+      { h: 'Payments and bank details', p: 'Payments by businesses are processed by Razorpay. Workers add a bank account or UPI ID to receive their pay; these details are stored securely, used only to send your money, and are never shown to a business.' },
+      { h: 'Photos and files', p: 'You can add a profile photo, and businesses upload registration and owner ID documents for verification. You choose each file; we do not access your gallery or camera otherwise.' },
+      { h: 'Notifications', p: 'We use Google Firebase Cloud Messaging to send alerts about jobs, applications, offers, attendance and payments. You can turn each type off in Settings.' },
+      { h: 'Who we share data with', p: 'A business sees an applicant\'s name, skills, experience and approximate distance; a worker sees the business name and work location. Service providers process data for us under contract: Razorpay (payments), Google Firebase (notifications), our cloud hosting provider, and OpenStreetMap or Google (address search). We do not sell data or show ads.' },
+      { h: 'Security and retention', p: 'Data is encrypted in transit (HTTPS). We keep your account while it is open. When you delete it, personal details are removed straight away; payment, earning and completed-work records are kept without your name or contact details for up to 8 years where tax and payment laws require.' },
+      { h: 'Deleting your account', p: 'Delete your account any time in the app under Settings → Delete my account, or request it at https://jobon.mindsyncos.com/delete-account if you no longer have the app.' },
+      { h: 'Age', p: 'LocalWork is for people aged 18 and over. We do not knowingly collect data from children.' },
+      { h: 'Contact', p: 'Questions about your data: hello@localworkapp.com.' },
       { h: 'Your rights', p: 'You can access, correct, export or delete your data from your profile, or by writing to us. Some employment and payment records are retained where the law requires.' },
     ],
   },
@@ -412,26 +420,26 @@ export const LEGAL_DOCS = [
   {
     id: 'payments',
     title: 'Payment Terms',
-    summary: 'How money moves between employers, JobOn and workers.',
+    summary: 'How money moves between employers, LocalWork and workers.',
     updated: 'April 1, 2026',
     sections: [
       { h: 'Funding a job', p: 'An employer funds the agreed wage before work begins. The amount is held against that assignment and cannot be spent elsewhere.' },
       { h: 'Releasing a wage', p: 'Wages are released once attendance and work completion are confirmed. For daily work this is per shift; for monthly roles it follows the payroll cycle with a payslip.' },
       { h: 'Withdrawals', p: 'Workers can withdraw their balance to a linked bank or UPI account. Withdrawal limits and processing times are shown at the time of the request.' },
-      { h: 'Deductions', p: 'Any statutory deduction is itemised on the payslip. JobOn does not deduct a fee from a worker’s wage.' },
+      { h: 'Deductions', p: 'Any statutory deduction is itemised on the payslip. LocalWork does not deduct a fee from a worker’s wage.' },
       { h: 'Records', p: 'Every fund, release, withdrawal and refund is recorded and visible to both sides, with a reference you can quote to support.' },
     ],
   },
   {
     id: 'community',
     title: 'Community Guidelines',
-    summary: 'How we expect people to treat each other on JobOn.',
+    summary: 'How we expect people to treat each other on LocalWork.',
     updated: 'April 1, 2026',
     sections: [
       { h: 'Respect', p: 'Communicate professionally. Harassment, threats, casteist, communal or sexist remarks are removed and can end an account immediately.' },
       { h: 'Honesty', p: 'Describe the job as it really is — the hours, the wage, the work. A job that does not match its description can be reported by the worker.' },
       { h: 'Fair hiring', p: 'Selection must be based on skills, availability and reliability. Requirements based on caste, religion, gender or region are not permitted.' },
-      { h: 'No off-platform pressure', p: 'Do not pressure anyone to move a confirmed job off JobOn. It removes the wage protection and record that both sides rely on.' },
+      { h: 'No off-platform pressure', p: 'Do not pressure anyone to move a confirmed job off LocalWork. It removes the wage protection and record that both sides rely on.' },
       { h: 'Reporting', p: 'Use the report option on any job, message or profile. We review every report and tell the reporter what action was taken.' },
     ],
   },
@@ -466,8 +474,8 @@ export const LEGAL_DOCS = [
     summary: 'Our regulatory position and the commitments behind it.',
     updated: 'April 1, 2026',
     sections: [
-      { h: 'Our role', p: 'JobOn operates an employment marketplace and supporting services. The employment relationship is between the worker and the employer; we provide matching, verification, records and payment facilitation.' },
-      { h: 'Payments', p: 'Money movement is carried out through regulated payment partners. JobOn does not operate as a bank and does not hold deposits.' },
+      { h: 'Our role', p: 'LocalWork operates an employment marketplace and supporting services. The employment relationship is between the worker and the employer; we provide matching, verification, records and payment facilitation.' },
+      { h: 'Payments', p: 'Money movement is carried out through regulated payment partners. LocalWork does not operate as a bank and does not hold deposits.' },
       { h: 'Worker classification', p: 'Employers are responsible for correctly classifying the people they hire and for meeting applicable wage, hours and workplace obligations.' },
       { h: 'Identity handling', p: 'Identity verification follows applicable UIDAI guidance. We do not store identity document images beyond the verification period.' },
       { h: 'Contact', p: 'Compliance queries can be sent to ' + SITE.email + ' marked for the attention of the Compliance team.' },
@@ -504,6 +512,7 @@ export const FOOTER_NAV = [
       { to: '/safety', t: 'Safety & Verification' },
       { to: '/legal/privacy', t: 'Privacy Policy' },
       { to: '/legal/terms', t: 'Terms of Service' },
+      { to: '/delete-account', t: 'Delete your account' },
       { to: '/legal', t: 'All Policies' },
     ],
   },

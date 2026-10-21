@@ -48,7 +48,7 @@ export default function AccountType({ navigation }) {
           <View style={{ flex: 1 }}>
             <Body style={{ fontWeight: '700', color: colors.ink }}>Looking for work?</Body>
             <Small style={{ marginTop: 2 }}>
-              Workers use the JobOn app to find work, mark attendance and get paid.
+              Workers use the LocalWork app to find work, mark attendance and get paid.
             </Small>
           </View>
         </View>

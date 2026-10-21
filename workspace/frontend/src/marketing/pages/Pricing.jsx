@@ -8,7 +8,7 @@ import { PRICING } from '../content'
 
 const PRICING_FAQS = [
   {
-    q: 'Will JobOn always be free for workers?',
+    q: 'Will LocalWork always be free for workers?',
     a: 'Yes. Workers never pay to create a profile, apply to jobs, be hired, or receive their wages. We do not take a cut of a worker’s pay, and no fee is ever deducted from a payslip.',
   },
   {

@@ -149,10 +149,10 @@ export const whatHappensNext = (model) => {
   switch (model?.value) {
     case 'ONE_DAY':
       return ['Post your job', 'Choose a worker', 'Worker accepts',
-        'Worker comes to work', 'Payment through JobOn']
+        'Worker comes to work', 'Payment through LocalWork']
     case 'FEW_DAYS':
       return ['Post your job', 'Choose a worker', 'Confirm the job', 'Worker accepts',
-        'Work begins', 'Payment through JobOn']
+        'Work begins', 'Payment through LocalWork']
     case 'FEW_WEEKS':
       return ['Post your job', 'Review workers', 'Talk or interview if you want',
         'Send a simple job offer', 'Worker accepts', 'Work begins']

@@ -258,10 +258,10 @@ public class JobService {
         return 0;
     }
 
-    /** Jobs are funded through SkillBridge - CASH survives only for rows written before this rule. */
+    /** Jobs are funded through LocalWork - CASH survives only for rows written before this rule. */
     private void applyPaymentMode(JobPost job, JobRequest request) {
         if (request.paymentMode() == PaymentMode.CASH) {
-            throw ApiException.badRequest("Jobs are funded through JobOn");
+            throw ApiException.badRequest("Jobs are funded through LocalWork");
         }
         job.setPaymentMode(PaymentMode.SKILLBRIDGE);
     }

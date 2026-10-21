@@ -416,7 +416,7 @@ export function StepPay({ job, set, onEditSchedule, feePercent }) {
           <div className="emp-kv-grid" style={{ marginTop: 12 }}>
             <KV k={model?.payroll === 'MONTHLY' ? 'You pay each month' : 'You pay'}
               v={<strong style={{ color: 'var(--blue-dark)' }}>{money(cost.total)}</strong>} />
-            <KV k={`JobOn fee (${cost.percent}%)`} v={<strong>− {money(cost.fee)}</strong>} />
+            <KV k={`LocalWork fee (${cost.percent}%)`} v={<strong>− {money(cost.fee)}</strong>} />
             <KV k="Worker gets" v={<strong style={{ color: 'var(--green-dark, #15803d)' }}>{money(cost.workerPay)}</strong>} />
           </div>
           {earnings.label && <p className="wk-sub">{earnings.label}</p>}
@@ -511,9 +511,9 @@ export function StepPay({ job, set, onEditSchedule, feePercent }) {
             <Icon name="lock" size={16} />
           </span>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>Payment through JobOn</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--ink)' }}>Payment through LocalWork</div>
             <p className="wk-sub" style={{ marginTop: 4 }}>
-              You pay JobOn and we pay the worker once the work is confirmed.
+              You pay LocalWork and we pay the worker once the work is confirmed.
               {model?.payroll === 'MONTHLY' ? ' Salary runs on a monthly cycle.' : ' Funded before the work starts.'}
             </p>
           </div>

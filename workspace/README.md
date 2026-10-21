@@ -1,6 +1,6 @@
-# SkillBridge — AI-Driven Skill Worker Hiring Platform
+# LocalWork — AI-Driven Skill Worker Hiring Platform
 
-SkillBridge connects local businesses with skilled and unskilled workers in real time. Workers build rich profiles (skills, experience, location, availability, expected salary, verification). Employers post job requirements and get an AI-ranked list of compatible workers. Everything — matching, messaging, interview scheduling, ratings, notifications — happens in one place.
+LocalWork connects local businesses with skilled and unskilled workers in real time. Workers build rich profiles (skills, experience, location, availability, expected salary, verification). Employers post job requirements and get an AI-ranked list of compatible workers. Everything — matching, messaging, interview scheduling, ratings, notifications — happens in one place.
 
 ## Tech Stack
 

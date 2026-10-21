@@ -1,6 +1,6 @@
 /* ==========================================================================
    Employer login + onboarding.
-   Uses the same design tokens as the worker side — one JobOn theme, not
+   Uses the same design tokens as the worker side — one LocalWork theme, not
    two. These classes only add layouts the worker flow does not have (the split
    login, plan cards, upload boxes).
    ========================================================================== */

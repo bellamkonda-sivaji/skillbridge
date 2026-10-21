@@ -5,7 +5,7 @@ import { listHires, releaseHire, money, formatDate } from '../api'
 import { DataTable, PageHead, ErrorNote, Badge, StatGrid, StatTile, usePermissions } from '../components'
 
 /**
- * Every hire from offer to payout, and the one decision JobOn makes on it:
+ * Every hire from offer to payout, and the one decision LocalWork makes on it:
  * the shop owner says the work is done, and an admin releases the worker's money.
  */
 const STAGE_TONE = {

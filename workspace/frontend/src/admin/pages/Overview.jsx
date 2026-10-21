@@ -26,7 +26,7 @@ export default function Overview() {
 
   return (
     <>
-      <PageHead title="Overview" sub="Everything happening across JobOn">
+      <PageHead title="Overview" sub="Everything happening across LocalWork">
         <Select
           value={days}
           onChange={(v) => setDays(Number(v))}

@@ -51,7 +51,7 @@ export default function HowItWorks() {
     <>
       <PageHead
         eyebrow="How it works"
-        title="How JobOn works"
+        title="How LocalWork works"
         sub="Simple. Transparent. Built for local work."
       >
         <div className="mk-cta-row center" style={{ marginTop: 28 }}>
@@ -87,7 +87,7 @@ export default function HowItWorks() {
         <SectionHead
           eyebrow="Two ways to hire"
           title="A day's work and a career need different journeys"
-          sub="JobOn runs both, so a business can staff a busy Saturday and fill a permanent vacancy in the same place."
+          sub="LocalWork runs both, so a business can staff a busy Saturday and fill a permanent vacancy in the same place."
         />
         <div className="mk-grid mk-grid-2">
           {FLOWS.map((f) => (

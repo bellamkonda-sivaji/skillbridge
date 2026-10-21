@@ -57,7 +57,7 @@ export function AccountType() {
   return (
     <EmpWizard
       step={0}
-      title="Get Started with JobOn"
+      title="Get Started with LocalWork"
       sub="Choose the option that best describes you."
     >
       <Alert>{error}</Alert>

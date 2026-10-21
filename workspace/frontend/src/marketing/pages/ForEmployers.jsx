@@ -82,7 +82,7 @@ export default function ForEmployers() {
       {/* ---------- Benefits ---------- */}
       <Section tone="soft">
         <SectionHead
-          eyebrow="Why businesses choose JobOn"
+          eyebrow="Why businesses choose LocalWork"
           title="Staff your shop without the guesswork"
           sub="Stop relying on notice boards and word of mouth. See who is available nearby, right now."
         />
@@ -176,7 +176,7 @@ export default function ForEmployers() {
 
       {/* ---------- Stories ---------- */}
       <Section tone="soft">
-        <SectionHead title="Businesses hiring on JobOn" />
+        <SectionHead title="Businesses hiring on LocalWork" />
         <Carousel
           items={TESTIMONIALS}
           label="Employer stories"

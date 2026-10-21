@@ -19,7 +19,7 @@ export default function Companies() {
 
   return (
     <>
-      <PageHead title="Companies" sub="Every business registered on JobOn" />
+      <PageHead title="Companies" sub="Every business registered on LocalWork" />
 
       <Filters q={list.filters.q} onQ={(v) => list.setFilter('q', v)} placeholder="Company, contact or city…" onReset={list.reset}>
         <Select value={list.filters.verified} onChange={(v) => list.setFilter('verified', v)} options={VERIFIED} all="All" ariaLabel="Verified" />

@@ -24,6 +24,12 @@ public record EmploymentDto(
         String workLocation,
         boolean isCurrent,
         // What reaches the worker per unit; `salary` is the employer's posted rate.
-        Double workerSalary
+        Double workerSalary,
+        // Who was hired - the employer's team list showed "?" without it.
+        Long workerId,
+        String workerName,
+        String workerPhotoUrl,
+        // The day they actually started; null until the owner confirms joining.
+        java.time.LocalDate joinedAt
 ) {
 }

@@ -38,7 +38,7 @@ export default {
     halfYearTitle: 'आधा साल',
     halfYearBody: '180 दिन। ऐसे रिकॉर्ड पर दुकानदार भरोसा करते हैं।',
     yearTitle: 'पूरा एक साल',
-    yearBody: 'JobOn के साथ 365 दिन का काम। धन्यवाद।',
+    yearBody: 'LocalWork के साथ 365 दिन का काम। धन्यवाद।',
   },
   perm: {
     heading: 'शुरू करने से पहले',
@@ -257,7 +257,7 @@ export default {
     personal: 'मेरी जानकारी', skills: 'मुझे क्या आता है', experience: 'कहाँ काम किया',
     location: 'मैं कहाँ रहता हूँ', documents: 'मेरे कागज़', documentsSub: 'आधार, ID',
     availability: 'कब काम कर सकता हूँ', languagePref: 'भाषा',
-    logout: 'लॉग आउट', logoutAsk: 'JobOn से बाहर जाएं?',
+    logout: 'लॉग आउट', logoutAsk: 'LocalWork से बाहर जाएं?',
   },
   messages: { title: 'संदेश', none: 'अभी कोई संदेश नहीं', typeHere: 'यहाँ लिखें…' },
   interviews: {
@@ -301,7 +301,7 @@ export default {
     title: 'सेटिंग', language: 'भाषा', notifications: 'सूचनाएं',
     jobAlerts: 'पास का नया काम', applicationAlerts: 'मेरे आवेदन की ख़बर',
     payAlerts: 'पैसा', account: 'मेरा खाता', editProfile: 'मेरी जानकारी बदलें',
-    payoutMethods: 'पैसा कहाँ भेजें', help: 'मदद', about: 'JobOn के बारे में',
+    payoutMethods: 'पैसा कहाँ भेजें', help: 'मदद', about: 'LocalWork के बारे में',
     version: 'वर्ज़न', logout: 'लॉग आउट',
   },
   notifications: { title: 'सूचनाएं', markAll: 'सब पढ़ा हुआ', none: 'कुछ नया नहीं' },

@@ -110,7 +110,7 @@ public class AttendanceSeeder implements CommandLineRunner {
                 } else {
                     a.setApprovalStatus(AttendanceApproval.AUTO_APPROVED);
                     a.setApprovedByType(AttendanceActor.SYSTEM);
-                    a.setApprovedByName("JobOn");
+                    a.setApprovedByName("LocalWork");
                     a.setApprovedAt(out);
                 }
                 attendances.save(a);
@@ -143,7 +143,7 @@ public class AttendanceSeeder implements CommandLineRunner {
                 "I started at 8:30, not 9",
                 AttendanceRequestStatus.APPROVED, AttendanceActor.EMPLOYER, first.getEmployer().getName()));
 
-        // Settled by SkillBridge when the shop owner did not answer.
+        // Settled by LocalWork when the shop owner did not answer.
         requests.save(request(second, today.minusDays(6), AttendanceRequestType.FORGOT_PUNCH_IN,
                 LocalTime.of(9, 0), null,
                 "I forgot to tap in the morning",

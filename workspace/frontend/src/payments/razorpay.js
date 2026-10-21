@@ -92,7 +92,7 @@ export async function payForJob({ jobId, amountMinor, config, prefill = {}, jobT
       order_id: order.providerOrderId,
       amount: order.amountMinor,
       currency: order.currency || 'INR',
-      name: 'JobOn',
+      name: 'LocalWork',
       description: jobTitle ? `Funding for ${jobTitle}` : 'Job funding',
       prefill,
       theme: { color: '#2563eb' },

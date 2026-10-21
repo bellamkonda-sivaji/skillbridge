@@ -42,7 +42,7 @@ export const en = {
     },
 
     account: {
-      title: 'How would you like to use JobOn?',
+      title: 'How would you like to use LocalWork?',
       sub: 'Choose the option that best describes you.',
       workerTitle: 'I am looking for work',
       workerPoints: ['Find local jobs', 'Apply and get hired', 'Build your work history', 'Get paid safely'],
@@ -118,7 +118,7 @@ export const te = {
     },
 
     account: {
-      title: 'JobOn ను ఎలా ఉపయోగించాలనుకుంటున్నారు?',
+      title: 'LocalWork ను ఎలా ఉపయోగించాలనుకుంటున్నారు?',
       sub: 'మీకు సరిపోయే ఎంపికను ఎంచుకోండి.',
       workerTitle: 'నేను పని వెతుకుతున్నాను',
       workerPoints: ['దగ్గరలోని పనులు చూడండి', 'దరఖాస్తు చేసి పని పొందండి', 'మీ పని చరిత్రను పెంచుకోండి', 'సురక్షితంగా జీతం పొందండి'],
@@ -194,7 +194,7 @@ export const hi = {
     },
 
     account: {
-      title: 'आप JobOn का उपयोग कैसे करना चाहते हैं?',
+      title: 'आप LocalWork का उपयोग कैसे करना चाहते हैं?',
       sub: 'वह विकल्प चुनें जो आप पर सही बैठता हो।',
       workerTitle: 'मैं काम ढूंढ रहा हूं',
       workerPoints: ['आस-पास के काम देखें', 'आवेदन करें और काम पाएं', 'अपना कार्य इतिहास बनाएं', 'सुरक्षित रूप से भुगतान पाएं'],

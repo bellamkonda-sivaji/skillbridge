@@ -243,7 +243,7 @@ function Days({ onChanged }) {
                     <Avatar name={a.workerName || '?'} size={30} />
                     <span className="nm">{a.workerName}</span>
                   </span>
-                  {a.editedByAdmin && <div className="sb">edited by JobOn</div>}
+                  {a.editedByAdmin && <div className="sb">edited by LocalWork</div>}
                 </td>
                 <td><Phone number={a.workerPhone} /></td>
                 <td><Link className="wk-link" to={`/admin/jobs/${a.jobId}`}>{a.jobTitle}</Link></td>

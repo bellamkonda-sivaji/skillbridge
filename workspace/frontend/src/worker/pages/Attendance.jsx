@@ -359,7 +359,7 @@ function AskDialog({ row, onClose, onDone }) {
               </label>
 
               <p className="wk-sub">
-                {row.businessName} will see this and can fix it. JobOn can also help if they do not answer.
+                {row.businessName} will see this and can fix it. LocalWork can also help if they do not answer.
               </p>
             </>
           )}

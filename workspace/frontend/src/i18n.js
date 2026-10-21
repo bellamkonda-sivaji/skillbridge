@@ -6,8 +6,8 @@ import * as flow from './locales/flow'
 const resources = {
   en: {
     translation: {
-      brand: 'JobOn',
-      tagline: 'Local Jobs · Local Workers · Growing Together',
+      brand: 'LocalWork',
+      tagline: 'Local Work · Local People · Growing Together',
       nav: {
         jobs: 'Find Jobs',
         workers: 'Find Workers',
@@ -32,11 +32,11 @@ const resources = {
         register: 'Create Account',
         or: 'or',
         haveAccount: 'Already have an account?',
-        noAccount: 'New to JobOn?'
+        noAccount: 'New to LocalWork?'
       },
       home: {
         heroTitle: 'Find the right worker. Or the right job.',
-        heroSub: 'JobOn connects local businesses with skilled and unskilled workers in real time — powered by AI matching, verified profiles and instant chat.',
+        heroSub: 'LocalWork connects local businesses with skilled and unskilled workers in real time — powered by AI matching, verified profiles and instant chat.',
         ctaWorker: 'I need work',
         ctaEmployer: 'I need to hire',
         statsWorkers: 'Skilled workers',
@@ -243,8 +243,8 @@ const resources = {
   },
   sw: {
     translation: {
-      brand: 'JobOn',
-      tagline: 'Kazi za hapa · Wafanyakazi wa hapa · Tukue pamoja',
+      brand: 'LocalWork',
+      tagline: 'Kazi za hapa · Watu wa hapa · Tukue pamoja',
       nav: {
         jobs: 'Tafuta Kazi',
         workers: 'Tafuta Wafanyakazi',
@@ -269,11 +269,11 @@ const resources = {
         register: 'Fungua Akaunti',
         or: 'au',
         haveAccount: 'Una akaunti tayari?',
-        noAccount: 'Mpya kwenye JobOn?'
+        noAccount: 'Mpya kwenye LocalWork?'
       },
       home: {
         heroTitle: 'Pata mfanyakazi sahihi. Au kazi sahihi.',
-        heroSub: 'JobOn inaunganisha biashara za ndani na wafanyakazi wenye ujuzi kwa wakati halisi — ikiendeshwa na upatanishi wa AI, wasifu uliothibitishwa na mazungumzo ya haraka.',
+        heroSub: 'LocalWork inaunganisha biashara za ndani na wafanyakazi wenye ujuzi kwa wakati halisi — ikiendeshwa na upatanishi wa AI, wasifu uliothibitishwa na mazungumzo ya haraka.',
         ctaWorker: 'Nahitaji kazi',
         ctaEmployer: 'Nahitaji kuajiri',
         featuresTitle: 'Kila unachohitaji kuajiri na kuajiriwa',
@@ -382,8 +382,8 @@ const resources = {
   },
   hi: {
     translation: {
-      brand: 'JobOn',
-      tagline: 'स्थानीय काम · स्थानीय कामगार · साथ बढ़ें',
+      brand: 'LocalWork',
+      tagline: 'स्थानीय काम · स्थानीय लोग · साथ बढ़ें',
       nav: {
         jobs: 'नौकरी खोजें',
         workers: 'कर्मचारी खोजें',
@@ -408,11 +408,11 @@ const resources = {
         register: 'खाता बनाएं',
         or: 'या',
         haveAccount: 'पहले से खाता है?',
-        noAccount: 'JobOn पर नए हैं?'
+        noAccount: 'LocalWork पर नए हैं?'
       },
       home: {
         heroTitle: 'सही कर्मचारी खोजें। या सही नौकरी।',
-        heroSub: 'JobOn स्थानीय व्यवसायों को कुशल और अकुशल कर्मचारियों से वास्तविक समय में जोड़ता है — AI मिलान, सत्यापित प्रोफ़ाइल और तुरंत चैट के साथ।',
+        heroSub: 'LocalWork स्थानीय व्यवसायों को कुशल और अकुशल कर्मचारियों से वास्तविक समय में जोड़ता है — AI मिलान, सत्यापित प्रोफ़ाइल और तुरंत चैट के साथ।',
         ctaWorker: 'मुझे काम चाहिए',
         ctaEmployer: 'मुझे काम पर रखना है',
         featuresTitle: 'काम पर रखने और काम पाने के लिए सब कुछ',

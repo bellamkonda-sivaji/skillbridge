@@ -72,7 +72,7 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="container">
         <Link className="brand" to="/">
-          <span>JobOn</span>
+          <span>LocalWork</span>
         </Link>
         <div className="nav-links">
           {!user && (

@@ -23,6 +23,7 @@ import Careers from './marketing/pages/Careers'
 import { BlogList, BlogPost } from './marketing/pages/Blog'
 import Help from './marketing/pages/Help'
 import Contact from './marketing/pages/Contact'
+import DeleteAccount from './marketing/pages/DeleteAccount'
 import { LegalIndex, LegalDoc } from './marketing/pages/Legal'
 import { FindJobs as PublicJobs, FindWorkers as PublicWorkers } from './marketing/pages/Browse'
 import NotFound from './marketing/pages/NotFound'
@@ -211,6 +212,7 @@ export default function App() {
         <Route path="/blog/:id" element={<BlogPost />} />
         <Route path="/help" element={<Help />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/delete-account" element={<DeleteAccount />} />
         <Route path="/legal" element={<LegalIndex />} />
         <Route path="/legal/:slug" element={<LegalDoc />} />
         <Route path="/register" element={<RegisterRedirect />} />

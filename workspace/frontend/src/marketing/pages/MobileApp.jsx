@@ -25,7 +25,7 @@ export default function MobileApp() {
         <div className="mk-container mk-hero-grid">
           <div>
             <span className="mk-pill"><span className="dot" />Coming soon</span>
-            <h1 className="mk-h1">Take JobOn with you</h1>
+            <h1 className="mk-h1">Take LocalWork with you</h1>
             <p className="mk-lead">
               Find jobs, manage workers and stay updated on the go. Built for the phone
               first, because that is where local hiring actually happens.
@@ -114,7 +114,7 @@ export default function MobileApp() {
 
       <CtaBand
         title="No app needed to get started"
-        sub="JobOn works in any mobile browser, right now."
+        sub="LocalWork works in any mobile browser, right now."
         primary={{ to: '/worker/login', label: 'I need work' }}
         secondary={{ to: '/employer/login', label: 'I want to hire' }}
       />

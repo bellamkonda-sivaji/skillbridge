@@ -33,7 +33,7 @@ export default function AdminLogin() {
       <div className="ad-auth-card">
         <Logo tagline size={40} className="ad-auth-logo" />
         <h1>Back office sign in</h1>
-        <p className="sub">JobOn staff only.</p>
+        <p className="sub">LocalWork staff only.</p>
 
         {error && <div className="ad-error"><Icon name="shield" size={15} /><span>{error}</span></div>}
 
@@ -43,7 +43,7 @@ export default function AdminLogin() {
             <input
               className="ad-input"
               autoComplete="username"
-              placeholder="admin@skillbridge.in"
+              placeholder="admin@localworkapp.com"
               value={form.identifier}
               onChange={(e) => setForm((f) => ({ ...f, identifier: e.target.value }))}
             />

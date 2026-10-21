@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { SITE } from './content'
 
 /**
- * The JobOn mark.
+ * The LocalWork mark.
  *
  * One component so the logo can never drift between the four apps. `mark`
  * renders the artwork alone (tight spaces: avatars, the app bar on a phone);
@@ -36,29 +36,43 @@ function Sparks() {
 function Word() {
   return (
     <span className="jo-word">
-      <span className="a">Job</span>
-      <span className="b">On<Sparks /></span>
+      <span className="a">Local</span>
+      <span className="b">Work<Sparks /></span>
     </span>
   )
 }
 
+// Width / height of /brand/localwork-logo.png, so the image is sized from the same `size`.
+const LOGO_RATIO = 1200 / 290
+
 export default function Logo({ mark = false, size = 30, showName = true, tagline = false, className = '' }) {
   const { t } = useTranslation()
+  // The brand artwork has fixed colours; on a dark bar the white text version reads better.
+  const onDark = className.split(' ').includes('on-dark')
+  const artwork = (height) => (
+    <img src="/brand/localwork-logo.png" alt={SITE.name} height={height}
+      width={Math.round(height * LOGO_RATIO)} className="jo-artwork" />
+  )
   if (tagline) {
     return (
       <span className={`jo-lockup ${className}`}>
-        <span className="jo-logo">
-          <img src="/brand/jobon-icon.png" alt="" aria-hidden="true" width={size} height={size} className="jo-mark" />
-          <Word />
-        </span>
+        {onDark ? (
+          <span className="jo-logo">
+            <img src="/brand/localwork-icon.png" alt="" aria-hidden="true" width={size} height={size} className="jo-mark" />
+            <Word />
+          </span>
+        ) : artwork(Math.round(size * 1.5))}
         <span className="jo-tagline">{t('a11y.tagline', SITE.tagline)}</span>
       </span>
     )
   }
+  if (!mark && showName && !onDark) {
+    return <span className={`jo-logo ${className}`}>{artwork(Math.round(size * 1.35))}</span>
+  }
   return (
     <span className={`jo-logo ${className}`}>
       <img
-        src="/brand/jobon-icon.png"
+        src="/brand/localwork-icon.png"
         alt={mark ? SITE.name : ''}
         aria-hidden={mark ? undefined : 'true'}
         width={size}

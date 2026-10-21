@@ -23,12 +23,9 @@ export default function Splash({ navigation }) {
           <LanguagePicker compact />
         </View>
         <View style={s.body}>
-          <View style={s.brandRow}>
-            <View style={s.mark}><Ionicons name="business" size={26} color={colors.white} /></View>
-            <Text style={s.word}>
-              <Text style={s.wordA}>Job</Text><Text style={s.wordB}>On</Text>
-            </Text>
-          </View>
+          {/* The brand artwork itself, so the welcome screen matches the logo everywhere else. */}
+          <Image source={require('../../assets/localwork-logo.png')} style={s.logo}
+            resizeMode="contain" accessibilityLabel="LocalWork" />
           <Small style={s.tagline}>{t('splash.tagline')}</Small>
 
           <View style={s.art}>
@@ -64,6 +61,7 @@ export default function Splash({ navigation }) {
 const s = StyleSheet.create({
   fill: { flex: 1 },
   body: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.xl },
+  logo: { width: '92%', maxWidth: 380, aspectRatio: 1200 / 290, alignSelf: 'center' },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   mark: {
     width: 46, height: 46, borderRadius: 13, backgroundColor: colors.blue,

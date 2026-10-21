@@ -159,7 +159,7 @@ export default function Attendance() {
                           <div className="sb">
                             {w.workerPhone ? `+91 ${w.workerPhone}` : ''}
                             {w.hasOpenRequest ? ' · asked for a correction' : ''}
-                            {w.editedByAdmin ? ' · edited by JobOn' : ''}
+                            {w.editedByAdmin ? ' · edited by LocalWork' : ''}
                           </div>
                         </div>
                         <div>

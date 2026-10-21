@@ -41,7 +41,7 @@ export default function PayoutMethods() {
 
   return (
     <>
-      <PageHead title="Bank &amp; UPI" sub="Where JobOn sends your money" back>
+      <PageHead title="Bank &amp; UPI" sub="Where LocalWork sends your money" back>
         <button className="mk-btn mk-btn-primary mk-btn-sm" onClick={() => setAdding(true)}>
           <Icon name="wallet" size={14} /> Add account
         </button>
@@ -130,7 +130,7 @@ export default function PayoutMethods() {
             <Empty
               icon="wallet"
               title="No payment method yet"
-              text="Add a bank account or a UPI id so JobOn can send you your wages."
+              text="Add a bank account or a UPI id so LocalWork can send you your wages."
             >
               <button className="mk-btn mk-btn-primary mk-btn-sm" onClick={() => setAdding(true)}>Add account</button>
             </Empty>

@@ -35,7 +35,7 @@ export default function Home() {
               Or the right <span className="accent">job</span>.
             </h1>
             <p className="mk-lead">
-              JobOn connects local businesses with skilled and unskilled workers in real time.
+              LocalWork connects local businesses with skilled and unskilled workers in real time.
               Verified profiles. Safe payments. Stronger communities.
             </p>
             <div className="mk-cta-row">
@@ -79,10 +79,10 @@ export default function Home() {
         </div>
       </Section>
 
-      {/* ---------- Why JobOn ---------- */}
+      {/* ---------- Why LocalWork ---------- */}
       <Section tone="soft">
         <SectionHead
-          eyebrow="Why JobOn"
+          eyebrow="Why LocalWork"
           title="More than a job board"
           sub="We stay with the work from the first match to the final payment — and the record it leaves behind."
         />
@@ -144,7 +144,7 @@ export default function Home() {
         <SectionHead
           eyebrow="Success stories"
           title="Real stories. Real impact."
-          sub="People and businesses growing together with JobOn."
+          sub="People and businesses growing together with LocalWork."
         />
         <Carousel
           items={TESTIMONIALS}
@@ -182,7 +182,7 @@ export default function Home() {
         <div className="mk-grid mk-grid-2" style={{ alignItems: 'center', gap: 40 }}>
           <div>
             <div className="mk-eyebrow">Mobile app</div>
-            <h2 className="mk-h2 mk-mt-8">Take JobOn with you</h2>
+            <h2 className="mk-h2 mk-mt-8">Take LocalWork with you</h2>
             <p className="mk-lead">
               Find jobs, manage workers and stay updated on the go.
             </p>
