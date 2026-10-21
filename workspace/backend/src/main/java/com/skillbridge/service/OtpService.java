@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,6 +24,8 @@ public class OtpService {
     private final int resendAfterSeconds;
     private final int maxAttempts;
     private final boolean exposeCode;
+    /** Store-review accounts: a fixed code for a few listed numbers, never for anyone else. */
+    private final Map<String, String> reviewCodes;
 
     private final Map<String, Challenge> challenges = new ConcurrentHashMap<>();
     private final SecureRandom random = new SecureRandom();
@@ -32,13 +35,34 @@ public class OtpService {
                       @Value("${skillbridge.otp.ttl-seconds:300}") int ttlSeconds,
                       @Value("${skillbridge.otp.resend-after-seconds:30}") int resendAfterSeconds,
                       @Value("${skillbridge.otp.max-attempts:5}") int maxAttempts,
-                      @Value("${skillbridge.otp.expose-code:false}") boolean exposeCode) {
+                      @Value("${skillbridge.otp.expose-code:false}") boolean exposeCode,
+                      @Value("${skillbridge.otp.review-logins:}") String reviewLogins) {
         this.otpSender = otpSender;
         this.length = length;
         this.ttlSeconds = ttlSeconds;
         this.resendAfterSeconds = resendAfterSeconds;
         this.maxAttempts = maxAttempts;
         this.exposeCode = exposeCode;
+        this.reviewCodes = parseReviewLogins(reviewLogins);
+    }
+
+    /** "9000000001:123456,9000000002:654321" - the last 10 digits of each number, and its code. */
+    static Map<String, String> parseReviewLogins(String spec) {
+        Map<String, String> out = new HashMap<>();
+        if (spec == null) return out;
+        for (String pair : spec.split(",")) {
+            String[] parts = pair.trim().split(":");
+            if (parts.length != 2) continue;
+            String number = lastTen(parts[0]);
+            String code = parts[1].trim();
+            if (number != null && code.matches("\\d{4,8}")) out.put(number, code);
+        }
+        return Map.copyOf(out);
+    }
+
+    private static String lastTen(String phone) {
+        String digits = phone == null ? "" : phone.replaceAll("\\D", "");
+        return digits.length() < 10 ? null : digits.substring(digits.length() - 10);
     }
 
     private static final class Challenge {
@@ -74,9 +98,13 @@ public class OtpService {
                     "Please wait " + Math.max(wait, 1) + " seconds before requesting another OTP");
         }
 
-        String code = generateCode();
+        String reviewCode = reviewCodes.get(lastTen(key));
+        String code = reviewCode != null ? reviewCode : generateCode();
         challenges.put(key, new Challenge(code, now.plusSeconds(ttlSeconds), now));
-        otpSender.send(key, code);
+        // A review number has no SIM behind it; its code is written in the store's review notes.
+        if (reviewCode == null) {
+            otpSender.send(key, code);
+        }
 
         return new OtpChallengeResponse(true, ttlSeconds, resendAfterSeconds, exposeCode ? code : null);
     }

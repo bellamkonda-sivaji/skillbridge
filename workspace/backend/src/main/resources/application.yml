@@ -80,6 +80,9 @@ skillbridge:
     # DEV ONLY: returns the OTP in the API response so the flow is testable
     # without an SMS provider. MUST be false in production.
     expose-code: true
+    # Google Play / App Store review accounts: "phone:code,phone:code". Only these numbers get a
+    # fixed code (and no SMS); every other number still needs the real one. Blank = none.
+    review-logins: "${OTP_REVIEW_LOGINS:}"
 
 logging:
   level:
