@@ -69,6 +69,10 @@ export const getLedger = (params) => api.get('/admin/finance/ledger', { params }
 export const listEscrows = (params) => api.get('/admin/finance/escrows', { params }).then((r) => r.data)
 export const listAdminPayouts = (params) => api.get('/admin/finance/payouts', { params }).then((r) => r.data)
 export const retryPayout = (id) => api.post(`/admin/finance/payouts/${id}/retry`).then((r) => r.data)
+/** Every hire start to finish, and the button that pays the worker once the work is done. */
+export const listHires = () => api.get('/admin/finance/hires').then((r) => r.data)
+export const releaseHire = (employmentId) =>
+  api.post(`/admin/finance/hires/${employmentId}/release`).then((r) => r.data)
 export const listOrders = (params) => api.get('/admin/finance/orders', { params }).then((r) => r.data)
 export const listWebhooks = (params) => api.get('/admin/finance/webhooks', { params }).then((r) => r.data)
 export const runReconcile = () => api.post('/admin/payments/reconcile').then((r) => r.data)

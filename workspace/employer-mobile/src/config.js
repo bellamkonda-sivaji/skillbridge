@@ -16,6 +16,11 @@ function devHost() {
 }
 
 function resolveBaseUrl() {
+  // An explicit override wins, so `npm run dev:local` really talks to a local
+  // backend instead of quietly reading and writing production data.
+  const override = process.env.EXPO_PUBLIC_API_URL
+  if (typeof override === 'string' && override.trim()) return override.trim()
+
   // Only a real string counts. Expo normalises an unset `extra` value into an
   // empty object, and handing that to axios produces "baseURL.slice is not a
   // function" - an error that says nothing about the actual cause.

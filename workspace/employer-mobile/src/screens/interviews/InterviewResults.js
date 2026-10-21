@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { Alert, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
@@ -10,6 +10,7 @@ import {
 import * as interviewsApi from '../../api/interviews'
 import { errorText } from '../../api/client'
 import { colors, space } from '../../theme'
+import { Dialog } from '../../ui/Dialog'
 
 const RESULTS = [
   { value: 'SELECTED', key: 'good', icon: 'checkmark-circle-outline', tone: colors.green },
@@ -54,7 +55,7 @@ export default function InterviewResults({ navigation, route }) {
       setEditing(null); setChoice(''); setNotes('')
       await load()
     } catch (err) {
-      Alert.alert('', errorText(err, 'We could not save that.'))
+      Dialog.alert('', errorText(err, 'We could not save that.'))
     } finally { setBusy(false) }
   }
 

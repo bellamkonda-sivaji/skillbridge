@@ -33,6 +33,7 @@ public record EmploymentDetailDto(
         boolean joiningAcknowledged,
         Double latitude,
         Double longitude,
-        List<String> benefits
+        List<String> benefits,
+        Double workerSalary
 ) {
 }

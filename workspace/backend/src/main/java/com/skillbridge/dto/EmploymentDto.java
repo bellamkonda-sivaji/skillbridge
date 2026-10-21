@@ -22,6 +22,8 @@ public record EmploymentDto(
         List<String> workingDays,
         String shiftLabel,
         String workLocation,
-        boolean isCurrent
+        boolean isCurrent,
+        // What reaches the worker per unit; `salary` is the employer's posted rate.
+        Double workerSalary
 ) {
 }

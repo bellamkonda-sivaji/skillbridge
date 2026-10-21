@@ -113,7 +113,7 @@ const INK = '#1D4ED8'
 
 const s = StyleSheet.create({
   scrim: { flex: 1, backgroundColor: 'rgba(15,23,42,0.55)', justifyContent: 'center', padding: space.lg },
-  behind: { ...StyleSheet.absoluteFillObject, zIndex: -1 },
+  behind: { ...StyleSheet.absoluteFill, zIndex: -1 },
   sheet: {
     backgroundColor: colors.white, borderRadius: 24,
     paddingHorizontal: space.lg, paddingTop: space.xxl, paddingBottom: space.lg,

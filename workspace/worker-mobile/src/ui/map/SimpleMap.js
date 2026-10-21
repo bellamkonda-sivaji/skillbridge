@@ -243,8 +243,8 @@ export default function SimpleMap({
 
 const s = StyleSheet.create({
   wrap: { overflow: 'hidden', backgroundColor: '#E8EDF2', borderRadius: radius.lg },
-  canvas: { ...StyleSheet.absoluteFillObject },
-  layer: { ...StyleSheet.absoluteFillObject },
+  canvas: { ...StyleSheet.absoluteFill },
+  layer: { ...StyleSheet.absoluteFill },
   tile: { position: 'absolute', width: TILE, height: TILE },
 
   pinWrap: { position: 'absolute', width: 104, alignItems: 'center' },

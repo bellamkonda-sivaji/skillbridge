@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Switch, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import Constants from 'expo-constants'
@@ -9,6 +9,7 @@ import {
 import { LANGUAGES, setLanguage } from '../i18n'
 import { useSession } from '../session/SessionProvider'
 import { colors, radius, space } from '../theme'
+import { Dialog } from '../ui/Dialog'
 
 /**
  * Settings.
@@ -24,7 +25,7 @@ export default function Settings({ navigation }) {
   const toggle = (k) => setAlerts((a) => ({ ...a, [k]: !a[k] }))
 
   const confirmLogout = () => {
-    Alert.alert(t('profile.logoutAsk'), '', [
+    Dialog.alert(t('profile.logoutAsk'), '', [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('settings.logout'), style: 'destructive', onPress: signOut },
     ])

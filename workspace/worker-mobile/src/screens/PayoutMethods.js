@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { Alert, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
@@ -10,6 +10,7 @@ import {
 import * as moneyApi from '../api/money'
 import { errorText } from '../api/client'
 import { colors, radius, space } from '../theme'
+import { Dialog } from '../ui/Dialog'
 
 /**
  * Where the worker's money goes.
@@ -77,11 +78,11 @@ export default function PayoutMethods({ navigation }) {
   }
 
   const act = async (fn, id) => {
-    try { await fn(id); load() } catch (err) { Alert.alert('', errorText(err)) }
+    try { await fn(id); load() } catch (err) { Dialog.alert('', errorText(err)) }
   }
 
   const remove = (id) => {
-    Alert.alert(t('payouts.remove'), '', [
+    Dialog.alert(t('payouts.remove'), '', [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('payouts.remove'), style: 'destructive',
         onPress: () => act(moneyApi.removeDestination, id) },

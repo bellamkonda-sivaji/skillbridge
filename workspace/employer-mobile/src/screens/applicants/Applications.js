@@ -8,6 +8,7 @@ import ApplicantCard from './ApplicantCard'
 import * as applicantsApi from '../../api/applicants'
 import { errorText } from '../../api/client'
 import { colors, space } from '../../theme'
+import LanguagePicker from '../../ui/LanguagePicker'
 
 /** Everyone who has applied, across every job. */
 export default function Applications({ navigation }) {
@@ -45,7 +46,10 @@ export default function Applications({ navigation }) {
         paddingHorizontal: space.lg, paddingTop: space.sm, paddingBottom: space.md,
         backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.line,
       }}>
-        <H2 style={{ marginBottom: space.md }}>{t('applicants.title')}</H2>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: space.md }}>
+          <H2 style={{ flex: 1 }}>{t('applicants.title')}</H2>
+          <LanguagePicker compact style={{ marginLeft: space.sm }} />
+        </View>
         <SegTabs
           tabs={[
             { value: 'ALL', label: `${t('common.all')} (${rows?.length || 0})` },

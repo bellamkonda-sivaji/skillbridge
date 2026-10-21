@@ -78,13 +78,23 @@ public class EscrowService {
      * keep their behaviour; otherwise the slab table applies.
      */
     public long feeOn(long agreedMinor) {
+        return feeOn(agreedMinor, agreedMinor / 100d);
+    }
+
+    /**
+     * The commission on a whole engagement, at the slab of its posted RATE. Rs 700 a day is the
+     * 10% slab whether the job runs one day or eighteen; slabbing the Rs 12,600 total put it at
+     * 20% and paid the worker less than every screen had promised. Whole rupees, as quoted.
+     */
+    public long feeOn(long agreedMinor, double rateRupees) {
         if (agreedMinor <= 0) {
             return 0L;
         }
         if (platformFeePercent > 0) {
             return Math.round(agreedMinor * platformFeePercent / 100.0);
         }
-        return pricing.feeMinor(agreedMinor);
+        double pct = pricing.feePercent(rateRupees > 0 ? rateRupees : agreedMinor / 100d);
+        return Math.round(agreedMinor / 100d * pct / 100d) * 100L;
     }
 
     // ================================================================= 1. FUND
@@ -149,6 +159,20 @@ public class EscrowService {
         return escrows.save(escrow);
     }
 
+    /**
+     * What this job could put behind a hire right now: its unreserved escrow plus the
+     * employer's wallet, which reserve() tops the escrow up from.
+     */
+    public long coverMinor(Long jobId, Long employerId) {
+        return escrowOrEmpty(jobId).unreservedMinor()
+                + Math.max(0, ledger.balanceMinor(LedgerAccountType.EMPLOYER_WALLET, employerId));
+    }
+
+    /** When this hire's money was released to the worker; null while it is still held. */
+    public LocalDateTime releasedAt(Long employmentId) {
+        return earnings.findByEmploymentId(employmentId).map(Earning::getPayableAt).orElse(null);
+    }
+
     // ============================================================== 2. RESERVE
 
     /**
@@ -164,6 +188,12 @@ public class EscrowService {
      */
     @Transactional
     public Earning reserve(Employment employment, String byType, Long byId) {
+        return reserve(employment, 0L, byType, byId);
+    }
+
+    /** {@code totalMinor} is the whole engagement; 0 falls back to the agreed rate. */
+    @Transactional
+    public Earning reserve(Employment employment, long totalMinor, String byType, Long byId) {
         Long employmentId = employment.getId();
         var already = earnings.lockByEmploymentId(employmentId);
         if (already.isPresent()) {
@@ -174,12 +204,12 @@ public class EscrowService {
         Long employerId = employment.getEmployer().getId();
         Long workerId = employment.getWorker().getId();
 
-        long agreedMinor = Money.fromRupees(employment.getSalary() > 0
-                ? employment.getSalary() : employment.getJob().getSalary());
+        double rate = employment.getSalary() > 0 ? employment.getSalary() : employment.getJob().getSalary();
+        long agreedMinor = totalMinor > 0 ? totalMinor : Money.fromRupees(rate);
         if (agreedMinor <= 0) {
             throw ApiException.badRequest("This engagement has no agreed amount to reserve.");
         }
-        long feeMinor = feeOn(agreedMinor);
+        long feeMinor = feeOn(agreedMinor, rate);
         // The employer funds the price they posted. The commission comes out of that, so the
         // gross reserved IS the agreed amount and the worker's net is what is left.
         long grossMinor = agreedMinor;

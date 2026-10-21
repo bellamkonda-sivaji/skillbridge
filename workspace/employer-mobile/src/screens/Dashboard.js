@@ -14,6 +14,7 @@ import { errorText } from '../api/client'
 import { useSession } from '../session/SessionProvider'
 import { colors, radius, space } from '../theme'
 import LanguagePicker from '../ui/LanguagePicker'
+import { word } from '../ui/words'
 
 const greetingKey = () => {
   const h = new Date().getHours()
@@ -29,6 +30,12 @@ const greetingKey = () => {
  * that leads with totals hides the one thing the owner can actually act on -
  * and acting on it is a phone call, not a report.
  */
+// Every stage reads differently at a glance; everything was "New" before.
+const RECENT_TONE = {
+  APPLIED: 'green', VIEWED: 'green', SHORTLISTED: 'violet', INTERVIEW_SCHEDULED: 'blue',
+  OFFERED: 'orange', ACCEPTED: 'green', REJECTED: 'grey', WITHDRAWN: 'grey',
+}
+
 export default function Dashboard({ navigation }) {
   const { t } = useTranslation()
   const { user } = useSession()
@@ -197,16 +204,19 @@ export default function Dashboard({ navigation }) {
             undefined keys are a duplicate as far as React is concerned. */}
         {recent.length ? recent.slice(0, 5).map((a, i) => (
           <Card key={a.id ?? a.applicationId ?? `recent-${i}`} style={{ marginBottom: space.md }}
-            onPress={() => navigation.navigate('ApplicantsTab')}>
+            onPress={() => navigation.navigate('ApplicantProfile', {
+              workerId: a.workerId, applicationId: a.applicationId ?? a.id, jobId: a.jobId,
+            })}>
             <Row>
-              <Avatar name={a.workerName} size={44} />
+              {/* The card sends `name`; reading `workerName` left every row a "?". */}
+              <Avatar name={a.name || a.workerName} uri={a.photoUrl} size={44} />
               <View style={{ flex: 1 }}>
-                <Text style={s.name}>{a.workerName}</Text>
-                <Small style={{ marginTop: 2 }}>{a.jobTitle}</Small>
+                <Text style={s.name}>{a.name || a.workerName}</Text>
+                <Small style={{ marginTop: 2 }}>{a.jobName || a.jobTitle}</Small>
                 <Small style={{ marginTop: 3 }}>{timeAgo(a.appliedAt)}</Small>
               </View>
-              <Badge label={a.status === 'SHORTLISTED' ? t('applicants.shortlisted') : t('applicants.newOnes')}
-                tone={a.status === 'SHORTLISTED' ? 'violet' : 'green'} />
+              <Badge label={['APPLIED', 'VIEWED'].includes(a.status) ? t('applicants.newOnes') : word(t, a.status)}
+                tone={RECENT_TONE[a.status] || 'grey'} />
             </Row>
           </Card>
         )) : (

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, Linking, Platform, StyleSheet, Text, View } from 'react-native'
+import { Linking, Platform, StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
@@ -12,6 +12,7 @@ import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 import { word } from '../../ui/words'
 import AskForCall from '../../ui/AskForCall'
+import { Dialog } from '../../ui/Dialog'
 
 /** One talk or visit, with the two things a worker may need to do about it. */
 export default function InterviewDetails({ navigation, route }) {
@@ -32,7 +33,7 @@ export default function InterviewDetails({ navigation, route }) {
 
   const act = (kind) => {
     const isCancel = kind === 'cancel'
-    Alert.alert(
+    Dialog.alert(
       isCancel ? t('interviews.confirmCancel') : t('interviews.reschedule'),
       '',
       [
@@ -46,7 +47,7 @@ export default function InterviewDetails({ navigation, route }) {
               await (isCancel ? appsApi.cancelInterview(id) : appsApi.rescheduleInterview(id))
               await load()
             } catch (err) {
-              Alert.alert('', errorText(err))
+              Dialog.alert('', errorText(err))
             } finally { setBusy('') }
           },
         },

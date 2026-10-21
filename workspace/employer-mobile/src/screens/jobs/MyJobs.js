@@ -15,6 +15,7 @@ import { colors, radius, space } from '../../theme'
 import { word } from '../../ui/words'
 import { draftLabel, loadDraft, worthSaving } from '../post/draftStore'
 import { useSession } from '../../session/SessionProvider'
+import LanguagePicker from '../../ui/LanguagePicker'
 
 const TONE = {
   OPEN: 'green', ACTIVE: 'green', PAUSED: 'orange',
@@ -79,6 +80,7 @@ export default function MyJobs({ navigation }) {
           <H2 style={{ flex: 1 }}>{t('jobs.title')}</H2>
           <Button title={t('dashboard.postJob')} icon="add" size="sm" full={false}
             onPress={() => navigation.navigate('PostJob')} />
+          <LanguagePicker compact style={{ marginLeft: space.sm }} />
         </Row>
         <SegTabs
           tabs={[

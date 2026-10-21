@@ -40,8 +40,10 @@ skillbridge:
     # refresh token to fall back on.
     expiration-ms: ${JWT_EXPIRATION_MS:2592000000}
   pricing:
-    # Platform fee on worker earnings, percent. Drives the schedule estimate and /api/config/pricing.
-    platform-fee-percent: 5
+    # A flat platform fee, percent, that overrides PricingService's slab table everywhere.
+    # Left at 0 so the slabs apply: a flat 5% here charged employers and paid workers a
+    # different commission from the take-home every job card shows.
+    platform-fee-percent: ${PLATFORM_FEE_PERCENT:0}
   places:
     # Google Places for address lookup. Without it the server falls back to
     # OpenStreetMap, which knows roads and localities well but is thin on

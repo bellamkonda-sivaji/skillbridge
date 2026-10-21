@@ -6,6 +6,7 @@ import {
   Input, Row, Screen, Small, Spacer,
 } from '../../ui'
 import { MODE_OPTIONS as MODES } from '../../ui/interviewMode'
+import DateField from '../../ui/DateField'
 import * as interviewsApi from '../../api/interviews'
 import { errorText } from '../../api/client'
 import { colors, space } from '../../theme'
@@ -17,7 +18,7 @@ const TIMES = ['09:00', '10:00', '11:00', '12:00', '15:00', '16:00', '17:00', '1
 /** Arranging a call or a visit. Times are taps, not a picker to fight with. */
 export default function ScheduleInterview({ navigation, route }) {
   const { t } = useTranslation()
-  const { applicationId, workerName, jobId } = route?.params || {}
+  const { workerId, workerName, jobId } = route?.params || {}
   const [mode, setMode] = useState('VISIT_SHOP')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('11:00')
@@ -39,12 +40,16 @@ export default function ScheduleInterview({ navigation, route }) {
     if (!day) { setError('Choose the day.'); return }
     setBusy(true); setError('')
     try {
+      // The server reads workerId, date, time and sendDetails. This used to
+      // send applicationId, one scheduledAt and notifyCandidate, so every
+      // talk came back "Worker, date, time and interview mode are required".
       await interviewsApi.schedule({
-        applicationId, jobId, mode,
-        scheduledAt: `${day}T${time}:00`,
+        workerId, jobId, mode,
+        date: day,
+        time,
         location: location || undefined,
         notes: notes || undefined,
-        notifyCandidate: notify,
+        sendDetails: notify,
       })
       navigation.navigate('InterviewCalendar')
     } catch (err) {
@@ -77,8 +82,8 @@ export default function ScheduleInterview({ navigation, route }) {
         </Field>
 
         <Field label={t('interviews.date')} hint="DD / MM / YYYY">
-          <Input value={date} onChangeText={setDate} placeholder="15 / 04 / 2026"
-            keyboardType="numbers-and-punctuation" />
+          <DateField value={date} onChange={setDate} placeholder={t('interviews.date')}
+            minimumDate={new Date()} />
         </Field>
 
         <Field label={t('interviews.time')}>

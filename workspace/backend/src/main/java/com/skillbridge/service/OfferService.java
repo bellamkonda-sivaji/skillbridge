@@ -10,6 +10,8 @@ import com.skillbridge.dto.OfferDto;
 import com.skillbridge.dto.OfferRequest;
 import com.skillbridge.dto.ScheduleEstimateDto;
 import com.skillbridge.exception.ApiException;
+import com.skillbridge.exception.FundsNeededException;
+import com.skillbridge.service.payment.Money;
 import com.skillbridge.model.*;
 import com.skillbridge.repository.EmployerProfileRepository;
 import com.skillbridge.repository.EmploymentRepository;
@@ -73,6 +75,9 @@ public class OfferService {
     private final ApplicantCardAssembler cardAssembler;
     private final NotificationService notificationService;
     private final AccountDirectory accountDirectory;
+    private final PricingService pricingService;
+    private final EngagementCost engagementCost;
+    private final com.skillbridge.service.payment.HireReleaseService hireReleaseService;
 
     public OfferService(JobOfferRepository offerRepository,
                         JobApplicationRepository applicationRepository,
@@ -87,7 +92,10 @@ public class OfferService {
                         ApplicationService applicationService,
                         ApplicantCardAssembler cardAssembler,
                         NotificationService notificationService,
-                        AccountDirectory accountDirectory) {
+                        AccountDirectory accountDirectory,
+                        PricingService pricingService,
+                        EngagementCost engagementCost,
+                        com.skillbridge.service.payment.HireReleaseService hireReleaseService) {
         this.offerRepository = offerRepository;
         this.applicationRepository = applicationRepository;
         this.jobRepository = jobRepository;
@@ -102,6 +110,9 @@ public class OfferService {
         this.cardAssembler = cardAssembler;
         this.notificationService = notificationService;
         this.accountDirectory = accountDirectory;
+        this.pricingService = pricingService;
+        this.engagementCost = engagementCost;
+        this.hireReleaseService = hireReleaseService;
     }
 
     // ================================================================== interview results
@@ -252,6 +263,18 @@ public class OfferService {
                 BenefitType parsed = BenefitType.parse(raw);
                 if (!benefits.contains(parsed)) benefits.add(parsed);
             }
+        }
+
+        // An offer the worker cannot accept is worse than none: they say yes and are told the
+        // job has no money. Ask for the money here, where the employer can act on it.
+        double offered = req.salary() != null && req.salary() > 0 ? req.salary() : job.getSalary();
+        long neededMinor = engagementCost.totalMinor(job, offered,
+                req.salaryUnit() != null ? req.salaryUnit() : job.getSalaryUnit(), req.workDate());
+        long coverMinor = escrowService.coverMinor(job.getId(), employer.getId());
+        if (coverMinor < neededMinor) {
+            throw new FundsNeededException("Add money to this job first. " + Money.inr(neededMinor)
+                    + " must be ready for the worker's pay before the offer goes out; this job has "
+                    + Money.inr(coverMinor) + ".");
         }
 
         applicationService.transition(application, ApplicationStatus.OFFERED);
@@ -420,7 +443,14 @@ public class OfferService {
             }
         }
         if (req.markStep() != null && !req.markStep().isBlank()) {
+            EmploymentStatus before = employment.getStatus();
             markStep(employment, shortJob, req.markStep());
+            if (before != EmploymentStatus.ACTIVE && employment.getStatus() == EmploymentStatus.ACTIVE) {
+                notificationService.notify(employment.getWorker(), "You have started work",
+                        "Welcome to " + accountDirectory.displayNameOf(AccountType.EMPLOYER, employer.getId())
+                                + ". Mark your attendance in My work every day you work.",
+                        NotificationType.APPLICATION, "/worker/work");
+            }
         }
         employmentRepository.save(employment);
         // The engagement finishing is what makes the worker's money withdrawable and what
@@ -429,7 +459,9 @@ public class OfferService {
         // already PAYABLE and does nothing. Releasing twice is impossible by construction,
         // not by the caller remembering.
         if (employment.getStatus() == EmploymentStatus.COMPLETED) {
-            escrowService.release(employment, "EMPLOYER", employer.getId());
+            // Held for JobOn to check, not released on the owner's word alone. An admin
+            // releases it from Hires & payouts, which is when the worker is told they are paid.
+            hireReleaseService.holdForApproval(employment);
         }
         return joiningDto(offer, employment);
     }
@@ -472,7 +504,9 @@ public class OfferService {
                     employment.setStatus(EmploymentStatus.ACTIVE);
                 }
             }
-            case PAYMENT, COMPLETE -> {
+            case PAYMENT -> throw ApiException.badRequest("JobOn releases the payment once it has "
+                    + "checked the work. You will be told when it is done.");
+            case COMPLETE -> {
                 if (employment.getWorkProgressAt() == null) {
                     throw ApiException.badRequest("Mark the work stage first.");
                 }
@@ -493,7 +527,10 @@ public class OfferService {
                 acceptedAt,
                 employment == null ? null : employment.getStartedAt(),
                 employment == null ? null : employment.getWorkProgressAt(),
-                employment == null ? null : employment.getSettledAt()
+                // Payment is JobOn's step, done when an admin releases the money - not a
+                // box the owner ticks. Longer jobs end on the owner's own COMPLETE step.
+                employment == null ? null
+                        : shortJob ? escrowService.releasedAt(employment.getId()) : employment.getSettledAt()
         };
 
         List<JoiningStepDto> rows = new ArrayList<>();
@@ -548,7 +585,8 @@ public class OfferService {
         ScheduleEstimateDto estimate = scheduleCalculator.estimate(priced);
         String employerName = accountDirectory.displayNameOf(AccountType.EMPLOYER, job.getEmployer().getId());
         return OfferDto.from(offer, employerName, estimate.estimatedWorkerEarnings(),
-                estimate.platformFee(), estimate.estimatedEmployerTotal());
+                estimate.platformFee(), estimate.estimatedEmployerTotal(),
+                pricingService.takeHome(offer.getSalary()));
     }
 
     // ================================================================== labels

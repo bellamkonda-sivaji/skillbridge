@@ -486,9 +486,11 @@ public class ScheduleCalculator {
         Double employerTotal = earnings;
         Double workerTakeHome = earnings;
         if (earnings != null && earnings > 0) {
+            // The slab is the posted rate's, not the total's - the same percentage the job
+            // card took off when it showed the worker their take-home.
             platformFee = platformFeePercent > 0
                     ? Math.round(earnings * platformFeePercent) / 100.0
-                    : pricing.fee(earnings);
+                    : (double) Math.round(earnings * pricing.feePercent(in.salary()) / 100d);
             if (platformFee != null && platformFee > 0) {
                 workerTakeHome = round2(earnings - platformFee);
             }

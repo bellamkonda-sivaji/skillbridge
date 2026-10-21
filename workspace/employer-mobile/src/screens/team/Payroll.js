@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
@@ -10,6 +10,7 @@ import {
 import * as teamApi from '../../api/team'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { Dialog } from '../../ui/Dialog'
 
 /**
  * What is owed and what has been paid.
@@ -57,7 +58,7 @@ export default function Payroll({ navigation }) {
   const process = () => {
     // Paying out needs the RazorpayX account number, which is not configured.
     // Saying so beats a button that fails with a gateway error.
-    Alert.alert(
+    Dialog.alert(
       t('team.processPayroll'),
       `${money(chosenTotal)} to ${picked.length} ${picked.length === 1 ? 'person' : 'people'}.\n\n`
       + 'Payouts switch on once your payout account is set up. Until then our team settles these for you.',

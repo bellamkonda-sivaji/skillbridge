@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
@@ -41,7 +41,9 @@ export default function FundJob({ navigation, route }) {
       ])
       setEscrow(e)
       setWallet(w)
-      const needed = Math.max(0, (e?.requiredMinor ?? 0) - (e?.fundedMinor ?? 0)) / 100
+      // Still short = needed minus what is already set aside or free on the job; money
+      // already paid out or refunded does not count towards this hire.
+      const needed = Math.max(0, (e?.requiredMinor ?? 0) - (e?.reservedMinor ?? 0) - (e?.unreservedMinor ?? 0)) / 100
       if (needed > 0) setAmount(String(Math.round(needed)))
     } catch (err) {
       setError(errorText(err, 'We could not load this job’s money.'))

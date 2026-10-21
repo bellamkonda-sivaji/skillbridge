@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { Alert, FlatList, View } from 'react-native'
+import { FlatList, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useFocusEffect } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -8,6 +8,7 @@ import ApplicantCard from './ApplicantCard'
 import * as applicantsApi from '../../api/applicants'
 import { errorText } from '../../api/client'
 import { colors, space } from '../../theme'
+import { Dialog } from '../../ui/Dialog'
 
 /** Workers the matcher suggests, who have not applied yet. */
 export default function Recommended({ navigation, route }) {
@@ -32,9 +33,9 @@ export default function Recommended({ navigation, route }) {
   const invite = async (workerId) => {
     try {
       await applicantsApi.invite(jobId, workerId)
-      Alert.alert('', 'We have invited them to apply.')
+      Dialog.alert('', 'We have invited them to apply.')
     } catch (err) {
-      Alert.alert('', errorText(err, 'We could not send the invite.'))
+      Dialog.alert('', errorText(err, 'We could not send the invite.'))
     }
   }
 

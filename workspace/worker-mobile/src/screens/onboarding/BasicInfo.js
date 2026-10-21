@@ -16,6 +16,27 @@ import { colors, space } from '../../theme'
  * screen asks for a date of birth and a photo - both skippable, because a
  * blocked profile is worse than an incomplete one.
  */
+/** "15032000" or "15/03/2000" shown as "15 / 03 / 2000" while typing. */
+function maskDob(text) {
+  const d = text.replace(/\D/g, '').slice(0, 8)
+  return [d.slice(0, 2), d.slice(2, 4), d.slice(4)].filter(Boolean).join(' / ')
+}
+
+/**
+ * The server takes 2000-03-15. Anything that is not a real date of someone
+ * old enough to work comes back as null rather than a server error.
+ */
+function dobToIso(masked) {
+  const d = masked.replace(/\D/g, '')
+  if (d.length !== 8) return null
+  const day = +d.slice(0, 2), month = +d.slice(2, 4), year = +d.slice(4)
+  const date = new Date(Date.UTC(year, month - 1, day))
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return null
+  const age = new Date().getFullYear() - year
+  if (age < 14 || age > 100) return null
+  return `${d.slice(4)}-${d.slice(2, 4)}-${d.slice(0, 2)}`
+}
+
 export default function BasicInfo({ navigation }) {
   const { t } = useTranslation()
   const { user, updateUser } = useSession()
@@ -59,12 +80,17 @@ export default function BasicInfo({ navigation }) {
   }
 
   const next = async () => {
+    const isoDob = dob ? dobToIso(dob) : undefined
+    if (dob && !isoDob) {
+      setError('Please enter your date of birth as DD / MM / YYYY, for example 15 / 03 / 2000.')
+      return
+    }
     setBusy(true); setError('')
     try {
       await profileApi.saveOnboardingStep({
         step: 'BASIC',
         name: name.trim() || undefined,
-        dateOfBirth: dob || undefined,
+        dateOfBirth: isoDob,
         gender: gender || undefined,
         alternatePhone: altPhone.replace(/\D/g, '') || undefined,
         photoUrl: photoData || undefined,
@@ -107,7 +133,8 @@ export default function BasicInfo({ navigation }) {
         </Field>
 
         <Field label={t('onboarding.dob')} hint="DD / MM / YYYY">
-          <Input value={dob} onChangeText={setDob} placeholder="15 / 03 / 2000" keyboardType="numbers-and-punctuation" />
+          <Input value={dob} onChangeText={(v) => setDob(maskDob(v))} placeholder="15 / 03 / 2000"
+            keyboardType="number-pad" maxLength={14} />
         </Field>
 
         <Field label={t('onboarding.gender')}>

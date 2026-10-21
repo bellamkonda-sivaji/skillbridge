@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, FlatList, StyleSheet, View } from 'react-native'
+import { FlatList, StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {
@@ -11,6 +11,7 @@ import * as applicantsApi from '../../api/applicants'
 import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
 import { colors, space } from '../../theme'
+import { Dialog } from '../../ui/Dialog'
 
 /**
  * Browsing workers instead of waiting for applications.
@@ -51,10 +52,10 @@ export default function FindWorkers({ navigation }) {
   const invite = (worker) => {
     const open = jobs.filter((j) => ['OPEN', 'ACTIVE'].includes(j.status))
     if (!open.length) {
-      Alert.alert('', 'Post a job first, then you can invite people to it.')
+      Dialog.alert('', 'Post a job first, then you can invite people to it.')
       return
     }
-    Alert.alert(
+    Dialog.alert(
       t('findWorkers.pickJob'),
       '',
       [
@@ -63,8 +64,8 @@ export default function FindWorkers({ navigation }) {
           onPress: async () => {
             try {
               await applicantsApi.invite(j.id, worker.userId || worker.id)
-              Alert.alert('', t('findWorkers.invited'))
-            } catch (err) { Alert.alert('', errorText(err)) }
+              Dialog.alert('', t('findWorkers.invited'))
+            } catch (err) { Dialog.alert('', errorText(err)) }
           },
         })),
         { text: t('common.cancel'), style: 'cancel' },

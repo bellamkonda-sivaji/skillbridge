@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Alert, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import {
   AppBar, Avatar, Badge, Body, Button, CheckRow, ChoiceCard, ErrorNote, Field,
@@ -8,6 +8,7 @@ import {
 import * as applicantsApi from '../../api/applicants'
 import { errorText } from '../../api/client'
 import { colors, space } from '../../theme'
+import { Dialog } from '../../ui/Dialog'
 
 const OPTIONS = [
   { value: 'SHORTLISTED', icon: 'star-outline', titleKey: 'shortlistIt', subKey: 'shortlistSub', tone: colors.violet },
@@ -25,7 +26,7 @@ const OPTIONS = [
  */
 export default function ApplicationDecision({ navigation, route }) {
   const { t } = useTranslation()
-  const { applicationId, workerId, workerName, jobId, matchScore } = route?.params || {}
+  const { applicationId, workerId, workerName, jobId, matchScore, status } = route?.params || {}
   const [choice, setChoice] = useState('')
   const [message, setMessage] = useState('')
   const [notify, setNotify] = useState(true)
@@ -36,17 +37,27 @@ export default function ApplicationDecision({ navigation, route }) {
     if (!choice) { setError(t('decision.title')); return }
     setBusy(true); setError('')
     try {
-      await applicantsApi.decide(applicationId, {
-        status: choice,
-        message: message || undefined,
-        notifyWorker: notify,
-      })
-      if (choice === 'INTERVIEW') {
-        navigation.replace('ScheduleInterview', { applicationId, workerName, jobId })
-      } else if (choice === 'SELECTED') {
-        navigation.replace('CreateOffer', { applicationId, workerId, jobId })
+      if (choice === 'INTERVIEW' || choice === 'SELECTED') {
+        // "Talk" and "offer" are not statuses - the server rejected them as
+        // unknown. Both need a shortlisted application, and their own screens
+        // move it on from there, so shortlist first if it is not yet.
+        if (!['SHORTLISTED', 'INTERVIEW_SCHEDULED'].includes(status)) {
+          await applicantsApi.decide(applicationId, {
+            status: 'SHORTLISTED', message: message || undefined, notifyWorker: notify,
+          })
+        }
+        if (choice === 'INTERVIEW') {
+          navigation.replace('ScheduleInterview', { applicationId, workerId, workerName, jobId })
+        } else {
+          navigation.replace('CreateOffer', { applicationId, workerId, jobId })
+        }
       } else {
-        Alert.alert('', t('decision.saved'))
+        await applicantsApi.decide(applicationId, {
+          status: choice,
+          message: message || undefined,
+          notifyWorker: notify,
+        })
+        Dialog.alert('', t('decision.saved'))
         navigation.goBack()
       }
     } catch (err) {

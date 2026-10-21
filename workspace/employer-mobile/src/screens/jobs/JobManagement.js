@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
@@ -11,6 +11,7 @@ import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 import { word } from '../../ui/words'
+import { Dialog } from '../../ui/Dialog'
 
 /**
  * One job: how it is doing, what it pays, and the advice when it is not
@@ -52,7 +53,7 @@ export default function JobManagement({ navigation, route }) {
     setJob((j) => ({ ...j, status }))
     try { await jobsApi.setJobStatus(jobId, status) } catch (err) {
       setJob((j) => ({ ...j, status: before }))
-      Alert.alert('', errorText(err))
+      Dialog.alert('', errorText(err))
     }
   }
 
@@ -67,7 +68,7 @@ export default function JobManagement({ navigation, route }) {
       setEditing(null)
       load()
     } catch (err) {
-      Alert.alert('', errorText(err, 'We could not change the pay.'))
+      Dialog.alert('', errorText(err, 'We could not change the pay.'))
     } finally { setBusy(false) }
   }
 

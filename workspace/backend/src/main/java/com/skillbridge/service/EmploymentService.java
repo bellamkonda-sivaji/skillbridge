@@ -39,6 +39,7 @@ public class EmploymentService {
     private final EmployerProfileRepository employerProfileRepository;
     private final NotificationService notificationService;
     private final ScheduleCalculator scheduleCalculator;
+    private final PricingService pricing = new PricingService();
 
     public EmploymentService(EmploymentRepository employmentRepository,
                              AttendanceRepository attendanceRepository,
@@ -507,7 +508,8 @@ public class EmploymentService {
                 e.getStatus(), e.getJoiningDate(), e.getEmploymentType(),
                 e.getSalary(), e.getSalaryUnit(),
                 new ArrayList<>(e.getJob().getWorkingDays()),
-                shiftLabel(e.getJob()), e.getWorkLocation(), e.isCurrent());
+                shiftLabel(e.getJob()), e.getWorkLocation(), e.isCurrent(),
+                pricing.takeHome(e.getSalary()));
     }
 
     private EmploymentDetailDto toDetail(Employment e) {
@@ -526,7 +528,8 @@ public class EmploymentService {
                 e.getDressCode(), new ArrayList<>(e.getDocumentsToCarry()),
                 e.getJoiningAcknowledgedAt() != null,
                 latitude(e, profile), longitude(e, profile),
-                new ArrayList<>(e.getJob().getBenefits()));
+                new ArrayList<>(e.getJob().getBenefits()),
+                pricing.takeHome(e.getSalary()));
     }
 
     private Double latitude(Employment e, EmployerProfile profile) {

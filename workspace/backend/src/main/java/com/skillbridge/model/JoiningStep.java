@@ -35,7 +35,7 @@ public enum JoiningStep {
             case JOINED -> "Mark when the worker arrives";
             case WORK_DONE -> "Mark when the work is completed";
             case WORK_IN_PROGRESS -> "Mark once the worker has settled in";
-            case PAYMENT -> "Released after completion";
+            case PAYMENT -> "JobOn releases it after checking the work";
             case COMPLETE -> "Marked when the engagement ends";
         };
     }

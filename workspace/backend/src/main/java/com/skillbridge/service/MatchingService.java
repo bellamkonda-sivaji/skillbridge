@@ -4,9 +4,13 @@ import com.skillbridge.dto.MatchDto;
 import com.skillbridge.exception.ApiException;
 import com.skillbridge.model.*;
 import com.skillbridge.repository.*;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +35,9 @@ public class MatchingService {
     private final NotificationService notificationService;
     private final GeoService geoService;
     private final SkillLexicon lexicon;
+    /** Matching threads of their own, so posting a job never waits on scoring. */
+    private final SimpleAsyncTaskExecutor executor = new SimpleAsyncTaskExecutor("match-");
+    private final TransactionTemplate tx;
 
     private static final double WEIGHT_SKILL = 0.40;
     private static final double WEIGHT_DISTANCE = 0.20;
@@ -56,13 +63,16 @@ public class MatchingService {
 
     public MatchingService(WorkerProfileRepository workerRepository, JobPostRepository jobRepository,
                            MatchRepository matchRepository, NotificationService notificationService,
-                           GeoService geoService, SkillLexicon lexicon) {
+                           GeoService geoService, SkillLexicon lexicon,
+                           PlatformTransactionManager transactionManager) {
         this.workerRepository = workerRepository;
         this.jobRepository = jobRepository;
         this.matchRepository = matchRepository;
         this.notificationService = notificationService;
         this.geoService = geoService;
         this.lexicon = lexicon;
+        this.executor.setConcurrencyLimit(4);
+        this.tx = new TransactionTemplate(transactionManager);
     }
 
     public record ScoreBreakdown(double score, double skillScore, double distanceKm, double distanceScore,
@@ -283,9 +293,26 @@ public class MatchingService {
      * pressing "post" waited while every worker was scored and notified.
      * Nothing the employer sees depends on the result.
      */
-    @Async
-    @Transactional
-    public List<MatchDto> generateMatchesForJob(JobPost job) {
+    public void generateMatchesForJob(JobPost job) {
+        Long jobId = job.getId();
+        Runnable run = () -> executor.execute(() -> tx.executeWithoutResult(s ->
+                jobRepository.findById(jobId).ifPresent(this::matchJob)));
+        // Wait for the job to be committed: a thread started inside the
+        // transaction can look for it before it exists. (This used to be
+        // @Async returning a List, which Spring refuses, so every post failed.)
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    run.run();
+                }
+            });
+        } else {
+            run.run();
+        }
+    }
+
+    private List<MatchDto> matchJob(JobPost job) {
         List<WorkerProfile> workers = workerRepository.findAll();
         List<Match> created = new ArrayList<>();
 
@@ -328,6 +355,8 @@ public class MatchingService {
         List<JobPost> jobs = jobRepository.findByStatusOrderByPostedAtDesc(JobStatus.OPEN);
         List<Match> created = new ArrayList<>();
         for (JobPost job : jobs) {
+            // Same rule as the job side: out of their range is never a match.
+            if (!withinTravel(worker, job)) continue;
             Match match = evaluateAndSave(worker, job);
             if (match != null) {
                 created.add(match);

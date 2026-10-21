@@ -5,8 +5,10 @@ import { useFocusEffect } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import {
-  AppBar, Badge, Button, EmptyState, ErrorNote, Loader, Row, Small, formatDate, money,
+  AppBar, Badge, Button, EmptyState, ErrorNote, Loader, Row, Small, formatDate, money, pay,
 } from '../../ui'
+import { EMPLOYMENT_TYPES } from '../../ui/catalog'
+import i18n from 'i18next'
 import * as offersApi from '../../api/offers'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
@@ -15,6 +17,12 @@ import { word } from '../../ui/words'
 const TONE = { PENDING: 'orange', SENT: 'orange', ACCEPTED: 'green', DECLINED: 'red', CANCELLED: 'grey' }
 
 /** Offers waiting for an answer. The most important screen in the app. */
+/** "A few weeks", "Permanent"… in the worker's language. */
+const lengthLabel = (model) => {
+  const e = EMPLOYMENT_TYPES.find((x) => x.value === model)
+  return e ? (e[i18n.language] || e.en) : null
+}
+
 export default function Offers({ navigation }) {
   const { t } = useTranslation()
   const [rows, setRows] = useState(null)
@@ -57,7 +65,7 @@ export default function Offers({ navigation }) {
                     <Text style={s.title} numberOfLines={1}>{item.jobTitle}</Text>
                     <Small numberOfLines={1}>{item.businessName}</Small>
                     <Row gap={6} style={{ marginTop: 6 }}>
-                      <Badge label={oneDay ? t('work.oneDay') : t('work.monthly')} tone="violet" />
+                      <Badge label={lengthLabel(item.engagementModel) || (oneDay ? t('work.oneDay') : t('work.monthly'))} tone="violet" />
                       {item.status ? (
                         <Badge label={word(t, item.status)} tone={TONE[item.status] || 'grey'} />
                       ) : null}
@@ -73,8 +81,7 @@ export default function Offers({ navigation }) {
                     <Small><Ionicons name="calendar-outline" size={12} /> {t('offers.joining')} {formatDate(item.joiningDate)}</Small>
                   ) : null}
                   <Text style={s.pay}>
-                    {money(item.workerSalary ?? item.salary)}
-                    {oneDay ? ` ${t('common.perDay')}` : ` ${t('common.perMonth')}`}
+                    {pay(item.workerSalary ?? item.salary, item.salaryUnit)}
                   </Text>
                 </View>
 

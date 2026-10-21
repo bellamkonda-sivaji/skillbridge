@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
@@ -7,6 +7,7 @@ import {
   Row, Screen, Small, Spacer, SuccessPanel, formatDate, timeOnly,
 } from '../../ui'
 import * as offersApi from '../../api/offers'
+import DateField from '../../ui/DateField'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 
@@ -21,6 +22,11 @@ import { colors, radius, space } from '../../theme'
  * The button always advances the first step that is not done yet, which is
  * what makes the last one release the worker's money.
  */
+const todayText = () => {
+  const d = new Date()
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
+}
+
 export default function JoiningConfirmation({ navigation, route }) {
   const { t } = useTranslation()
   const offerId = route?.params?.offerId
@@ -37,9 +43,10 @@ export default function JoiningConfirmation({ navigation, route }) {
       setData(d)
       setForm((f) => ({
         ...f,
+        // Today by default: the owner is usually marking it the day the worker walks in.
         joinedOn: f.joinedOn || (d.actualJoiningDate
-          ? String(d.actualJoiningDate).split('-').reverse().join(' / ') : ''),
-        reportingTime: f.reportingTime || d.reportingTime || '09:00',
+          ? String(d.actualJoiningDate).split('-').reverse().join('/') : todayText()),
+        reportingTime: f.reportingTime || String(d.reportingTime || '09:00').slice(0, 5),
         employeeId: f.employeeId || d.employeeId || '',
       }))
     } catch (err) {
@@ -126,7 +133,7 @@ export default function JoiningConfirmation({ navigation, route }) {
   return (
     <Screen
       padded={false}
-      footer={next ? (
+      footer={next && next.key !== 'PAYMENT' ? (
         <Button
           title={next.key === 'JOINED' ? t('offers.confirmJoining')
             : next.key === 'WORK_DONE' || next.key === 'COMPLETE' ? t('offers.markCompleted')
@@ -146,7 +153,7 @@ export default function JoiningConfirmation({ navigation, route }) {
             <Text style={s.name}>{data.workerName}</Text>
             <Small style={{ marginTop: 2 }}>{data.jobTitle}</Small>
           </View>
-          <Badge label={data.isShortJob ? t('work.oneDay') : t('work.permanent')} tone="violet" />
+          <Badge label={data.isShortJob ? t('offers.shortJob') : t('offers.longJob')} tone="violet" />
         </Row>
 
         <ErrorNote onRetry={load}>{error}</ErrorNote>
@@ -184,9 +191,8 @@ export default function JoiningConfirmation({ navigation, route }) {
               {t('offers.joiningDetails')}
             </H3>
             <Field label={t('offers.actualJoining')} hint="DD / MM / YYYY">
-              <Input value={form.joinedOn}
-                onChangeText={(v) => setForm((f) => ({ ...f, joinedOn: v }))}
-                placeholder="22 / 04 / 2026" keyboardType="numbers-and-punctuation" />
+              <DateField value={form.joinedOn} maximumDate={new Date()}
+                onChange={(v) => setForm((f) => ({ ...f, joinedOn: v }))} />
             </Field>
             <Field label={t('offers.reportingTime')}>
               <Input value={form.reportingTime}
@@ -207,6 +213,14 @@ export default function JoiningConfirmation({ navigation, route }) {
           <Input value={form.notes} onChangeText={(v) => setForm((f) => ({ ...f, notes: v }))}
             multiline maxLength={300} style={{ minHeight: 76, alignItems: 'flex-start' }} />
         </Field>
+
+        {/* Payment is JobOn's step: the owner waits here rather than pressing a button. */}
+        {next?.key === 'PAYMENT' ? (
+          <View style={[s.releaseNote, { backgroundColor: colors.orangeSoft }]}>
+            <Ionicons name="time-outline" size={18} color={colors.orangeText} />
+            <Small style={{ flex: 1, color: colors.orangeText }}>{t('offers.waitingRelease')}</Small>
+          </View>
+        ) : null}
 
         {next?.key === 'WORK_DONE' || next?.key === 'COMPLETE' ? (
           <View style={s.releaseNote}>

@@ -120,11 +120,11 @@ class ScheduleCalculatorTest {
         assertEquals(27, dto.scheduledDays());
         assertEquals(8.5, dto.paidHoursPerDay());
         assertEquals(229.5, dto.expectedPaidHours());
-        // Rs 18,900 sits above the Rs 10,000 band, so the commission is 20% and comes out of
-        // the employer's figure - they pay what they posted, the worker takes home the rest.
+        // The slab is the posted RATE's: Rs 700 a day is the 10% band however many days run,
+        // so the worker takes home the Rs 630 a day their job card showed them, 27 times over.
         assertEquals(18900.0, dto.estimatedEmployerTotal());
-        assertEquals(3780.0, dto.platformFee());
-        assertEquals(15120.0, dto.estimatedWorkerEarnings());
+        assertEquals(1890.0, dto.platformFee());
+        assertEquals(17010.0, dto.estimatedWorkerEarnings());
         assertEquals("BEFORE_WORK", dto.fundingWhen());
     }
 
@@ -137,10 +137,10 @@ class ScheduleCalculatorTest {
         calculator.validate(in);
         ScheduleEstimateDto dto = calculator.estimate(in);
         assertEquals(5, dto.scheduledDays());
-        // Rs 3,500 is in the Rs 1,000 - 4,000 band: 13% out, Rs 3,045 to the worker.
+        // Five days at Rs 700: the Rs 700 rate is in the 10% band, so Rs 3,150 to the worker.
         assertEquals(3500.0, dto.estimatedEmployerTotal());
-        assertEquals(455.0, dto.platformFee());
-        assertEquals(3045.0, dto.estimatedWorkerEarnings());
+        assertEquals(350.0, dto.platformFee());
+        assertEquals(3150.0, dto.estimatedWorkerEarnings());
     }
 
     @Test
@@ -157,12 +157,12 @@ class ScheduleCalculatorTest {
         assertEquals(175.0, withFee.platformFee());
         assertEquals(3325.0, withFee.estimatedWorkerEarnings());
 
-        // With no flat percentage configured the slab decides: 13% on Rs 3,500.
+        // With no flat percentage configured the rate's slab decides: 10% for Rs 700 a day.
         calculator.setPlatformFeePercent(0);
         ScheduleEstimateDto slabbed = calculator.estimate(in);
-        assertEquals(455.0, slabbed.platformFee());
+        assertEquals(350.0, slabbed.platformFee());
         assertEquals(3500.0, slabbed.estimatedEmployerTotal());
-        assertEquals(3045.0, slabbed.estimatedWorkerEarnings());
+        assertEquals(3150.0, slabbed.estimatedWorkerEarnings());
     }
 
     @Test

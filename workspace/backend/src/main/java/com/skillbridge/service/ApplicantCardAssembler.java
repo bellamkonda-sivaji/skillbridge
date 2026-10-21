@@ -82,7 +82,9 @@ public class ApplicantCardAssembler {
                 List.copyOf(profile.getSkills()),
                 profile.getExpectedSalary(),
                 profile.getSalaryUnit(),
-                profile.getAccount().getPhotoUrl());
+                profile.getAccount().getPhotoUrl(),
+                job != null ? job.getId() : null,
+                job != null ? job.getTitle() : null);
     }
 
     // ------------------------------------------------------------------ detail

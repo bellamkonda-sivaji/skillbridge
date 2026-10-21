@@ -25,6 +25,7 @@ const NAV = [
   { to: '/admin/skills', icon: 'target', label: 'Skills Registry' },
   { to: '/admin/analytics', icon: 'trending', label: 'Analytics', perm: 'VIEW_REPORTS' },
   { to: '/admin/interviews', icon: 'calendar', label: 'Calls & visits' },
+  { to: '/admin/hires', icon: 'checkCircle', label: 'Hires & payouts', perm: 'VIEW_PAYMENTS' },
   { to: '/admin/payments', icon: 'wallet', label: 'Payments', perm: 'VIEW_PAYMENTS' },
   { to: '/admin/finance', icon: 'rupee', label: 'Finance', perm: 'VIEW_PAYMENTS' },
   { to: '/admin/verifications', icon: 'shield', label: 'Worker checks', perm: 'VERIFY_ACCOUNTS' },

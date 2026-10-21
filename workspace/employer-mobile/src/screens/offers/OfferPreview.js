@@ -10,6 +10,7 @@ import { splitPrice } from '../../ui/catalog'
 import * as offersApi from '../../api/offers'
 import { errorText } from '../../api/client'
 import { colors, space } from '../../theme'
+import { Dialog } from '../../ui/Dialog'
 
 /**
  * The last look before an offer goes out.
@@ -20,7 +21,7 @@ import { colors, space } from '../../theme'
  */
 export default function OfferPreview({ navigation, route }) {
   const { t } = useTranslation()
-  const { applicationId, draft, workerName, jobTitle } = route?.params || {}
+  const { applicationId, jobId, draft, workerName, jobTitle } = route?.params || {}
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
@@ -39,7 +40,16 @@ export default function OfferPreview({ navigation, route }) {
       })
       navigation.replace('OfferSent', { offer, workerName })
     } catch (err) {
-      setError(errorText(err, 'We could not send this offer.'))
+      const message = errorText(err, 'We could not send this offer.')
+      // The one thing that stops an offer is money. Say so, and take them there.
+      if (/add money to this job/i.test(message) && jobId) {
+        Dialog.alert('Add money first', message, [
+          { text: 'Not now', style: 'cancel' },
+          { text: 'Add money', onPress: () => navigation.navigate('FundJob', { jobId, jobTitle }) },
+        ], { tone: 'warning' })
+      } else {
+        setError(message)
+      }
     } finally { setBusy(false) }
   }
 

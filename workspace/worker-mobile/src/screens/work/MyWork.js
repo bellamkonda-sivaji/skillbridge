@@ -6,15 +6,21 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import {
   Badge, Button, Card, EmptyState, ErrorNote, H2, Loader, Row, SegTabs, Small,
-  formatDate, money,
+  formatDate, money, pay,
 } from '../../ui'
 import * as offersApi from '../../api/offers'
 import * as attendanceApi from '../../api/attendance'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 import { word } from '../../ui/words'
+import LanguagePicker from '../../ui/LanguagePicker'
 
 /** Every job they hold: running now, starting soon, or finished. */
+// The server's own words for where a job stands. A hire arrives as OFFER_ACCEPTED,
+// which no list here knew, so a worker who had just been hired saw "nothing here".
+const NOW = ['ACTIVE', 'JOINED', 'ONGOING']
+const SOON = ['OFFER_ACCEPTED', 'JOINING_CONFIRMED', 'OFFERED', 'ACCEPTED', 'UPCOMING', 'PENDING_JOIN']
+
 export default function MyWork({ navigation }) {
   const { t } = useTranslation()
   const [rows, setRows] = useState(null)
@@ -29,7 +35,10 @@ export default function MyWork({ navigation }) {
         offersApi.employments(),
         attendanceApi.today().catch(() => []),
       ])
-      setRows(Array.isArray(list) ? list : list?.content || [])
+      const all = Array.isArray(list) ? list : list?.content || []
+      setRows(all)
+      // Someone just hired has nothing "now" yet - open where their job actually is.
+      if (!all.some((r) => NOW.includes(r.status)) && all.some((r) => SOON.includes(r.status))) setTab('UPCOMING')
       setToday(Array.isArray(shifts) ? shifts : [])
     } catch (err) {
       setError(errorText(err, 'We could not load your work.'))
@@ -41,8 +50,8 @@ export default function MyWork({ navigation }) {
 
   const filtered = useMemo(() => {
     if (!rows) return []
-    if (tab === 'ACTIVE') return rows.filter((r) => ['ACTIVE', 'JOINED', 'ONGOING'].includes(r.status))
-    if (tab === 'UPCOMING') return rows.filter((r) => ['OFFERED', 'ACCEPTED', 'UPCOMING', 'PENDING_JOIN'].includes(r.status))
+    if (tab === 'ACTIVE') return rows.filter((r) => NOW.includes(r.status))
+    if (tab === 'UPCOMING') return rows.filter((r) => SOON.includes(r.status))
     return rows.filter((r) => ['COMPLETED', 'ENDED', 'TERMINATED'].includes(r.status))
   }, [rows, tab])
 
@@ -51,12 +60,15 @@ export default function MyWork({ navigation }) {
   return (
     <SafeAreaView style={s.fill} edges={['top', 'left', 'right']}>
       <View style={s.head}>
-        <H2>{t('myWork.title')}</H2>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <H2 style={{ flex: 1 }}>{t('myWork.title')}</H2>
+          <LanguagePicker compact style={{ marginLeft: space.sm }} />
+        </View>
         <View style={{ marginTop: space.md }}>
           <SegTabs
             tabs={[
-              { value: 'ACTIVE', label: `${t('myWork.active')} (${count(['ACTIVE', 'JOINED', 'ONGOING'])})` },
-              { value: 'UPCOMING', label: `${t('myWork.upcoming')} (${count(['OFFERED', 'ACCEPTED', 'UPCOMING', 'PENDING_JOIN'])})` },
+              { value: 'ACTIVE', label: `${t('myWork.active')} (${count(NOW)})` },
+              { value: 'UPCOMING', label: `${t('myWork.upcoming')} (${count(SOON)})` },
               { value: 'COMPLETED', label: `${t('myWork.completed')} (${count(['COMPLETED', 'ENDED', 'TERMINATED'])})` },
             ]}
             value={tab}
@@ -119,13 +131,15 @@ export default function MyWork({ navigation }) {
                   />
                   {item.salary ? (
                     <Small style={{ fontWeight: '700', color: colors.greenText }}>
-                      {money(item.workerSalary ?? item.salary)}
+                      {pay(item.workerSalary ?? item.salary, item.salaryUnit)}
                     </Small>
                   ) : null}
                 </Row>
-                {item.joinedAt || item.startDate ? (
+                {item.joinedAt || item.startDate || item.joiningDate ? (
                   <Small style={{ marginTop: 4 }}>
-                    {t('myWork.joined')} {formatDate(item.joinedAt || item.startDate)}
+                    {item.joinedAt
+                      ? `${t('myWork.joined')} ${formatDate(item.joinedAt)}`
+                      : `${t('applications.starts')} ${formatDate(item.startDate || item.joiningDate)}`}
                   </Small>
                 ) : null}
               </View>

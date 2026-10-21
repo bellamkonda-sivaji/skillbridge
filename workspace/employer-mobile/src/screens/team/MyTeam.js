@@ -12,6 +12,7 @@ import * as teamApi from '../../api/team'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 import { word } from '../../ui/words'
+import LanguagePicker from '../../ui/LanguagePicker'
 
 /** The people currently working for this business. */
 export default function MyTeam({ navigation }) {
@@ -44,6 +45,7 @@ export default function MyTeam({ navigation }) {
       <View style={s.head}>
         <Row style={{ marginBottom: space.md }}>
           <H2 style={{ flex: 1 }}>{t('team.title')} {rows ? `(${rows.length})` : ''}</H2>
+          <LanguagePicker compact style={{ marginLeft: space.sm }} />
         </Row>
         <Input value={query} onChangeText={setQuery} placeholder={t('common.search')} />
         <Row style={{ marginTop: space.md }}>

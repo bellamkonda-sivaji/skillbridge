@@ -20,13 +20,30 @@ public class AdminFinanceController {
     private final ReconcileService reconcile;
     private final PayoutService payouts;
     private final AdminGuard guard;
+    private final com.skillbridge.service.payment.HireReleaseService hireRelease;
 
     public AdminFinanceController(FinanceQueryService finance, ReconcileService reconcile,
-                                  PayoutService payouts, AdminGuard guard) {
+                                  PayoutService payouts, AdminGuard guard,
+                                  com.skillbridge.service.payment.HireReleaseService hireRelease) {
+        this.hireRelease = hireRelease;
         this.finance = finance;
         this.reconcile = reconcile;
         this.payouts = payouts;
         this.guard = guard;
+    }
+
+    /** Every hire, start to finish; money waiting for release first. */
+    @GetMapping("/finance/hires")
+    public java.util.List<com.skillbridge.service.payment.HireReleaseService.HireDto> hires() {
+        guard.require(AdminPermission.VIEW_PAYMENTS);
+        return hireRelease.list();
+    }
+
+    /** The owner said the work is done; this is JobOn agreeing, and paying the worker. */
+    @PostMapping("/finance/hires/{employmentId}/release")
+    public com.skillbridge.service.payment.HireReleaseService.HireDto release(@PathVariable Long employmentId) {
+        var admin = guard.require(AdminPermission.MANAGE_PAYMENTS);
+        return hireRelease.release(employmentId, admin);
     }
 
     @GetMapping("/finance/summary")

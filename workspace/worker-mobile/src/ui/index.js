@@ -7,6 +7,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import Listen from './Listen'
+import LanguagePicker from './LanguagePicker'
 import { colors, radius, shadow, space, type, HIT } from '../theme'
 
 export * from './format'
@@ -41,7 +42,11 @@ export function Screen({ children, scroll = true, style, footer, bg = colors.bg,
 }
 
 /** The bar at the top of a pushed screen. `onBack` renders the arrow. */
-export function AppBar({ title, onBack, right, subtitle }) {
+/**
+ * The header on every inner screen. The language switch lives in its corner so
+ * anyone can change it from wherever they are, not only from their profile.
+ */
+export function AppBar({ title, onBack, right, subtitle, language = true }) {
   return (
     <View style={s.appBar}>
       {onBack ? (
@@ -54,6 +59,7 @@ export function AppBar({ title, onBack, right, subtitle }) {
         {subtitle ? <Text style={s.appBarSub} numberOfLines={1}>{subtitle}</Text> : null}
       </View>
       {right || null}
+      {language ? <LanguagePicker compact style={{ marginLeft: space.sm }} /> : null}
     </View>
   )
 }
@@ -95,6 +101,7 @@ const BTN_TONE = {
   primary: { bg: colors.blue, fg: colors.white, border: colors.blue },
   success: { bg: colors.green, fg: colors.white, border: colors.green },
   danger: { bg: colors.red, fg: colors.white, border: colors.red },
+  warning: { bg: colors.orange, fg: colors.white, border: colors.orange },
   outline: { bg: colors.white, fg: colors.blue, border: colors.blue },
   quiet: { bg: colors.white, fg: colors.body, border: colors.line },
   dangerQuiet: { bg: colors.white, fg: colors.redText, border: colors.redLine },

@@ -55,6 +55,7 @@ import AdminSkills from './admin/pages/Skills'
 import AdminCompanies, { CompanyDetail as AdminCompanyDetail } from './admin/pages/Companies'
 import AdminInterviews from './admin/pages/Interviews'
 import AdminPayments from './admin/pages/Payments'
+import AdminHires from './admin/pages/Hires'
 import AdminDailyReport from './admin/pages/DailyReport'
 import AdminTeam from './admin/pages/Team'
 import AdminAudit from './admin/pages/Audit'
@@ -321,6 +322,7 @@ export default function App() {
         <Route path="analytics" element={<RequirePermission permission="VIEW_REPORTS"><AdminAnalytics /></RequirePermission>} />
         <Route path="finance" element={<RequirePermission permission="VIEW_PAYMENTS"><AdminFinance /></RequirePermission>} />
         <Route path="interviews" element={<AdminInterviews />} />
+        <Route path="hires" element={<RequirePermission permission="VIEW_PAYMENTS"><AdminHires /></RequirePermission>} />
         <Route path="payments" element={<RequirePermission permission="VIEW_PAYMENTS"><AdminPayments /></RequirePermission>} />
         <Route path="verifications" element={<AdminVerifications />} />
         <Route path="verifications/businesses" element={<AdminEmployerVerifications />} />

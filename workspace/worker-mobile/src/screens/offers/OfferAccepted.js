@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Button, Card, Loader, Row, Screen, Small, Spacer, SuccessPanel,
-  formatDate, hhmm, money,
+  formatDate, hhmm, money, pay,
 } from '../../ui'
 import * as offersApi from '../../api/offers'
 import { colors, space } from '../../theme'
@@ -26,7 +26,7 @@ export default function OfferAccepted({ navigation, route }) {
       <AppBar onBack={() => navigation.navigate('Offers')} />
       <SuccessPanel
         title={t('offers.acceptedTitle')}
-        sub={`${t('offers.acceptedSub')} ${offer.businessName || ''}`.trim()}
+        sub={offer.employerName ? `${offer.employerName} has been told.` : t('offers.acceptedSub')}
       >
         <Card style={s.card}>
           {oneDay && offer.workDate ? (
@@ -38,16 +38,16 @@ export default function OfferAccepted({ navigation, route }) {
           {offer.startTime ? (
             <Fact icon="time-outline" text={`${hhmm(offer.startTime)} – ${hhmm(offer.endTime)}`} />
           ) : null}
-          <Fact
-            icon="cash-outline"
-            text={`${money(offer.workerSalary ?? offer.salary)}${oneDay ? ` ${t('common.perDay')}` : ` ${t('common.perMonth')}`}`}
-          />
+          {/* The offer's own unit - this said "/month" on a daily job. */}
+          <Fact icon="cash-outline" text={pay(offer.workerSalary ?? offer.salary, offer.salaryUnit)} />
         </Card>
 
         <View style={s.note}>
           <Ionicons name="information-circle-outline" size={18} color={colors.blueDark} />
           <Small style={{ flex: 1, color: colors.blueDark }}>
-            The shop owner has been told. Your joining details are in My work.
+            {offer.estimatedWorkerPay
+              ? `You will get about ${money(offer.estimatedWorkerPay)} for this work. The money is already kept safe and comes to you as the work is done.`
+              : 'Your joining details are in My work.'}
           </Small>
         </View>
 

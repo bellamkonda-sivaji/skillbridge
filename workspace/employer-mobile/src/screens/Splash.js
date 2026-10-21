@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { Button, Body, H1, Small } from '../ui'
 import { colors, space } from '../theme'
+import LanguagePicker from '../ui/LanguagePicker'
 
 /**
  * The first thing a business owner sees.
@@ -18,6 +19,9 @@ export default function Splash({ navigation }) {
   return (
     <LinearGradient colors={[colors.white, colors.blueSoft]} style={s.fill}>
       <SafeAreaView style={s.fill} edges={['top', 'bottom']}>
+        <View style={{ alignItems: 'flex-end', paddingHorizontal: space.lg, paddingTop: space.sm }}>
+          <LanguagePicker compact />
+        </View>
         <View style={s.body}>
           <View style={s.brandRow}>
             <View style={s.mark}><Ionicons name="business" size={26} color={colors.white} /></View>

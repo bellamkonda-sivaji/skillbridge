@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
@@ -9,10 +9,13 @@ import {
 import Photo from '../../ui/Photo'
 import Listen from '../../ui/Listen'
 import { workArt } from '../../ui/workArt'
+import { word } from '../../ui/words'
+import { EMPLOYMENT_TYPES } from '../../ui/catalog'
 import * as jobsApi from '../../api/jobs'
 import * as appsApi from '../../api/applications'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { Dialog } from '../../ui/Dialog'
 
 /**
  * One job, in full.
@@ -23,7 +26,7 @@ import { colors, radius, space } from '../../theme'
  * later, so it is settled here, before anyone applies.
  */
 export default function JobDetails({ navigation, route }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const jobId = route?.params?.jobId
   const [job, setJob] = useState(null)
   const [error, setError] = useState('')
@@ -66,7 +69,17 @@ export default function JobDetails({ navigation, route }) {
       setApplied(true)
       setJustApplied(true)
     } catch (err) {
-      Alert.alert('', errorText(err, 'We could not send your application.'))
+      const message = errorText(err, 'We could not send your application.')
+      // Someone who skipped part of sign-up lands here first. Telling them
+      // what is missing without a way to fix it left them stuck on "OK".
+      if (/complete your worker profile/i.test(message)) {
+        Dialog.alert('', message, [
+          { text: 'Not now', style: 'cancel' },
+          { text: 'Finish profile', onPress: () => navigation.navigate('BasicInfo') },
+        ])
+      } else {
+        Dialog.alert('', message)
+      }
     } finally {
       setApplying(false)
     }
@@ -80,6 +93,10 @@ export default function JobDetails({ navigation, route }) {
 
   if (!job && !error) return <Screen scroll={false}><Loader /></Screen>
   if (!job) return <Screen><AppBar onBack={navigation.goBack} /><ErrorNote onRetry={load}>{error}</ErrorNote></Screen>
+
+  // How long the work is, in words ("A few weeks"), not a code like FULL_TIME.
+  const length = EMPLOYMENT_TYPES.find((e) => e.value === job.engagementModel)
+  const typeLabel = length ? (length[i18n.language] || length.en) : word(t, job.employmentType || job.workType)
 
   // The success panel is for the moment of applying. Arriving at a job that
   // was applied to days ago should show the job, with the button saying so.
@@ -169,7 +186,7 @@ export default function JobDetails({ navigation, route }) {
         </Card>
 
         <View style={s.facts}>
-          <Fact icon="time-outline" label={t('jobs.type')} value={job.employmentType || job.workType} />
+          <Fact icon="time-outline" label={t('jobs.type')} value={typeLabel} />
           {/* Only claim a distance when we have one - falling back to the city
               under a "Distance" label reads as "Distance: Tirupati", which is
               not a distance and not an answer. */}
@@ -220,7 +237,7 @@ export default function JobDetails({ navigation, route }) {
 
         {job.requiredSkills?.length ? (
           <>
-            <H3 style={{ marginTop: space.xl }}>{t('profile.skills')}</H3>
+            <H3 style={{ marginTop: space.xl }}>{t('jobs.skillsNeeded')}</H3>
             <View style={s.skills}>
               {job.requiredSkills.map((sk) => (
                 <View key={sk} style={s.skill}><Text style={s.skillText}>{sk}</Text></View>

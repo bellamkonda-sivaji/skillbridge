@@ -6,6 +6,8 @@ import {
   AppBar, Body, Button, Chip, ChoiceCard, ErrorNote, Field, H1, Input, Screen, Small, Steps,
 } from '../../ui'
 import { AVAILABILITY, RADIUS_OPTIONS } from '../../ui/catalog'
+import AddressPicker from '../../ui/AddressPicker'
+import { emptyAddress } from '../../location/geocode'
 import { errorText } from '../../api/client'
 import * as profileApi from '../../api/profile'
 import { useSession } from '../../session/SessionProvider'
@@ -41,7 +43,9 @@ export default function LocationStep({ navigation }) {
         latitude: address.latitude ?? undefined,
         longitude: address.longitude ?? undefined,
         preferredRadiusKm: km,
-        availability,
+        // The server only knows "available now"; "in a week / a month" has no
+        // value there yet and was rejected, so it is left at the default.
+        availability: availability === 'IMMEDIATE' ? availability : undefined,
       })
       updateUser({ onboarded: true })
       navigation.reset({ index: 0, routes: [{ name: 'Main' }] })

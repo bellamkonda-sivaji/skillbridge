@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { Alert, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useFocusEffect } from '@react-navigation/native'
 import {
@@ -10,6 +10,8 @@ import * as profileApi from '../api/profile'
 import { errorText } from '../api/client'
 import { useSession } from '../session/SessionProvider'
 import { colors, space } from '../theme'
+import { Dialog } from '../ui/Dialog'
+import LanguagePicker from '../ui/LanguagePicker'
 
 export default function Profile({ navigation }) {
   const { t, i18n } = useTranslation()
@@ -34,7 +36,7 @@ export default function Profile({ navigation }) {
   }
 
   const confirmLogout = () => {
-    Alert.alert(t('profile.logoutAsk'), '', [
+    Dialog.alert(t('profile.logoutAsk'), '', [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('profile.logout'), style: 'destructive', onPress: signOut },
     ])
@@ -43,6 +45,7 @@ export default function Profile({ navigation }) {
   return (
     <Screen padded={false}>
       <View style={s.header}>
+        <View style={{ alignItems: 'flex-end', marginBottom: space.sm }}><LanguagePicker compact /></View>
         <Row>
           {/* The shop front, if one was uploaded during verification. It is
               the one picture a business has that means anything to a worker. */}

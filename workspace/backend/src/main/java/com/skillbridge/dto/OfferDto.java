@@ -3,6 +3,9 @@ package com.skillbridge.dto;
 import com.skillbridge.security.Privacy;
 import com.skillbridge.model.AccountType;
 import com.skillbridge.model.EmploymentType;
+import com.skillbridge.model.EngagementModel;
+import com.skillbridge.model.JobPost;
+import com.skillbridge.model.JobShift;
 import com.skillbridge.model.JobOffer;
 import com.skillbridge.model.OfferStatus;
 import com.skillbridge.model.OfferType;
@@ -10,6 +13,7 @@ import com.skillbridge.model.SalaryUnit;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,19 +50,31 @@ public record OfferDto(
         String message,
         Double estimatedWorkerPay,
         Double platformFee,
-        Double estimatedEmployerTotal
+        Double estimatedEmployerTotal,
+        // What reaches the worker per unit: the offered rate less the commission. The worker
+        // screens show this; showing them `salary` promised money they would never get.
+        Double workerSalary,
+        // ---- the schedule, so the worker can see what they are agreeing to ----
+        EngagementModel engagementModel,
+        LocalDate startDate,
+        LocalDate endDate,
+        List<String> workingDays,
+        LocalTime startTime,
+        LocalTime endTime
 ) {
     /** {@code employerName} is the business name when there is one, else the account name. */
     public static OfferDto from(JobOffer o, String employerName) {
-        return from(o, employerName, null, null, null);
+        return from(o, employerName, null, null, null, null);
     }
 
     public static OfferDto from(JobOffer o, String employerName, Double workerPay,
-                                Double platformFee, Double employerTotal) {
+                                Double platformFee, Double employerTotal, Double workerSalary) {
         // Offers written before the offer type column existed fall back to the job's duration.
         OfferType offerType = o.getOfferType() != null ? o.getOfferType()
                 : (o.getApplication().getJob().getEngagementModel() != null
                         ? o.getApplication().getJob().getEngagementModel().offerType() : null);
+        JobPost job = o.getApplication().getJob();
+        JobShift shift = job.getShifts() == null || job.getShifts().isEmpty() ? null : job.getShifts().get(0);
         List<String> benefits = new ArrayList<>();
         if (o.getBenefits() != null) {
             o.getBenefits().forEach(b -> benefits.add(b.name()));
@@ -75,7 +91,10 @@ public record OfferDto(
                 o.getApplication().getJob().getId(),
                 offerType, offerLabel(offerType),
                 o.getRespondedAt(), o.getExpiresAt(), o.getWorkDate(), o.getProbationMonths(),
-                benefits, o.getMessage(), workerPay, platformFee, employerTotal);
+                benefits, o.getMessage(), workerPay, platformFee, employerTotal, workerSalary,
+                job.getEngagementModel(), job.getStartDate(), job.getEndDate(),
+                job.getWorkingDays() == null ? List.of() : List.copyOf(job.getWorkingDays()),
+                shift == null ? null : shift.getStartTime(), shift == null ? null : shift.getEndTime());
     }
 
     /** The plain-language name the offer screens print for the paperwork the offer carries. */

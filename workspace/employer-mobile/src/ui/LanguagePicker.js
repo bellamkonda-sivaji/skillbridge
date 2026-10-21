@@ -16,7 +16,10 @@ import { colors, radius, shadow, space, HIT } from '../theme'
  * The button shows the language's own name in its own script. Someone who reads
  * only Telugu can find "తెలుగు" without reading a word of anything else.
  */
-export default function LanguagePicker({ style }) {
+// Short enough for the corner of any header.
+const SHORT = { en: 'EN', te: 'తె', hi: 'हि' }
+
+export default function LanguagePicker({ style, compact = false }) {
   const { i18n } = useTranslation()
   const [open, setOpen] = useState(false)
 
@@ -37,7 +40,7 @@ export default function LanguagePicker({ style }) {
         style={({ pressed }) => [s.btn, pressed && { opacity: 0.7 }, style]}
       >
         <Ionicons name="language-outline" size={17} color={colors.blue} />
-        <Text style={s.label} numberOfLines={1}>{current.native}</Text>
+        <Text style={s.label} numberOfLines={1}>{compact ? (SHORT[current.code] || current.native) : current.native}</Text>
         <Ionicons name="chevron-down" size={14} color={colors.blue} />
       </Pressable>
 

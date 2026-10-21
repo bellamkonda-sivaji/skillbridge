@@ -9,6 +9,7 @@ import JobCard from '../../ui/JobCard'
 import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import LanguagePicker from '../../ui/LanguagePicker'
 
 const TABS = [
   { value: 'NEARBY', key: 'nearby' },
@@ -75,6 +76,7 @@ export default function FindJobs({ navigation, route }) {
             <Pressable onPress={() => navigation.navigate('SavedJobs')} hitSlop={10} style={s.iconBtn}>
               <Ionicons name="heart-outline" size={20} color={colors.blue} />
             </Pressable>
+            <LanguagePicker compact style={{ marginLeft: space.sm }} />
           </View>
         </View>
 

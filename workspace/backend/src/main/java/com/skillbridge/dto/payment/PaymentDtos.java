@@ -41,13 +41,20 @@ public final class PaymentDtos {
             String provider,
             String providerRef,
             LocalDateTime fundedAt,
-            LocalDateTime updatedAt
+            LocalDateTime updatedAt,
+            // What the job needs behind it: every hire already reserved plus the whole cost of
+            // the offers still waiting for an answer. The fund screen read this and got nothing.
+            long requiredMinor
     ) {
         public static EscrowDto from(JobEscrow e, String jobTitle) {
+            return from(e, jobTitle, e.getReservedMinor());
+        }
+
+        public static EscrowDto from(JobEscrow e, String jobTitle, long requiredMinor) {
             return new EscrowDto(e.getJobId(), jobTitle, e.getCurrency(), e.getFundedMinor(),
                     e.getReservedMinor(), e.getReleasedMinor(), e.getRefundedMinor(),
                     e.unreservedMinor(), e.getStatus(), e.getProvider(), e.getProviderRef(),
-                    e.getFundedAt(), e.getUpdatedAt());
+                    e.getFundedAt(), e.getUpdatedAt(), requiredMinor);
         }
     }
 

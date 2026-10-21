@@ -56,7 +56,13 @@ public class WorkerService {
         JobCardAssembler.CardContext context = assembler.contextFor(worker, profile);
         List<JobPost> openJobs = jobRepository.findByStatusOrderByPostedAtDesc(JobStatus.OPEN);
 
-        List<JobCardDto> recommended = assembler.sorted(assembler.cards(openJobs, context)).stream()
+        // "Work for you" is work they can reach. It listed every open job in the country, so a
+        // worker who said 3 km was shown jobs 200 km away. Their own radius first; only if
+        // nothing is that close, widen so the home screen is never empty.
+        List<JobPost> reachable = within(profile, openJobs, radiusOf(profile));
+        if (reachable.isEmpty()) reachable = within(profile, openJobs, WIDER_RADIUS_KM);
+        if (reachable.isEmpty()) reachable = openJobs;
+        List<JobCardDto> recommended = assembler.sorted(assembler.cards(reachable, context)).stream()
                 .limit(RECOMMENDED_LIMIT).toList();
 
         return new WorkerDashboardDto(
@@ -111,15 +117,27 @@ public class WorkerService {
     }
 
     private long jobsNearYou(WorkerProfile p, List<JobPost> openJobs) {
+        return within(p, openJobs, radiusOf(p)).size();
+    }
+
+    /** How far you can go to find work in a nearby town when nothing is within your own range. */
+    private static final double WIDER_RADIUS_KM = 50;
+
+    private double radiusOf(WorkerProfile p) {
+        return p != null && p.getPreferredRadiusKm() != null && p.getPreferredRadiusKm() > 0
+                ? p.getPreferredRadiusKm() : DEFAULT_RADIUS_KM;
+    }
+
+    /** Jobs inside the radius; everything when we do not know where they are. */
+    private List<JobPost> within(WorkerProfile p, List<JobPost> jobs, double radiusKm) {
         if (p == null || (p.getLatitude() == 0 && p.getLongitude() == 0)) {
-            return openJobs.size();
+            return jobs;
         }
-        double radius = p.getPreferredRadiusKm() != null ? p.getPreferredRadiusKm() : DEFAULT_RADIUS_KM;
-        return openJobs.stream().filter(j -> {
+        return jobs.stream().filter(j -> {
             Double d = geoService.distanceKmOrNull(p.getLatitude(), p.getLongitude(),
                     j.getLatitude(), j.getLongitude());
-            return d != null && d <= radius;
-        }).count();
+            return d != null && d <= radiusKm;
+        }).toList();
     }
 
     // ------------------------------------------------------------------ search

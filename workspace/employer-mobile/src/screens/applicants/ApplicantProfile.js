@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, Linking, ScrollView, StyleSheet, Text, View } from 'react-native'
+import React, { useCallback, useState } from 'react'
+import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Avatar, Badge, Body, Button, Card, ErrorNote, H3, KV, Loader, Row,
@@ -8,9 +9,13 @@ import {
 } from '../../ui'
 import Photo from '../../ui/Photo'
 import * as applicantsApi from '../../api/applicants'
+import * as offersApi from '../../api/offers'
+import * as teamApi from '../../api/team'
+import * as miscApi from '../../api/misc'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 import AskForCall from '../../ui/AskForCall'
+import { Dialog } from '../../ui/Dialog'
 
 /**
  * One worker, in full - including where they have worked before and what the
@@ -25,6 +30,9 @@ export default function ApplicantProfile({ navigation, route }) {
   const [tab, setTab] = useState('about')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState('')
+  const [offerId, setOfferId] = useState(null)
+  const [unfunded, setUnfunded] = useState(false)
+  const [fundJobId, setFundJobId] = useState(jobId)
 
   const load = useCallback(async () => {
     setError('')
@@ -35,23 +43,101 @@ export default function ApplicantProfile({ navigation, route }) {
       ])
       setWorker(w)
       setHistory(Array.isArray(h) ? h : h?.content || [])
+      // Once an offer exists, the footer leads to it, so find which one.
+      if (['OFFERED', 'ACCEPTED'].includes(w?.status) && applicationId) {
+        const offers = await offersApi.list('ALL').catch(() => [])
+        const list = Array.isArray(offers) ? offers : offers?.content || []
+        const mine = list.find((o) => o.applicationId === applicationId)
+        setOfferId(mine?.id ?? null)
+        // An offer on a job with no money behind it cannot be accepted - the
+        // worker is told to wait, so the owner needs to see it here.
+        const offerJob = jobId || mine?.jobId
+        if (w.status === 'OFFERED' && offerJob) {
+          // Same sum the server makes: the job's free money plus the wallet it tops up from.
+          const [e, wallet] = await Promise.all([
+            teamApi.escrow(offerJob).catch(() => null),
+            miscApi.wallet().catch(() => null),
+          ])
+          const free = (e?.unreservedMinor ?? 0) + Math.round(Number(wallet?.balance ?? 0) * 100)
+          // The whole engagement, not one day: requiredMinor already counts this offer in full.
+          setUnfunded(Boolean(e) && Boolean(mine) && free < (e.requiredMinor ?? 0) - (e.reservedMinor ?? 0))
+          setFundJobId(offerJob)
+        }
+      }
     } catch (err) {
       setError(errorText(err, 'We could not load this worker.'))
     }
-  }, [workerId, jobId])
+  }, [workerId, jobId, applicationId])
 
-  useEffect(() => { load() }, [load])
+  // Reload on return too: shortlisting, a decision or an offer all happen on
+  // other screens, and a stale status kept offering "Shortlist" forever.
+  useFocusEffect(useCallback(() => { load() }, [load]))
 
   const decide = async (status) => {
     if (!applicationId) return
     setBusy(status)
     try {
       await applicantsApi.decide(applicationId, { status })
-      Alert.alert('', status === 'SHORTLISTED' ? 'Shortlisted.' : 'Saved.')
+      Dialog.alert('', status === 'SHORTLISTED' ? 'Shortlisted.' : 'Saved.')
       load()
     } catch (err) {
-      Alert.alert('', errorText(err, 'We could not save that.'))
+      Dialog.alert('', errorText(err, 'We could not save that.'))
     } finally { setBusy('') }
+  }
+
+  const toDecision = () => navigation.navigate('ApplicationDecision', {
+    applicationId, workerId, jobId, workerName: worker.name, matchScore: worker.matchScore,
+    status: worker.status,
+  })
+
+  // What can happen next depends on where this application already is.
+  const footerFor = (status) => {
+    if (status === 'SHORTLISTED' || status === 'INTERVIEW_SCHEDULED') {
+      return (
+        <Row>
+          <Button title={t('applicants.nextStep')} tone="outline" style={{ flex: 1 }} onPress={toDecision} />
+          <Button title={t('applicants.sendOffer')} icon="send" tone="success" style={{ flex: 1 }}
+            onPress={() => navigation.navigate('CreateOffer', { applicationId, workerId, jobId })} />
+        </Row>
+      )
+    }
+    if (status === 'OFFERED' && unfunded) {
+      return (
+        <Button title={`Add money so ${worker.name?.split(' ')[0] || 'they'} can start`} icon="wallet-outline"
+          tone="warning" onPress={() => navigation.navigate('FundJob', { jobId: fundJobId, jobTitle: worker.jobTitle })} />
+      )
+    }
+    if (status === 'OFFERED') {
+      return (
+        <Button title="Offer sent · See offer" icon="paper-plane-outline"
+          onPress={() => (offerId
+            ? navigation.navigate('OfferStatusDetail', { offerId })
+            : navigation.navigate('OfferTracking'))} />
+      )
+    }
+    if (status === 'ACCEPTED') {
+      return (
+        <Button title="Hired · See joining" icon="checkmark-circle-outline" tone="success"
+          onPress={() => (offerId
+            ? navigation.navigate('JoiningConfirmation', { offerId })
+            : navigation.navigate('OfferTracking'))} />
+      )
+    }
+    if (status === 'REJECTED' || status === 'WITHDRAWN') {
+      return (
+        <Button disabled tone="quiet" icon="close-circle-outline"
+          title={status === 'REJECTED' ? 'You said no to this application' : 'The worker withdrew'} />
+      )
+    }
+    // Shortlisting is the common case, so it stays one tap. Anything else - a
+    // talk, an offer, a rejection with a message - goes through the decision screen.
+    return (
+      <Row>
+        <Button title={t('applicants.shortlistAction')} tone="outline" style={{ flex: 1 }}
+          loading={busy === 'SHORTLISTED'} onPress={() => decide('SHORTLISTED')} />
+        <Button title={t('applicants.nextStep')} style={{ flex: 1 }} onPress={toDecision} />
+      </Row>
+    )
   }
 
   if (!worker && !error) return <Screen scroll={false}><Loader /></Screen>
@@ -63,20 +149,7 @@ export default function ApplicantProfile({ navigation, route }) {
   return (
     <Screen
       padded={false}
-      footer={applicationId ? (
-        <Row>
-          {/* Shortlisting is the common case, so it stays one tap. Anything
-              else - a talk, an offer, a rejection with a message - goes
-              through the decision screen. */}
-          <Button title={t('applicants.shortlistAction')} tone="outline" style={{ flex: 1 }}
-            loading={busy === 'SHORTLISTED'} onPress={() => decide('SHORTLISTED')} />
-          <Button title={t('decision.title')} style={{ flex: 1 }}
-            onPress={() => navigation.navigate('ApplicationDecision', {
-              applicationId, workerId, jobId,
-              workerName: worker.name, matchScore: worker.matchScore,
-            })} />
-        </Row>
-      ) : null}
+      footer={applicationId ? footerFor(worker.status) : null}
     >
       <AppBar onBack={navigation.goBack} />
       <View style={{ paddingHorizontal: space.lg, paddingTop: space.lg }}>

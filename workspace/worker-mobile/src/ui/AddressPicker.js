@@ -54,7 +54,7 @@ export default function AddressPicker({ value, onChange, error }) {
     setLocating(true); setLocErr('')
     const got = await currentLocation()
     if (!got.ok) {
-      setLocErr(t(`business.loc_${got.reason}`))
+      setLocErr(t(`onboarding.loc_${got.reason}`))
       setLocating(false)
       return
     }

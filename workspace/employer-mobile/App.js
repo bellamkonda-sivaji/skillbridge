@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { I18nextProvider } from 'react-i18next'
 import i18n from './src/i18n'
 import { SessionProvider } from './src/session/SessionProvider'
+import { DialogHost } from './src/ui/Dialog'
 import RootNavigator from './src/navigation'
 
 /**
@@ -20,6 +21,7 @@ export default function App() {
         <SessionProvider>
           <StatusBar style="dark" />
           <RootNavigator />
+          <DialogHost />
         </SessionProvider>
       </I18nextProvider>
     </SafeAreaProvider>

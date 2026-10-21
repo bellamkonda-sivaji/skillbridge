@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
-import { Alert } from 'react-native'
+import { } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Button } from './index'
 import * as supportApi from '../api/support'
+import { Dialog } from './Dialog'
 
 /**
  * Asking the office to put the two sides in touch.
@@ -31,9 +32,9 @@ export default function AskForCall({ about, topic = 'WORK', tone = 'outline', st
         callBack: true,
       })
       setSent(true)
-      Alert.alert(t('callRequest.sentTitle'), t('callRequest.sentBody'))
+      Dialog.alert(t('callRequest.sentTitle'), t('callRequest.sentBody'))
     } catch {
-      Alert.alert(t('callRequest.failedTitle'), t('callRequest.failedBody'))
+      Dialog.alert(t('callRequest.failedTitle'), t('callRequest.failedBody'))
     } finally {
       setBusy(false)
     }

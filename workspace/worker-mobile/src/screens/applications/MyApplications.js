@@ -11,20 +11,25 @@ import * as appsApi from '../../api/applications'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 import { word } from '../../ui/words'
+import LanguagePicker from '../../ui/LanguagePicker'
 
 export const STATUS_TONE = {
   APPLIED: 'orange', PENDING: 'orange', VIEWED: 'blue', SHORTLISTED: 'violet',
   INTERVIEW: 'violet', INTERVIEW_SCHEDULED: 'violet', SELECTED: 'green',
-  OFFERED: 'green', HIRED: 'green', REJECTED: 'red', WITHDRAWN: 'grey',
+  OFFERED: 'green', ACCEPTED: 'green', HIRED: 'green', REJECTED: 'red', WITHDRAWN: 'grey',
 }
+
+// A booked talk is still "shortlisted" to the worker - it had no tab at all.
+const SHORTLIST_STATES = ['SHORTLISTED', 'INTERVIEW_SCHEDULED']
+const OFFER_STATES = ['SELECTED', 'OFFERED', 'ACCEPTED', 'HIRED']
 
 export const statusLabel = (status, t) => {
   const map = {
     APPLIED: t('applications.pending'), PENDING: t('applications.pending'),
     VIEWED: t('applications.pending'), SHORTLISTED: t('applications.shortlisted'),
     INTERVIEW: t('applications.interview'), INTERVIEW_SCHEDULED: t('applications.interview'),
-    SELECTED: t('applications.selected'), OFFERED: t('applications.selected'),
-    HIRED: t('applications.selected'), REJECTED: t('applications.rejected'),
+    SELECTED: t('applications.selected'), OFFERED: t('applications.offered'),
+    ACCEPTED: t('applications.hired'), HIRED: t('applications.hired'), REJECTED: t('applications.rejected'),
     WITHDRAWN: t('words.WITHDRAWN'),
   }
   // Anything this map has not met yet still has to read as words, not as a
@@ -56,9 +61,9 @@ export default function MyApplications({ navigation }) {
     if (!rows) return []
     if (tab === 'ALL') return rows
     if (tab === 'PENDING') return rows.filter((r) => ['APPLIED', 'PENDING', 'VIEWED'].includes(r.status))
-    if (tab === 'SHORTLISTED') return rows.filter((r) => r.status === 'SHORTLISTED')
+    if (tab === 'SHORTLISTED') return rows.filter((r) => SHORTLIST_STATES.includes(r.status))
     if (tab === 'INTERVIEW') return rows.filter((r) => String(r.status).startsWith('INTERVIEW'))
-    return rows.filter((r) => ['SELECTED', 'OFFERED', 'HIRED'].includes(r.status))
+    return rows.filter((r) => OFFER_STATES.includes(r.status))
   }, [rows, tab])
 
   const count = (fn) => (rows ? rows.filter(fn).length : 0)
@@ -72,13 +77,14 @@ export default function MyApplications({ navigation }) {
             <Ionicons name="mail-outline" size={17} color={colors.blue} />
             <Text style={s.offersText}>{t('offers.title')}</Text>
           </Pressable>
+          <LanguagePicker compact style={{ marginLeft: space.sm }} />
         </View>
         <SegTabs
           tabs={[
             { value: 'ALL', label: `${t('applications.all')} (${rows?.length || 0})` },
             { value: 'PENDING', label: `${t('applications.pending')} (${count((r) => ['APPLIED', 'PENDING', 'VIEWED'].includes(r.status))})` },
-            { value: 'SHORTLISTED', label: `${t('applications.shortlisted')} (${count((r) => r.status === 'SHORTLISTED')})` },
-            { value: 'SELECTED', label: `${t('applications.selected')} (${count((r) => ['SELECTED', 'OFFERED', 'HIRED'].includes(r.status))})` },
+            { value: 'SHORTLISTED', label: `${t('applications.shortlisted')} (${count((r) => SHORTLIST_STATES.includes(r.status))})` },
+            { value: 'SELECTED', label: `${t('applications.selected')} (${count((r) => OFFER_STATES.includes(r.status))})` },
           ]}
           value={tab}
           onChange={setTab}

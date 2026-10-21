@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, Linking, StyleSheet, Text, View } from 'react-native'
+import { Linking, StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
@@ -11,6 +11,7 @@ import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 import { word } from '../../ui/words'
 import AskForCall from '../../ui/AskForCall'
+import { Dialog } from '../../ui/Dialog'
 
 const TONE = { PENDING: 'orange', SENT: 'orange', ACCEPTED: 'green', DECLINED: 'red', CANCELLED: 'grey' }
 
@@ -39,7 +40,7 @@ export default function OfferStatusDetail({ navigation, route }) {
   useEffect(() => { load() }, [load])
 
   const cancel = () => {
-    Alert.alert(t('offers.cancelOffer'), t('offers.cancelAsk'), [
+    Dialog.alert(t('offers.cancelOffer'), t('offers.cancelAsk'), [
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('offers.cancelOffer'),
@@ -47,7 +48,7 @@ export default function OfferStatusDetail({ navigation, route }) {
         onPress: async () => {
           setBusy(true)
           try { await offersApi.cancel(offerId); await load() } catch (err) {
-            Alert.alert('', errorText(err))
+            Dialog.alert('', errorText(err))
           } finally { setBusy(false) }
         },
       },

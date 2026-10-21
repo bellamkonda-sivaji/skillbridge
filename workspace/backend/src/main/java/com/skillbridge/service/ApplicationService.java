@@ -2,6 +2,8 @@ package com.skillbridge.service;
 
 import com.skillbridge.dto.*;
 import com.skillbridge.exception.ApiException;
+import com.skillbridge.exception.FundsNeededException;
+import com.skillbridge.service.payment.Money;
 import com.skillbridge.model.*;
 import com.skillbridge.repository.*;
 import com.skillbridge.service.payment.EscrowService;
@@ -37,6 +39,8 @@ public class ApplicationService {
     private final MatchingService matchingService;
     private final AccountDirectory accountDirectory;
     private final EmploymentService employmentService;
+    private final PricingService pricingService;
+    private final EngagementCost engagementCost;
 
     public ApplicationService(JobApplicationRepository applicationRepository, JobOfferRepository offerRepository,
                               JobPostRepository jobRepository, WorkerProfileRepository workerProfileRepository,
@@ -44,7 +48,8 @@ public class ApplicationService {
                               NotificationService notificationService, WalletService walletService,
                               EscrowService escrowService,
                               MatchingService matchingService, AccountDirectory accountDirectory,
-                              EmploymentService employmentService) {
+                              EmploymentService employmentService, PricingService pricingService,
+                              EngagementCost engagementCost) {
         this.applicationRepository = applicationRepository;
         this.offerRepository = offerRepository;
         this.jobRepository = jobRepository;
@@ -57,6 +62,8 @@ public class ApplicationService {
         this.matchingService = matchingService;
         this.accountDirectory = accountDirectory;
         this.employmentService = employmentService;
+        this.pricingService = pricingService;
+        this.engagementCost = engagementCost;
     }
 
     // ------------------------------------------------------------------ worker side
@@ -131,12 +138,24 @@ public class ApplicationService {
         return toOfferDto(requireWorkerOffer(worker, offerId));
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = FundsNeededException.class)
     public OfferDto acceptOffer(WorkerAccount worker, Long offerId) {
         JobOffer offer = requireWorkerOffer(worker, offerId);
         if (!offer.getStatus().isOpen()) {
             throw ApiException.badRequest("This offer has already been "
                     + offer.getStatus().name().toLowerCase());
+        }
+        // Checked before anything changes. The worker cannot fund a job, so they are told what
+        // is happening in their terms, and the shop owner is the one asked to add the money.
+        JobPost offerJob = offer.getApplication().getJob();
+        long totalMinor = engagementCost.totalMinor(offer);
+        if (escrowService.coverMinor(offerJob.getId(), offerJob.getEmployer().getId()) < totalMinor) {
+            notificationService.notify(offerJob.getEmployer(), "Add money to hire " + worker.getName(),
+                    worker.getName() + " wants to accept your offer for \"" + offerJob.getTitle()
+                            + "\", but the job has no money behind it yet. Add money so they can start.",
+                    NotificationType.APPLICATION, "/employer/applications");
+            throw new FundsNeededException("The shop has not added the money for this work yet. "
+                    + "We have asked them to add it. You will get a message when you can accept.");
         }
         offer.setStatus(OfferStatus.ACCEPTED);
         offer.setRespondedAt(LocalDateTime.now());
@@ -149,7 +168,7 @@ public class ApplicationService {
         // slipped through. If neither the job's escrow nor the employer's wallet covers it,
         // this throws 400 telling the employer to fund the job - and the whole acceptance
         // rolls back, rather than leaving an employment with no money behind it.
-        escrowService.reserve(employment, "WORKER", worker.getId());
+        escrowService.reserve(employment, totalMinor, "WORKER", worker.getId());
         notificationService.notify(offer.getApplication().getJob().getEmployer(), "Offer accepted",
                 worker.getName() + " accepted your offer for \""
                         + offer.getApplication().getJob().getTitle() + "\"",
@@ -399,7 +418,11 @@ public class ApplicationService {
 
     public OfferDto toOfferDto(JobOffer offer) {
         Long employerId = offer.getApplication().getJob().getEmployer().getId();
-        return OfferDto.from(offer, accountDirectory.displayNameOf(AccountType.EMPLOYER, employerId));
+        // The whole engagement as well as the rate, so the worker sees what the work adds up to.
+        double total = engagementCost.totalMinor(offer) / 100d;
+        double fee = Math.round(total * pricingService.feePercent(offer.getSalary()) / 100d);
+        return OfferDto.from(offer, accountDirectory.displayNameOf(AccountType.EMPLOYER, employerId),
+                total - fee, fee, total, pricingService.takeHome(offer.getSalary()));
     }
 
     // ------------------------------------------------------------------ helpers

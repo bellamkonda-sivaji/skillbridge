@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import { Alert, FlatList, StyleSheet, View } from 'react-native'
+import { FlatList, StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useFocusEffect } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -10,6 +10,7 @@ import ApplicantCard from './ApplicantCard'
 import * as applicantsApi from '../../api/applicants'
 import { errorText } from '../../api/client'
 import { colors, space } from '../../theme'
+import { Dialog } from '../../ui/Dialog'
 
 /**
  * The shortlist for one job, with actions that apply to everyone chosen.
@@ -54,7 +55,7 @@ export default function Shortlist({ navigation, route }) {
       setPicked([])
       await load()
     } catch (err) {
-      Alert.alert('', errorText(err, 'We could not update those.'))
+      Dialog.alert('', errorText(err, 'We could not update those.'))
     } finally { setBusy('') }
   }
 
@@ -109,6 +110,7 @@ export default function Shortlist({ navigation, route }) {
               onPress={() => navigation.navigate('ScheduleInterview', {
                 applicationId: (rows.find((r) => r.workerId === picked[0]) || {}).applicationId,
                 workerName: (rows.find((r) => r.workerId === picked[0]) || {}).workerName,
+                workerId: picked[0],
                 jobId,
               })} />
           </Row>

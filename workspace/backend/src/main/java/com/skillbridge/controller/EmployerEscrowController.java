@@ -8,6 +8,8 @@ import com.skillbridge.model.money.JobEscrow;
 import com.skillbridge.model.money.LedgerAccountType;
 import com.skillbridge.repository.JobEscrowRepository;
 import com.skillbridge.repository.JobPostRepository;
+import com.skillbridge.repository.JobOfferRepository;
+import com.skillbridge.service.EngagementCost;
 import com.skillbridge.security.AuthenticationUtils;
 import com.skillbridge.service.WalletService;
 import com.skillbridge.service.payment.EscrowService;
@@ -34,10 +36,15 @@ public class EmployerEscrowController {
     private final JobPostRepository jobs;
     private final JobEscrowRepository escrows;
     private final WalletService wallets;
+    private final JobOfferRepository offers;
+    private final EngagementCost engagementCost;
 
     public EmployerEscrowController(EscrowService escrow, RazorpayPaymentService payments,
                                     JobPostRepository jobs, JobEscrowRepository escrows,
-                                    WalletService wallets) {
+                                    WalletService wallets, JobOfferRepository offers,
+                                    EngagementCost engagementCost) {
+        this.offers = offers;
+        this.engagementCost = engagementCost;
         this.escrow = escrow;
         this.payments = payments;
         this.jobs = jobs;
@@ -57,7 +64,11 @@ public class EmployerEscrowController {
     @GetMapping("/jobs/{id}/escrow")
     public EscrowDto escrow(@PathVariable Long id) {
         JobPost job = ownedJob(id);
-        return EscrowDto.from(escrow.escrowOrEmpty(id), job.getTitle());
+        JobEscrow e = escrow.escrowOrEmpty(id);
+        long waiting = offers.findByEmployerId(job.getEmployer().getId()).stream()
+                .filter(o -> o.getApplication().getJob().getId().equals(id) && o.getStatus().isOpen())
+                .mapToLong(engagementCost::totalMinor).sum();
+        return EscrowDto.from(e, job.getTitle(), e.getReservedMinor() + waiting);
     }
 
     @PostMapping("/jobs/{id}/escrow/order")

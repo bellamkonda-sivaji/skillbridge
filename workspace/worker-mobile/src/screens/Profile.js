@@ -1,6 +1,6 @@
 import * as ImagePicker from 'expo-image-picker'
 import React, { useCallback, useState } from 'react'
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
@@ -14,6 +14,8 @@ import * as jobsApi from '../api/jobs'
 import { errorText } from '../api/client'
 import { useSession } from '../session/SessionProvider'
 import { colors, radius, space } from '../theme'
+import { Dialog } from '../ui/Dialog'
+import LanguagePicker from '../ui/LanguagePicker'
 
 /** The account screen: who they are, and the way out. */
 export default function Profile({ navigation }) {
@@ -53,7 +55,7 @@ export default function Profile({ navigation }) {
   }
 
   const confirmLogout = () => {
-    Alert.alert(t('profile.logoutAsk'), '', [
+    Dialog.alert(t('profile.logoutAsk'), '', [
       { text: t('common.cancel'), style: 'cancel' },
       { text: t('profile.logout'), style: 'destructive', onPress: signOut },
     ])
@@ -84,6 +86,7 @@ export default function Profile({ navigation }) {
   return (
     <Screen padded={false}>
       <View style={s.header}>
+        <View style={{ alignItems: 'flex-end', marginBottom: space.sm }}><LanguagePicker compact /></View>
         <Row>
           {/* Changing the picture should not mean going back through
               onboarding, which is where it used to be the only option. */}

@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Badge, Body, Button, Card, ErrorNote, H3, Loader, Row, Screen, Small,
@@ -30,7 +31,7 @@ export default function ApplicationDetails({ navigation, route }) {
     }
   }, [id])
 
-  useEffect(() => { load() }, [load])
+  useFocusEffect(useCallback(() => { load() }, [load]))
 
   if (!item && !error) return <Screen scroll={false}><Loader /></Screen>
   if (!item) {
@@ -39,35 +40,37 @@ export default function ApplicationDetails({ navigation, route }) {
   }
 
   const job = item.job || item
-  const canWithdraw = !['WITHDRAWN', 'REJECTED', 'HIRED'].includes(item.status)
+  // The server says whether this can still be withdrawn; it knows about
+  // offers and hires, which a status list here kept getting wrong.
+  const canWithdraw = item.canWithdraw ?? !['WITHDRAWN', 'REJECTED', 'ACCEPTED'].includes(item.status)
+  const offer = item.offer && item.offer.status === 'PENDING' ? item.offer : null
+  const openOffer = () => navigation.navigate('OfferDetails', { id: offer.id })
 
-  const steps = [
-    { key: 'applied', label: t('applications.timelineApplied'), at: item.appliedAt, done: true },
-    { key: 'viewed', label: t('applications.timelineViewed'), at: item.viewedAt, done: Boolean(item.viewedAt) },
-    {
-      key: 'shortlisted',
-      label: t('applications.timelineShortlisted'),
-      at: item.shortlistedAt,
-      done: Boolean(item.shortlistedAt) || ['SHORTLISTED', 'INTERVIEW', 'SELECTED', 'HIRED'].includes(item.status),
-    },
-    {
-      key: 'interview',
-      label: t('applications.timelineInterview'),
-      at: item.interviewAt,
-      done: Boolean(item.interviewAt),
-    },
-    {
-      key: 'decision',
-      label: t('applications.timelineDecision'),
-      at: item.decidedAt,
-      done: ['SELECTED', 'OFFERED', 'HIRED', 'REJECTED'].includes(item.status),
-    },
-  ]
+  // The server keeps the real history (when they viewed, shortlisted, ...).
+  // Working it out here from fields that were never sent left steps unticked
+  // after they had happened, and ticked "Final answer" with nothing under it.
+  const LABEL = {
+    APPLIED: 'timelineApplied', VIEWED: 'timelineViewed', SHORTLISTED: 'timelineShortlisted',
+    INTERVIEW: 'timelineInterview', DECISION: 'timelineDecision',
+  }
+  const raw = item.timeline || []
+  const steps = raw.map((st, i) => ({
+    key: st.key,
+    label: LABEL[st.key] ? t(`applications.${LABEL[st.key]}`) : st.label,
+    at: st.at,
+    note: st.note,
+    done: st.state === 'DONE',
+    current: st.state === 'CURRENT',
+    // A talk the shop owner went past (straight to an offer) is not still coming.
+    skipped: st.state === 'PENDING' && raw.slice(i + 1).some((x) => x.state !== 'PENDING'),
+  }))
 
   return (
     <Screen
       padded={false}
-      footer={canWithdraw ? (
+      footer={offer ? (
+        <Button title={t('applications.offerReply')} tone="success" icon="mail-open-outline" onPress={openOffer} />
+      ) : canWithdraw ? (
         <Button
           title={t('applications.withdraw')}
           tone="dangerQuiet"
@@ -91,28 +94,51 @@ export default function ApplicationDetails({ navigation, route }) {
           </Row>
         </Card>
 
+        {offer ? (
+          <Card style={s.offer} onPress={openOffer}>
+            <Row gap={space.sm}>
+              <Text style={{ fontSize: 26 }}>🎉</Text>
+              <Text style={s.offerTitle}>{t('applications.offerWaiting')}</Text>
+            </Row>
+            <Row style={{ marginTop: space.md }}>
+              <View style={{ flex: 1 }}>
+                <Small>{t('applications.youGet')}</Small>
+                <Text style={s.offerPay}>{pay(offer.workerSalary ?? offer.salary, offer.salaryUnit)}</Text>
+              </View>
+              {offer.joiningDate || offer.workDate ? (
+                <View style={{ flex: 1 }}>
+                  <Small>{t('applications.starts')}</Small>
+                  <Text style={s.offerPay}>{formatDate(offer.workDate || offer.joiningDate)}</Text>
+                </View>
+              ) : null}
+            </Row>
+          </Card>
+        ) : null}
+
         <H3 style={{ marginTop: space.xl, marginBottom: space.md }}>Progress</H3>
         <View>
           {steps.map((step, i) => (
             <Row key={step.key} align="flex-start" gap={space.md}>
               <View style={{ alignItems: 'center' }}>
-                <View style={[s.dot, step.done && s.dotOn]}>
+                <View style={[s.dot, step.done && s.dotOn, step.current && s.dotNow]}>
                   {step.done ? <Ionicons name="checkmark" size={13} color={colors.white} /> : null}
+                  {step.current ? <View style={s.dotNowInner} /> : null}
                 </View>
                 {i < steps.length - 1 ? <View style={[s.line, step.done && s.lineOn]} /> : null}
               </View>
               <View style={{ flex: 1, paddingBottom: space.lg }}>
-                <Text style={[s.stepLabel, !step.done && { color: colors.muted }]}>{step.label}</Text>
-                <Small style={{ marginTop: 2 }}>
-                  {step.at ? formatDate(step.at, true)
-                    : step.done ? '' : t('applications.willTell')}
-                </Small>
+                <Text style={[s.stepLabel, !step.done && !step.current && { color: colors.muted }]}>{step.label}</Text>
+                {step.at ? <Small style={{ marginTop: 2 }}>{formatDate(step.at, true)}</Small> : null}
+                {step.skipped ? <Small style={{ marginTop: 2 }}>{t('applications.skipped')}</Small>
+                  : step.note && !step.done ? (
+                    <Small style={[{ marginTop: 2 }, step.current && { color: colors.body }]}>{step.note}</Small>
+                  ) : null}
               </View>
             </Row>
           ))}
         </View>
 
-        {!['SELECTED', 'OFFERED', 'HIRED', 'REJECTED'].includes(item.status) ? (
+        {['APPLIED', 'VIEWED', 'SHORTLISTED', 'INTERVIEW_SCHEDULED'].includes(item.status) ? (
           <Card style={s.waiting}>
             <Row gap={space.sm}>
               <Ionicons name="time-outline" size={19} color={colors.orangeText} />
@@ -140,6 +166,11 @@ const s = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   dotOn: { backgroundColor: colors.green },
+  dotNow: { backgroundColor: colors.white, borderWidth: 2, borderColor: colors.blue },
+  dotNowInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.blue },
+  offer: { marginTop: space.lg, backgroundColor: colors.greenSoft || '#ECFDF5', borderColor: colors.green, borderWidth: 2 },
+  offerTitle: { flex: 1, fontSize: 17, fontWeight: '800', color: colors.greenText },
+  offerPay: { fontSize: 17, fontWeight: '800', color: colors.ink, marginTop: 2 },
   line: { width: 2, flex: 1, minHeight: 26, backgroundColor: colors.line },
   lineOn: { backgroundColor: colors.greenLine },
   stepLabel: { fontSize: 15, fontWeight: '700', color: colors.ink },

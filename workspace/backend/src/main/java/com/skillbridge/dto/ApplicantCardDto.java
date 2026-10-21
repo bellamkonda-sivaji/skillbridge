@@ -31,5 +31,9 @@ public record ApplicantCardDto(
         List<String> skills,
         double expectedSalary,
         SalaryUnit salaryUnit,
-        String photoUrl
+        String photoUrl,
+        // The job this card is about. `jobTitle` above is the worker's own title, so a
+        // dashboard row could not say which job, or open the right application.
+        Long jobId,
+        String jobName
 ) {}

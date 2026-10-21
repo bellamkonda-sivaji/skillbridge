@@ -17,8 +17,9 @@ const RESEND_SECONDS = 30
  * Six boxes rather than one field, because that is what an SMS code looks like
  * everywhere else and it makes a mistyped digit obvious at a glance.
  *
- * Typing moves forward automatically and backspace moves back, so nobody has
- * to aim at a 40px box to correct one digit.
+ * The boxes only show the code. One hidden field underneath holds it, so a
+ * pasted or SMS-filled code, or quick typing, arrives whole - six separate
+ * fields raced each other and dropped digits.
  */
 export default function Otp({ navigation, route }) {
   const { t } = useTranslation()
@@ -26,11 +27,11 @@ export default function Otp({ navigation, route }) {
   const phone = route?.params?.phone || ''
   const password = route?.params?.password
 
-  const [digits, setDigits] = useState(Array(LENGTH).fill(''))
+  const [code, setCode] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [seconds, setSeconds] = useState(RESEND_SECONDS)
-  const inputs = useRef([])
+  const input = useRef(null)
 
   useEffect(() => {
     if (seconds <= 0) return undefined
@@ -43,24 +44,11 @@ export default function Otp({ navigation, route }) {
     if (phone) authApi.requestOtp(phone).catch(() => { /* the resend button covers this */ })
   }, [phone])
 
-  const setDigit = (index, value) => {
-    const clean = value.replace(/\D/g, '').slice(-1)
+  const onCode = (value) => {
     setError('')
-    setDigits((prev) => {
-      const next = [...prev]
-      next[index] = clean
-      return next
-    })
-    if (clean && index < LENGTH - 1) inputs.current[index + 1]?.focus()
+    setCode(value.replace(/\D/g, '').slice(0, LENGTH))
   }
 
-  const onKeyPress = (index) => ({ nativeEvent }) => {
-    if (nativeEvent.key === 'Backspace' && !digits[index] && index > 0) {
-      inputs.current[index - 1]?.focus()
-    }
-  }
-
-  const code = digits.join('')
 
   const verify = async () => {
     if (code.length !== LENGTH) { setError(t('otp.wrong')); return }
@@ -107,21 +95,24 @@ export default function Otp({ navigation, route }) {
         <ErrorNote>{error}</ErrorNote>
 
         <View style={s.boxes}>
-          {digits.map((d, i) => (
-            <TextInput
-              key={i}
-              ref={(el) => { inputs.current[i] = el }}
-              value={d}
-              onChangeText={(v) => setDigit(i, v)}
-              onKeyPress={onKeyPress(i)}
-              keyboardType="number-pad"
-              maxLength={1}
-              style={[s.box, d && s.boxFilled]}
-              textAlign="center"
-              autoFocus={i === 0}
-              accessibilityLabel={`Digit ${i + 1}`}
-            />
+          {Array.from({ length: LENGTH }, (_, i) => (
+            <View key={i} style={[s.box, code[i] && s.boxFilled]} accessibilityLabel={`Digit ${i + 1}`}>
+              <Text style={s.digit}>{code[i] || ''}</Text>
+            </View>
           ))}
+          <TextInput
+            ref={input}
+            value={code}
+            onChangeText={onCode}
+            keyboardType="number-pad"
+            maxLength={LENGTH}
+            autoFocus
+            autoComplete="sms-otp"
+            textContentType="oneTimeCode"
+            caretHidden
+            style={s.hidden}
+            accessibilityLabel="Code"
+          />
         </View>
 
         <View style={s.resendRow}>
@@ -150,8 +141,10 @@ const s = StyleSheet.create({
   boxes: { flexDirection: 'row', gap: space.sm, justifyContent: 'center' },
   box: {
     width: 48, height: 58, borderRadius: radius.md, borderWidth: 2, borderColor: colors.line,
-    fontSize: 24, fontWeight: '800', color: colors.ink, backgroundColor: colors.white,
+    alignItems: 'center', justifyContent: 'center', backgroundColor: colors.white,
   },
+  digit: { fontSize: 24, fontWeight: '800', color: colors.ink },
+  hidden: { ...StyleSheet.absoluteFill, opacity: 0 },
   boxFilled: { borderColor: colors.blue, backgroundColor: colors.blueSoft },
   resendRow: { alignItems: 'center', marginTop: space.lg },
   resend: { fontSize: 14, fontWeight: '700', color: colors.blue },

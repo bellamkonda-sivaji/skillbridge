@@ -17,6 +17,11 @@ import { colors, space } from '../../theme'
  * and pressing send. The split is shown again here because this is the moment
  * the money becomes a promise to a named person.
  */
+const toDmy = (isoDate) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate || '')
+  return m ? `${m[3]} / ${m[2]} / ${m[1]}` : ''
+}
+
 export default function CreateOffer({ navigation, route }) {
   const { t } = useTranslation()
   const { applicationId } = route?.params || {}
@@ -32,7 +37,9 @@ export default function CreateOffer({ navigation, route }) {
         setForm((f) => ({
           ...f,
           salary: String(d.salary ?? d.suggestedSalary ?? ''),
-          joiningDate: d.joiningDate || '',
+          // The server suggests 2026-10-20; the box is DD / MM / YYYY. It read
+          // a joiningDate field that does not exist, so it always started empty.
+          joiningDate: toDmy(d.suggestedJoiningDate || d.workDate || d.startDate),
           benefits: (d.benefits || []).map((b) => b.benefitType || b),
         }))
       })
@@ -63,6 +70,7 @@ export default function CreateOffer({ navigation, route }) {
     if (!(Number(form.salary) > 0)) { setError('Enter what you will pay.'); return }
     navigation.navigate('OfferPreview', {
       applicationId,
+      jobId: draft.jobId,
       workerName: draft.workerName,
       jobTitle: draft.jobTitle,
       draft: {

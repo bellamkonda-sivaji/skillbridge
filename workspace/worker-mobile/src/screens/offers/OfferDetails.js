@@ -1,14 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Alert, StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Badge, Body, Button, Card, ErrorNote, H3, KV, Loader, Row, Screen,
-  Small, Spacer, formatDate, hhmm, money,
+  Small, Spacer, formatDate, hhmm, money, pay,
 } from '../../ui'
+import { EMPLOYMENT_TYPES } from '../../ui/catalog'
 import * as offersApi from '../../api/offers'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { Dialog } from '../../ui/Dialog'
 
 /**
  * The full offer, and the two buttons that answer it.
@@ -18,8 +20,21 @@ import { colors, radius, space } from '../../theme'
  * monthly salary and trial period. Same screen, different facts - the worker
  * should not have to learn two layouts.
  */
+const DAY = { MON: 'Mon', TUE: 'Tue', WED: 'Wed', THU: 'Thu', FRI: 'Fri', SAT: 'Sat', SUN: 'Sun' }
+const ORDER = Object.keys(DAY)
+
+/** ["MON".."SAT"] -> "Mon – Sat"; a broken run is listed. */
+function daysLabel(days) {
+  if (!days?.length) return null
+  const idx = days.map((d) => ORDER.indexOf(d)).filter((i) => i >= 0).sort((a, b) => a - b)
+  const run = idx.every((v, i) => i === 0 || v === idx[i - 1] + 1)
+  return run && idx.length > 2 ? `${DAY[ORDER[idx[0]]]} – ${DAY[ORDER[idx[idx.length - 1]]]}`
+    : idx.map((i) => DAY[ORDER[i]]).join(', ')
+}
+
 export default function OfferDetails({ navigation, route }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const lang = i18n.language || 'en'
   const id = route?.params?.id
   const [offer, setOffer] = useState(null)
   const [error, setError] = useState('')
@@ -40,19 +55,25 @@ export default function OfferDetails({ navigation, route }) {
       await offersApi.acceptOffer(id)
       navigation.replace('OfferAccepted', { id })
     } catch (err) {
-      Alert.alert('', errorText(err, 'We could not accept this offer.'))
+      const message = errorText(err, 'We could not accept this offer.')
+      // Nothing the worker did wrong - the shop has to add the money first.
+      if (/has not added the money/i.test(message)) {
+        Dialog.alert('Waiting for the shop', message, [{ text: 'OK, got it' }], { tone: 'info' })
+      } else {
+        Dialog.alert('', message)
+      }
     } finally { setBusy(false) }
   }
 
   const decline = () => {
-    Alert.alert(t('offers.decline'), t('applications.withdrawAsk'), [
+    Dialog.alert(t('offers.decline'), t('applications.withdrawAsk'), [
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('offers.decline'),
         style: 'destructive',
         onPress: async () => {
           try { await offersApi.declineOffer(id); navigation.goBack() } catch (err) {
-            Alert.alert('', errorText(err))
+            Dialog.alert('', errorText(err))
           }
         },
       },
@@ -65,9 +86,13 @@ export default function OfferDetails({ navigation, route }) {
       <View style={{ padding: space.lg }}><ErrorNote onRetry={load}>{error}</ErrorNote></View></Screen>
   }
 
-  const oneDay = offer.offerType === 'ONE_DAY' || offer.engagementModel === 'ONE_DAY'
+  const oneDay = offer.engagementModel === 'ONE_DAY' || offer.offerType === 'ONE_DAY'
   const open = ['PENDING', 'SENT'].includes(offer.status)
+  // What actually reaches them, in the offer's own unit. This used to print
+  // the shop's price with "/month" on a daily job.
   const takeHome = offer.workerSalary ?? offer.salary
+  const length = EMPLOYMENT_TYPES.find((e) => e.value === offer.engagementModel)
+  const hours = offer.startTime ? `${hhmm(offer.startTime)} – ${hhmm(offer.endTime)}` : null
 
   return (
     <Screen
@@ -84,43 +109,40 @@ export default function OfferDetails({ navigation, route }) {
         <Row align="flex-start">
           <View style={s.logo}><Ionicons name="storefront" size={24} color={colors.blue} /></View>
           <View style={{ flex: 1 }}>
-            <Text style={s.biz}>{offer.businessName}</Text>
-            <Small style={{ marginTop: 2 }}>{[offer.area, offer.city].filter(Boolean).join(', ')}</Small>
-            <Badge label={oneDay ? t('work.oneDay') : t('work.permanent')} tone="violet"
-              style={{ marginTop: 7 }} />
+            <Text style={s.biz}>{offer.jobTitle}</Text>
+            <Small style={{ marginTop: 2 }}>{offer.employerName}</Small>
+            {length ? (
+              <Badge label={length[lang] || length.en} tone="violet" style={{ marginTop: 7, alignSelf: 'flex-start' }} />
+            ) : null}
           </View>
         </Row>
 
         <Card style={s.payCard}>
           <Small style={{ color: colors.greenText }}>{t('jobs.youGet')}</Small>
-          <Text style={s.payBig}>
-            {money(takeHome)}{oneDay ? ` ${t('common.perDay')}` : ` ${t('common.perMonth')}`}
-          </Text>
+          <Text style={s.payBig}>{pay(takeHome, offer.salaryUnit)}</Text>
+          {offer.estimatedWorkerPay ? (
+            <Small style={{ color: colors.greenText, marginTop: 4 }}>
+              {`About ${money(offer.estimatedWorkerPay)} for the whole work`}
+            </Small>
+          ) : null}
         </Card>
 
         <H3 style={{ marginTop: space.xl, marginBottom: space.sm }}>{t('offers.jobDetails')}</H3>
         <Card>
-          <KV k={t('applications.detailsTitle')} v={offer.jobTitle} />
           {oneDay ? (
-            <>
-              <KV k={t('offers.workDate')} v={formatDate(offer.workDate)} />
-              <KV k={t('offers.workTime')}
-                v={offer.startTime ? `${hhmm(offer.startTime)} – ${hhmm(offer.endTime)}` : '—'} />
-              {offer.breakMinutes ? <KV k={t('offers.breakTime')} v={`${offer.breakMinutes} min`} /> : null}
-            </>
+            <KV k={t('offers.workDate')} v={formatDate(offer.workDate || offer.joiningDate)} />
           ) : (
             <>
-              <KV k={t('offers.joining')} v={formatDate(offer.joiningDate)} />
+              <KV k={t('offers.joining')} v={formatDate(offer.joiningDate || offer.startDate)} />
+              {offer.endDate ? <KV k="Last day" v={formatDate(offer.endDate)} /> : null}
               {offer.probationMonths ? (
                 <KV k={t('myWork.probation')} v={`${offer.probationMonths} months`} />
               ) : null}
-              {offer.workingDays ? <KV k={t('myWork.workingDays')} v={offer.workingDays} /> : null}
-              {offer.startTime ? (
-                <KV k={t('myWork.workingHours')} v={`${hhmm(offer.startTime)} – ${hhmm(offer.endTime)}`} />
-              ) : null}
             </>
           )}
-          <KV k={t('jobs.location')} v={offer.workLocation || offer.city} />
+          {daysLabel(offer.workingDays) ? <KV k={t('myWork.workingDays')} v={daysLabel(offer.workingDays)} /> : null}
+          {hours ? <KV k={t('myWork.workingHours')} v={hours} /> : null}
+          <KV k={t('jobs.location')} v={offer.workLocation} />
         </Card>
 
         {offer.benefits?.length ? (
