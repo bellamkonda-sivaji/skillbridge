@@ -2,6 +2,8 @@ package com.skillbridge.service;
 
 import com.skillbridge.dto.OtpChallengeResponse;
 import com.skillbridge.exception.ApiException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class OtpService {
 
+    private static final Logger log = LoggerFactory.getLogger(OtpService.class);
+
     private final OtpSender otpSender;
     private final int length;
     private final int ttlSeconds;
@@ -26,6 +30,8 @@ public class OtpService {
     private final boolean exposeCode;
     /** Store-review accounts: a fixed code for a few listed numbers, never for anyone else. */
     private final Map<String, String> reviewCodes;
+    /** Demo mode: one code for every number, and no SMS. Blank (the default) turns it off. */
+    private final String fixedCode;
 
     private final Map<String, Challenge> challenges = new ConcurrentHashMap<>();
     private final SecureRandom random = new SecureRandom();
@@ -36,7 +42,8 @@ public class OtpService {
                       @Value("${skillbridge.otp.resend-after-seconds:30}") int resendAfterSeconds,
                       @Value("${skillbridge.otp.max-attempts:5}") int maxAttempts,
                       @Value("${skillbridge.otp.expose-code:false}") boolean exposeCode,
-                      @Value("${skillbridge.otp.review-logins:}") String reviewLogins) {
+                      @Value("${skillbridge.otp.review-logins:}") String reviewLogins,
+                      @Value("${skillbridge.otp.fixed-code:}") String fixedCode) {
         this.otpSender = otpSender;
         this.length = length;
         this.ttlSeconds = ttlSeconds;
@@ -44,6 +51,12 @@ public class OtpService {
         this.maxAttempts = maxAttempts;
         this.exposeCode = exposeCode;
         this.reviewCodes = parseReviewLogins(reviewLogins);
+        String fixed = fixedCode == null ? "" : fixedCode.trim();
+        this.fixedCode = fixed.matches("\\d{4,8}") ? fixed : null;
+        if (this.fixedCode != null) {
+            log.warn("OTP demo mode is ON: every number accepts the fixed code and no SMS is sent. "
+                    + "Unset OTP_FIXED_CODE before real users sign up.");
+        }
     }
 
     /** "9000000001:123456,9000000002:654321" - the last 10 digits of each number, and its code. */
@@ -99,10 +112,11 @@ public class OtpService {
         }
 
         String reviewCode = reviewCodes.get(lastTen(key));
-        String code = reviewCode != null ? reviewCode : generateCode();
+        String fixed = reviewCode != null ? reviewCode : fixedCode;
+        String code = fixed != null ? fixed : generateCode();
         challenges.put(key, new Challenge(code, now.plusSeconds(ttlSeconds), now));
         // A review number has no SIM behind it; its code is written in the store's review notes.
-        if (reviewCode == null) {
+        if (fixed == null) {
             otpSender.send(key, code);
         }
 

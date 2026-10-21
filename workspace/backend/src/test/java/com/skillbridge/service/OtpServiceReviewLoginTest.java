@@ -14,7 +14,7 @@ class OtpServiceReviewLoginTest {
     private final OtpSender sender = (phone, code) -> sent.add(phone);
 
     private OtpService service(String reviewLogins) {
-        return new OtpService(sender, 6, 300, 30, 5, false, reviewLogins);
+        return new OtpService(sender, 6, 300, 30, 5, false, reviewLogins, "");
     }
 
     @Test
@@ -38,5 +38,21 @@ class OtpServiceReviewLoginTest {
         assertTrue(OtpService.parseReviewLogins("").isEmpty());
         assertTrue(OtpService.parseReviewLogins(null).isEmpty());
         assertTrue(OtpService.parseReviewLogins("123:999999, 9000000001:abc").isEmpty());
+    }
+
+    @Test
+    void fixedCodeWorksForAnyNumberWithoutSms() {
+        OtpService otp = new OtpService(sender, 6, 300, 30, 5, false, "", "112233");
+        otp.request("9876543210");
+        assertTrue(sent.isEmpty());
+        assertDoesNotThrow(() -> otp.verify("9876543210", "112233"));
+    }
+
+    @Test
+    void blankFixedCodeKeepsRealOtps() {
+        OtpService otp = new OtpService(sender, 6, 300, 30, 5, false, "", "");
+        otp.request("9876543210");
+        assertEquals(1, sent.size());
+        assertThrows(ApiException.class, () -> otp.verify("9876543210", "112233"));
     }
 }
