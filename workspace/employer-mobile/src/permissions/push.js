@@ -36,7 +36,12 @@ export async function registerPushToken() {
     // treat failure as a problem.
   }
   try {
-    const { status } = await Notifications.getPermissionsAsync()
+    let { status, canAskAgain } = await Notifications.getPermissionsAsync()
+    // Someone who signs in with "Log in" skips the onboarding permission screen, so this
+    // may be the first chance to ask - without it Android 13+ never shows a notification.
+    if (status !== 'granted' && canAskAgain) {
+      ({ status } = await Notifications.requestPermissionsAsync())
+    }
     if (status !== 'granted') return null
 
     const token = await Notifications.getDevicePushTokenAsync()
