@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { Button, Field, Input, Row, Small } from './index'
-import { currentLocation } from '../location/current'
+import { locateTurningOn, openAppSettings } from '../location/current'
 import { addressFromCoords, formatAddress, searchAddress } from '../location/geocode'
 import { colors, radius, space } from '../theme'
 
@@ -27,6 +27,9 @@ export default function AddressPicker({ value, onChange, error }) {
   const [searching, setSearching] = useState(false)
   const [locating, setLocating] = useState(false)
   const [locErr, setLocErr] = useState('')
+  // Why the last try came back empty-handed, when it needs a button rather
+  // than a sentence: 'off' (they said no to switching it on) or 'blocked'.
+  const [locNeed, setLocNeed] = useState(null)
   const abort = useRef(null)
 
   const a = value || {}
@@ -51,10 +54,12 @@ export default function AddressPicker({ value, onChange, error }) {
   }, [query, mode, a.latitude, a.longitude])
 
   const useHere = async () => {
-    setLocating(true); setLocErr('')
-    const got = await currentLocation()
+    setLocating(true); setLocErr(''); setLocNeed(null)
+    // Switches location on if it is off - Google's sheet, or Settings and back.
+    const got = await locateTurningOn()
     if (!got.ok) {
-      setLocErr(t(`business.loc_${got.reason}`))
+      if (got.reason === 'off' || got.reason === 'blocked') setLocNeed(got.reason)
+      else setLocErr(t(`business.loc_${got.reason}`))
       setLocating(false)
       return
     }
@@ -63,6 +68,12 @@ export default function AddressPicker({ value, onChange, error }) {
     onChange({ ...a, ...found })
     setMode('manual')
     setLocating(false)
+  }
+
+  // A permanent "no" can only be undone in Settings; try again once they are back.
+  const fixInSettings = async () => {
+    await openAppSettings()
+    useHere()
   }
 
   const choose = (r) => {
@@ -107,6 +118,24 @@ export default function AddressPicker({ value, onChange, error }) {
         style={{ marginBottom: space.md }}
       />
       {locErr ? <Small style={{ color: colors.redText, marginBottom: space.sm }}>{locErr}</Small> : null}
+      {locNeed && !locating ? (
+        <View style={s.locNote}>
+          <Ionicons name="location-outline" size={16} color={colors.orangeText} />
+          <View style={{ flex: 1 }}>
+            <Small style={{ color: colors.ink }}>
+              {t(locNeed === 'blocked' ? 'address.locBlocked' : 'address.locOffNote')}
+            </Small>
+            <Button
+              title={t(locNeed === 'blocked' ? 'address.openSettings' : 'address.turnOn')}
+              size="sm"
+              full={false}
+              tone="outline"
+              onPress={locNeed === 'blocked' ? fixInSettings : useHere}
+              style={{ marginTop: space.sm, alignSelf: 'flex-start' }}
+            />
+          </View>
+        </View>
+      ) : null}
 
       {mode === 'search' ? (
         <>
@@ -202,6 +231,11 @@ const s = StyleSheet.create({
   },
   resultMain: { fontSize: 15.5, fontWeight: '700', color: colors.ink },
   pin: { marginTop: 2, color: colors.blue, fontWeight: '700' },
+  locNote: {
+    flexDirection: 'row', gap: space.sm, alignItems: 'flex-start',
+    marginBottom: space.md, padding: space.md,
+    borderRadius: radius.md, backgroundColor: colors.orangeSoft,
+  },
   summary: {
     flexDirection: 'row', gap: space.sm, alignItems: 'flex-start',
     marginTop: space.md, padding: space.md,

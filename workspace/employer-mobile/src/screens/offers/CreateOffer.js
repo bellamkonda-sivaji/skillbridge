@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import {
   AppBar, Avatar, Body, Button, Card, CheckRow, ErrorNote, Field, H3, Input,
-  KV, Loader, Row, Screen, Small, Spacer, money,
+  KV, Loader, Row, Screen, Small, Spacer, payIn,
 } from '../../ui'
 import { BENEFITS, splitPrice } from '../../ui/catalog'
 import * as offersApi from '../../api/offers'
@@ -110,12 +110,14 @@ export default function CreateOffer({ navigation, route }) {
 
         {split.total > 0 ? (
           <Card style={{ marginBottom: space.lg }}>
-            <KV k={t('post.youPay')} v={money(split.total)} strong />
+            <KV k={t('post.youPay')} v={payIn(t, split.total, draft.salaryUnit)} strong />
             <Small style={{ marginTop: space.sm }}>{t('post.payNote')}</Small>
           </Card>
         ) : null}
 
-        <Field label={oneDay ? t('post.workDate') : t('offers.actualJoining')} hint="DD / MM / YYYY">
+        {/* A day still to come. "Day they joined" belongs to the joining
+            confirmation, where it records what actually happened. */}
+        <Field label={oneDay ? t('post.workDate') : t('post.startDate')} hint="DD / MM / YYYY">
           <Input value={form.joiningDate} onChangeText={set('joiningDate')}
             placeholder="20 / 04 / 2026" keyboardType="numbers-and-punctuation" />
         </Field>

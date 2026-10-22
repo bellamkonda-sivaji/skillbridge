@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Avatar, Badge, Body, Button, Card, ErrorNote, H3, KV, Loader, Row,
-  Screen, Small, Spacer, formatDate, money, timeOnly,
+  Screen, Small, Spacer, formatDate, payIn, timeOnly,
 } from '../../ui'
 import * as offersApi from '../../api/offers'
 import { errorText } from '../../api/client'
@@ -116,7 +116,7 @@ export default function OfferStatusDetail({ navigation, route }) {
 
         <Card style={s.payCard}>
           <Small>{t('post.youPay')}</Small>
-          <Text style={s.payBig}>{money(offer.salary)}</Text>
+          <Text style={s.payBig}>{payIn(t, offer.salary, offer.salaryUnit)}</Text>
         </Card>
 
         <H3 style={{ marginTop: space.xl, marginBottom: space.md }}>{t('offers.workStatus')}</H3>
@@ -150,7 +150,7 @@ export default function OfferStatusDetail({ navigation, route }) {
         <Card>
           <KV k={t('post.jobTitle')} v={offer.jobTitle} strong />
           {offer.joiningDate ? (
-            <KV k={t('offers.actualJoining')} v={formatDate(offer.joiningDate)} />
+            <KV k={t('post.startDate')} v={formatDate(offer.joiningDate)} />
           ) : null}
           {offer.workDate ? <KV k={t('post.workDate')} v={formatDate(offer.workDate)} /> : null}
           {offer.workLocation ? <KV k={t('business.address')} v={offer.workLocation} /> : null}

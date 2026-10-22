@@ -25,6 +25,10 @@ export default {
     doorNo: 'Door / shop number', doorNoHint: 'e.g. 12-3/A, Shop 4',
     building: 'Building or complex', street: 'Street or road',
     locality: 'Area or locality', city: 'Town or city', pincode: 'PIN code',
+    locOffNote: 'Location is still off. Turn it on to fill the address from where you are.',
+    turnOn: 'Turn on location',
+    locBlocked: 'Location is blocked for this app. Allow it in Settings, then come back.',
+    openSettings: 'Open settings',
   },
   notif: {
     workName: 'Work for you',
@@ -127,6 +131,7 @@ export default {
     search: 'Search', seeAll: 'See all', viewAll: 'View all', loading: 'Loading…',
     optional: 'Optional', yes: 'Yes', no: 'No', all: 'All', perDay: '/day',
     perMonth: '/month', perHour: '/hour', km: 'km away',
+    perWeek: '/week', perShift: '/shift',
     somethingWrong: 'Something went wrong. Please try again.',
   },
   splash: {
@@ -292,6 +297,10 @@ export default {
     allDays: 'All days', noAttendance: 'Nobody marked attendance',
     payroll: 'Pay', totalPayout: 'Total to pay', processPayroll: 'Pay now',
     paid: 'Paid', unpaid: 'To pay', none: 'Nobody hired yet',
+    farFromShop: 'Far from shop · {{distance}}', farFromShopPlain: 'Far from shop',
+    farTitle: 'Checked in away from the shop',
+    farBody: 'The phone was {{distance}} from your workplace when this worker marked attendance. GPS can be wrong indoors or with a weak signal, so ask them before you decide.',
+    farBodyPlain: 'The phone was far from your workplace when this worker marked attendance. GPS can be wrong indoors or with a weak signal, so ask them before you decide.',
   },
   profile: {
     title: 'My business', edit: 'Edit', plan: 'Plan', billing: 'Payments',
@@ -346,7 +355,9 @@ export default {
   notifications: { title: 'Alerts', markAll: 'Mark all read', none: 'Nothing new' },
   offerPreview: {
     title: 'Check the offer', editIt: 'Change something',
-    confirm: 'This is what the worker will see.',
+    confirm: 'The worker sees what they take home after LocalWork\'s fee.',
+    workplace: 'Workplace',
   },
+  gender: { MALE: 'Male', FEMALE: 'Female', OTHER: 'Other' },
   tabs: { home: 'Home', jobs: 'Jobs', applicants: 'People', team: 'Team', profile: 'Business' },
 }

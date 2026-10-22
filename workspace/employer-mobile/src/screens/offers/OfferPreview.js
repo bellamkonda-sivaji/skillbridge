@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Avatar, Badge, Body, Button, Card, ErrorNote, H3, KV, Row, Screen,
-  Small, Spacer, formatDate, money,
+  Small, Spacer, formatDate, payIn,
 } from '../../ui'
 import { splitPrice } from '../../ui/catalog'
 import * as offersApi from '../../api/offers'
@@ -81,15 +81,15 @@ export default function OfferPreview({ navigation, route }) {
         <H3 style={{ marginBottom: space.sm }}>{t('offers.jobSummary')}</H3>
         <Card>
           <KV k={t('post.jobTitle')} v={jobTitle} strong />
-          <KV k={oneDay ? t('post.workDate') : t('offers.actualJoining')}
+          <KV k={oneDay ? t('post.workDate') : t('post.startDate')}
             v={draft?.joiningDateIso ? formatDate(draft.joiningDateIso) : '—'} />
           {draft?.workingHours ? <KV k={t('post.shiftTimings')} v={draft.workingHours} /> : null}
-          {draft?.location ? <KV k={t('jobs.title')} v={draft.location} /> : null}
+          {draft?.location ? <KV k={t('offerPreview.workplace')} v={draft.location} /> : null}
         </Card>
 
         <H3 style={{ marginTop: space.xl, marginBottom: space.sm }}>{t('offers.paySummary')}</H3>
         <Card>
-          <KV k={t('post.youPay')} v={money(split.total)} strong />
+          <KV k={t('post.youPay')} v={payIn(t, split.total, draft?.salaryUnit)} strong />
         </Card>
 
         {(draft?.benefits || []).length ? (

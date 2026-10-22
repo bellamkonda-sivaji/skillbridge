@@ -56,7 +56,9 @@ export default function Notifications({ navigation }) {
     if (jobId) navigation.navigate('JobsTab', { screen: 'JobManagement', params: { jobId: Number(jobId) } })
     else if (link.includes('application')) navigation.navigate('ApplicantsTab')
     else if (link.includes('offer')) navigation.navigate('ProfileTab', { screen: 'OfferTracking' })
-    else if (link.includes('attendance')) navigation.navigate('TeamTab')
+    // Straight to the day view: a "check-in far from the shop" alert is only
+    // useful next to the row it is about, not on the team list.
+    else if (link.includes('attendance')) navigation.navigate('TeamTab', { screen: 'Attendance' })
   }
 
   const unread = (rows || []).filter((n) => !n.read).length

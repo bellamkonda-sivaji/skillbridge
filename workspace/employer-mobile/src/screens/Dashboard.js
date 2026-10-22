@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react'
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import React, { useCallback, useRef, useState } from 'react'
+import { AppState, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useFocusEffect } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -45,21 +45,37 @@ export default function Dashboard({ navigation }) {
   const [error, setError] = useState('')
   const [refreshing, setRefreshing] = useState(false)
 
+  // Focus, foreground and pull can each start a load; only the newest one may
+  // write, or a slow earlier reply lands last and puts the old counts back.
+  const latest = useRef(0)
   const load = useCallback(async () => {
+    const mine = ++latest.current
     setError('')
     try {
       const [dash, advice] = await Promise.all([
         jobsApi.dashboard(),
         jobsApi.demandAlerts().catch(() => []),
       ])
+      if (mine !== latest.current) return
       setData(dash)
       setAlerts(Array.isArray(advice) ? advice : [])
     } catch (err) {
+      if (mine !== latest.current) return
       setError(errorText(err, 'We could not load your dashboard.'))
     }
   }, [])
 
-  useFocusEffect(useCallback(() => { load() }, [load]))
+  // Focus alone is not enough: coming back to the app from the home screen or
+  // a notification does not change focus, so the counts stayed as they were
+  // when the phone was put down. Reload whenever the app comes to the front
+  // while this screen is the one showing, and stop listening once it is not.
+  useFocusEffect(useCallback(() => {
+    load()
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') load()
+    })
+    return () => sub.remove()
+  }, [load]))
   const refresh = async () => { setRefreshing(true); await load(); setRefreshing(false) }
 
   const firstName = String(data?.greetingName || user?.name || '').split(' ')[0] || 'there'

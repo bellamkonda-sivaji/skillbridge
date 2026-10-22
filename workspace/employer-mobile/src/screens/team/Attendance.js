@@ -6,11 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Avatar, Badge, Button, Card, EmptyState, ErrorNote, H3, Loader, Row,
-  SegTabs, Small, formatDate, isoDay, timeOnly,
+  SegTabs, Small, formatDate, isoDay, metres, timeOnly,
 } from '../../ui'
 import * as teamApi from '../../api/team'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
+import { Dialog } from '../../ui/Dialog'
 
 /**
  * A day of attendance, and the corrections waiting on the owner.
@@ -132,6 +133,7 @@ export default function Attendance({ navigation }) {
                       {r.checkInAt ? `${timeOnly(r.checkInAt)} – ${r.checkOutAt ? timeOnly(r.checkOutAt) : '…'}` : '—'}
                       {r.workedLabel ? ` · ${r.workedLabel}` : ''}
                     </Small>
+                    <FarBadge row={r} t={t} />
                   </View>
                   <Badge
                     label={r.approvalLabel || r.approvalStatus || r.status}
@@ -193,7 +195,44 @@ export default function Attendance({ navigation }) {
   )
 }
 
+/**
+ * A quiet flag when the phone was well away from the shop at check-in or
+ * check-out. Only FAR gets one: OK needs no comment, and UNKNOWN (no GPS fix,
+ * or a shop with no pin) is not the worker's doing, so it must not read as
+ * an accusation. Tapping it explains, because GPS indoors is often wrong by
+ * hundreds of metres and the owner should ask before rejecting the day.
+ */
+function FarBadge({ row, t }) {
+  if (row?.locationFlag !== 'FAR') return null
+  const far = [row.checkInDistanceM, row.checkOutDistanceM]
+    .map(Number).filter((n) => Number.isFinite(n) && n >= 0)
+  const distance = far.length ? metres(Math.max(...far)) : null
+  const explain = () => Dialog.alert(
+    t('team.farTitle'),
+    distance ? t('team.farBody', { distance }) : t('team.farBodyPlain'),
+    [{ text: t('common.close') }],
+    { tone: 'warning' },
+  )
+  return (
+    <Pressable onPress={explain} hitSlop={8} accessibilityRole="button"
+      style={({ pressed }) => [s.far, pressed && { opacity: 0.75 }]}>
+      <Ionicons name="location-outline" size={13} color={colors.orangeText} />
+      <Text style={s.farText}>
+        {distance ? t('team.farFromShop', { distance }) : t('team.farFromShopPlain')}
+      </Text>
+      <Ionicons name="information-circle-outline" size={13} color={colors.orangeText} />
+    </Pressable>
+  )
+}
+
 const s = StyleSheet.create({
+  far: {
+    flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start',
+    marginTop: space.sm, paddingHorizontal: space.sm, paddingVertical: 3,
+    borderRadius: radius.pill, backgroundColor: colors.orangeSoft,
+    borderWidth: 1, borderColor: '#FDE68A',
+  },
+  farText: { fontSize: 12.5, fontWeight: '700', color: colors.orangeText },
   tabsBar: {
     paddingHorizontal: space.lg, paddingVertical: space.md, backgroundColor: colors.white,
     borderBottomWidth: 1, borderBottomColor: colors.line,

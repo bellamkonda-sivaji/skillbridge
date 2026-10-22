@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Badge, Body, Button, Card, ErrorNote, H3, Input, KV, Loader, Row,
-  Screen, SegTabs, Small, Spacer, formatDate, hhmm, money,
+  Screen, SegTabs, Small, Spacer, formatDate, hhmm, payIn,
 } from '../../ui'
 import { splitPrice } from '../../ui/catalog'
 import * as jobsApi from '../../api/jobs'
@@ -111,14 +111,14 @@ export default function JobManagement({ navigation, route }) {
             <Body style={{ fontSize: 13.5, marginTop: 4 }}>{demand.detail}</Body>
             {demand.reachNow != null && demand.reachAtSuggested > demand.reachNow ? (
               <Small style={{ marginTop: 6 }}>
-                At {money(demand.currentSalary)} this job suits {demand.reachNow} worker
-                {demand.reachNow === 1 ? '' : 's'} near you. At {money(demand.suggestedSalary)} it
+                At {payIn(t, demand.currentSalary, job.salaryUnit)} this job suits {demand.reachNow} worker
+                {demand.reachNow === 1 ? '' : 's'} near you. At {payIn(t, demand.suggestedSalary, job.salaryUnit)} it
                 suits {demand.reachAtSuggested}.
               </Small>
             ) : null}
             {demand.suggestedSalary > 0 ? (
               <Button
-                title={`Raise to ${money(demand.suggestedSalary)}`}
+                title={`Raise to ${payIn(t, demand.suggestedSalary, job.salaryUnit)}`}
                 size="sm"
                 full={false}
                 style={{ marginTop: space.md, alignSelf: 'flex-start' }}
@@ -192,7 +192,7 @@ export default function JobManagement({ navigation, route }) {
               <View style={[s.splitRow, s.splitTotal]}>
                 <Text style={[s.splitKey, { fontWeight: '700' }]}>{t('post.youPay')}</Text>
                 <Text style={[s.splitValue, { fontSize: 19 }]}>
-                  {money(pricing?.postedSalary ?? job.salary)}
+                  {payIn(t, pricing?.postedSalary ?? job.salary, job.salaryUnit)}
                 </Text>
               </View>
             </Card>
@@ -219,7 +219,7 @@ export default function JobManagement({ navigation, route }) {
                     onPress={() => setEditing(String(Number(editing) + step))} />
                 </Row>
                 <View style={{ marginTop: space.md }}>
-                  <KV k={t('post.youPay')} v={money(split.total)} strong />
+                  <KV k={t('post.youPay')} v={payIn(t, split.total, job.salaryUnit)} strong />
                 </View>
                 <Input value={reason} onChangeText={setReason}
                   placeholder={t('jobs.whyChange')} style={{ marginTop: space.md }} />

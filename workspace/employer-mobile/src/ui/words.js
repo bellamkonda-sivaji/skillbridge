@@ -19,3 +19,14 @@ export function word(t, value) {
   const plain = key.replace(/_/g, ' ').toLowerCase()
   return plain.charAt(0).toUpperCase() + plain.slice(1)
 }
+
+/**
+ * Gender as a word, not the column value: "MALE" on a card reads like a form
+ * field nobody filled in properly. "Prefer not to say" shows nothing at all -
+ * printing it would undo the choice.
+ */
+export function genderWord(t, value) {
+  const key = String(value || '').trim().toUpperCase()
+  if (!['MALE', 'FEMALE', 'OTHER'].includes(key)) return ''
+  return t ? t(`gender.${key}`) : ''
+}

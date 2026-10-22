@@ -25,6 +25,10 @@ export default {
     doorNo: 'मकान / दुकान नंबर', doorNoHint: 'जैसे 12-3/A, दुकान 4',
     building: 'इमारत या कॉम्प्लेक्स', street: 'गली या सड़क',
     locality: 'इलाका', city: 'शहर या कस्बा', pincode: 'पिन कोड',
+    locOffNote: 'लोकेशन अभी भी बंद है। जहाँ आप हैं वहाँ से पता भरने के लिए इसे चालू करें।',
+    turnOn: 'लोकेशन चालू करें',
+    locBlocked: 'इस ऐप के लिए लोकेशन बंद की गई है। सेटिंग्स में इजाज़त दें, फिर वापस आएँ।',
+    openSettings: 'सेटिंग्स खोलें',
   },
   notif: {
     workName: 'आपके लिए काम',
@@ -127,6 +131,7 @@ export default {
     search: 'खोजें', seeAll: 'सब देखें', viewAll: 'सब देखें', loading: 'आ रहा है…',
     optional: 'ज़रूरी नहीं', yes: 'हाँ', no: 'नहीं', all: 'सब', perDay: '/दिन',
     perMonth: '/महीना', perHour: '/घंटा', km: 'कि.मी. दूर',
+    perWeek: '/हफ़्ता', perShift: '/शिफ़्ट',
     somethingWrong: 'कुछ गड़बड़ हुई। फिर कोशिश करें।',
   },
   splash: {
@@ -293,6 +298,10 @@ export default {
     allDays: 'सारे दिन', noAttendance: 'किसी ने हाज़िरी नहीं लगाई',
     payroll: 'पैसा', totalPayout: 'कुल देना है', processPayroll: 'अभी दें',
     paid: 'दे दिया', unpaid: 'देना है', none: 'अभी किसी को नहीं रखा',
+    farFromShop: 'दुकान से दूर · {{distance}}', farFromShopPlain: 'दुकान से दूर',
+    farTitle: 'दुकान से दूर रहकर हाज़िरी लगाई',
+    farBody: 'इस मज़दूर ने जब हाज़िरी लगाई, तब फ़ोन आपकी काम की जगह से {{distance}} दूर था। अंदर या कमज़ोर सिग्नल में GPS गलत हो सकता है, इसलिए फ़ैसला करने से पहले उनसे पूछ लें।',
+    farBodyPlain: 'इस मज़दूर ने जब हाज़िरी लगाई, तब फ़ोन आपकी काम की जगह से दूर था। अंदर या कमज़ोर सिग्नल में GPS गलत हो सकता है, इसलिए फ़ैसला करने से पहले उनसे पूछ लें।',
   },
   profile: {
     title: 'मेरा काम-धंधा', edit: 'बदलें', plan: 'प्लान', billing: 'भुगतान',
@@ -347,7 +356,9 @@ export default {
   notifications: { title: 'सूचनाएं', markAll: 'सब पढ़ा हुआ', none: 'कुछ नया नहीं' },
   offerPreview: {
     title: 'प्रस्ताव जाँचें', editIt: 'कुछ बदलें',
-    confirm: 'मज़दूर को यही दिखेगा।',
+    confirm: 'मज़दूर को LocalWork की फ़ीस कटने के बाद हाथ में आने वाली रकम दिखती है।',
+    workplace: 'काम की जगह',
   },
+  gender: { MALE: 'पुरुष', FEMALE: 'महिला', OTHER: 'अन्य' },
   tabs: { home: 'होम', jobs: 'काम', applicants: 'लोग', team: 'टीम', profile: 'धंधा' },
 }

@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import {
   Avatar, Badge, Button, EmptyState, ErrorNote, H2, Input, Loader, Row, Small,
-  formatDate, money,
+  formatDate, payIn,
 } from '../../ui'
 import * as teamApi from '../../api/team'
 import { errorText } from '../../api/client'
@@ -79,7 +79,7 @@ export default function MyTeam({ navigation }) {
                       label={word(t, item.status)}
                       tone={['ACTIVE', 'JOINED', 'ONGOING'].includes(item.status) ? 'green' : 'grey'}
                     />
-                    {item.salary ? <Small style={{ fontWeight: '700' }}>{money(item.salary)}</Small> : null}
+                    {item.salary ? <Small style={{ fontWeight: '700' }}>{payIn(t, item.salary, item.salaryUnit)}</Small> : null}
                   </Row>
                 </View>
                 {/* No dial button on a list row: the office puts the two

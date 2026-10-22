@@ -1,7 +1,7 @@
 import React from 'react'
 import { Share, StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { Button, Card, KV, Screen, Small, Spacer, SuccessPanel, money } from '../../ui'
+import { Button, Card, KV, Screen, Small, Spacer, SuccessPanel, payIn } from '../../ui'
 import { splitPrice } from '../../ui/catalog'
 import { space } from '../../theme'
 
@@ -49,7 +49,7 @@ export default function JobPublished({ navigation, route }) {
         <Card style={{ alignSelf: 'stretch', marginTop: space.xxl }}>
           <KV k={t('post.jobTitle')} v={job.title} strong />
           <KV k={t('post.openings')} v={String(job.workersNeeded || 1)} />
-          <KV k={t('post.youPay')} v={money(job.salary)} />
+          <KV k={t('post.youPay')} v={payIn(t, job.salary, job.salaryUnit)} />
         </Card>
         <Button
           title={t('post.share')}

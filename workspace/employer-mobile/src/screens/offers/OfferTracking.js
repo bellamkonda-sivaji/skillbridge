@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Avatar, Badge, EmptyState, ErrorNote, Loader, Row, SegTabs, Small,
-  formatDate, money,
+  formatDate, payIn,
 } from '../../ui'
 import * as offersApi from '../../api/offers'
 import { errorText } from '../../api/client'
@@ -81,7 +81,7 @@ export default function OfferTracking({ navigation }) {
                   <Small style={{ marginTop: 4 }}>
                     Sent {formatDate(item.sentAt || item.createdAt)}
                   </Small>
-                  <Text style={s.pay}>{money(item.salary)}</Text>
+                  <Text style={s.pay}>{payIn(t, item.salary, item.salaryUnit)}</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end', gap: 8 }}>
                   <Badge label={word(t, item.status)} tone={TONE[item.status] || 'grey'} />

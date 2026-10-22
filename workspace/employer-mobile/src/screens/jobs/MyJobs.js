@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import {
-  Badge, Button, EmptyState, ErrorNote, H2, Loader, Row, SegTabs, Small, money, timeAgo,
+  Badge, Button, EmptyState, ErrorNote, H2, Loader, Row, SegTabs, Small, payIn, timeAgo,
 } from '../../ui'
 import Photo from '../../ui/Photo'
 import { workArt } from '../../ui/workArt'
@@ -159,7 +159,7 @@ export default function MyJobs({ navigation }) {
                     <Small>{item.applicationsCount ?? item.applicantsCount ?? 0} {t('jobs.applicants')}</Small>
                   </Row>
                   <Row gap={space.md} style={{ marginTop: 7 }}>
-                    <Text style={s.pay}>{money(item.salary)}</Text>
+                    <Text style={s.pay}>{payIn(t, item.salary, item.salaryUnit)}</Text>
                   </Row>
                   {item.postedAt ? (
                     <Small style={{ marginTop: 5 }}>{t('jobs.posted')} {timeAgo(item.postedAt)}</Small>

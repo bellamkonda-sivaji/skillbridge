@@ -14,6 +14,24 @@ const UNIT = {
 export const pay = (amount, unit) => money(amount) + (UNIT[unit] || '')
 
 /**
+ * Pay with its unit, in the reader's language: "₹650/day", "₹12,000/month".
+ *
+ * A bare "₹650" next to a bare "₹12,000" makes a day's wage and a month's
+ * salary look like the same kind of number. Anything an employer reads as
+ * the price of a job goes through here. An unknown or missing unit drops the
+ * suffix rather than guessing one.
+ */
+const UNIT_KEY = {
+  HOURLY: 'common.perHour', PER_SHIFT: 'common.perShift', DAILY: 'common.perDay',
+  PER_WEEK: 'common.perWeek', MONTHLY: 'common.perMonth',
+}
+
+export function payIn(t, amount, unit) {
+  const key = UNIT_KEY[unit]
+  return money(amount) + (key && t ? t(key) : (UNIT[unit] || ''))
+}
+
+/**
  * The same pay, said out loud.
  *
  * "₹700/day" is four symbols a reader has to decode. Spoken, it has to be words
@@ -50,6 +68,13 @@ export function distance(km) {
   const n = Number(km)
   if (!Number.isFinite(n)) return null
   return n < 1 ? `${Math.round(n * 1000)} m` : `${n.toFixed(1)} km`
+}
+
+/** Metres as people say them: "450 m" up close, "1.2 km" beyond. */
+export function metres(m) {
+  const n = Number(m)
+  if (m === null || m === undefined || !Number.isFinite(n) || n < 0) return null
+  return n < 1000 ? `${Math.round(n)} m` : `${(n / 1000).toFixed(1)} km`
 }
 
 export function timeAgo(iso) {
