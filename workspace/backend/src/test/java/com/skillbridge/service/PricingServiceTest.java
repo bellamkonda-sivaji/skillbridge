@@ -1,5 +1,6 @@
 package com.skillbridge.service;
 
+import com.skillbridge.model.SalaryUnit;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -92,5 +93,48 @@ class PricingServiceTest {
         assertEquals("\u20b91,000 - \u20b94,000", pricing.slabLabel(2500));
         assertEquals("\u20b94,000 - \u20b910,000", pricing.slabLabel(10000));
         assertEquals("Above \u20b910,000", pricing.slabLabel(11000));
+    }
+
+    @Test
+    void theSlabIsChosenOnTheDailyEquivalentOfTheRate() {
+        // Rs 14,000 a month is about Rs 538 a day: the 10% band, not the 20% a raw 14,000 drew.
+        assertEquals(10, pricing.feePercent(14000, SalaryUnit.MONTHLY));
+        assertEquals(1400d, pricing.fee(14000, SalaryUnit.MONTHLY));
+        assertEquals(12600d, pricing.takeHome(14000, SalaryUnit.MONTHLY));
+
+        // A week is six days: Rs 3,600 a week is Rs 600 a day, the 10% band.
+        assertEquals(10, pricing.feePercent(3600, SalaryUnit.PER_WEEK));
+        // An hour is an eighth of a day: Rs 80 an hour is Rs 640 a day, the 10% band.
+        assertEquals(10, pricing.feePercent(80, SalaryUnit.HOURLY));
+        // A day and a shift are already a day's pay.
+        assertEquals(10, pricing.feePercent(700, SalaryUnit.DAILY));
+        assertEquals(10, pricing.feePercent(700, SalaryUnit.PER_SHIFT));
+        // No unit means the figure is taken as daily, exactly as the unit-less methods do.
+        assertEquals(pricing.feePercent(14000), pricing.feePercent(14000, null));
+    }
+
+    @Test
+    void theDailyEquivalentFactorsLiveInOnePlace() {
+        assertEquals(14000 / 26d, PricingService.dailyEquivalent(14000, SalaryUnit.MONTHLY), 1e-9);
+        assertEquals(100d, PricingService.dailyEquivalent(600, SalaryUnit.PER_WEEK), 1e-9);
+        assertEquals(800d, PricingService.dailyEquivalent(100, SalaryUnit.HOURLY), 1e-9);
+        assertEquals(700d, PricingService.dailyEquivalent(700, SalaryUnit.DAILY), 1e-9);
+        assertEquals(700d, PricingService.dailyEquivalent(700, SalaryUnit.PER_SHIFT), 1e-9);
+        for (SalaryUnit unit : SalaryUnit.values()) {
+            assertTrue(PricingService.DAYS_PER_UNIT.containsKey(unit), unit + " has no factor");
+        }
+    }
+
+    @Test
+    void aMonthlyBandLabelSaysItIsADailyBand() {
+        assertEquals("\u20b9500 - \u20b91,000 a day", pricing.slabLabel(14000, SalaryUnit.MONTHLY));
+        assertEquals("\u20b9500 - \u20b91,000", pricing.slabLabel(700, SalaryUnit.DAILY));
+    }
+
+    @Test
+    void grossForAMonthlyTakeHomeSurvivesItsOwnFee() {
+        double gross = pricing.grossForTakeHome(12600, SalaryUnit.MONTHLY);
+        assertTrue(pricing.takeHome(gross, SalaryUnit.MONTHLY) >= 12600);
+        assertEquals(14000d, gross);
     }
 }

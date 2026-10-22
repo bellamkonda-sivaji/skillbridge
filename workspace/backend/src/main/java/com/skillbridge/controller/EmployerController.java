@@ -65,8 +65,13 @@ public class EmployerController {
 
     // ---------------------------------------------------------------- employments & attendance
 
+    /**
+     * {@code scope}: UPCOMING (accepted, not started yet), CURRENT (started, or due today or
+     * earlier), PAST (completed / ended) or ALL. Left out, it is LIVE - UPCOMING and CURRENT
+     * together - which is what this list always returned without a scope.
+     */
     @GetMapping("/employments")
-    public List<EmploymentDto> employments(@RequestParam(required = false, defaultValue = "CURRENT") String scope) {
+    public List<EmploymentDto> employments(@RequestParam(required = false, defaultValue = "LIVE") String scope) {
         return employmentService.listForEmployer(AuthenticationUtils.currentEmployer(), scope);
     }
 

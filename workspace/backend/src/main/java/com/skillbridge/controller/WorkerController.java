@@ -50,9 +50,14 @@ public class WorkerController {
 
     // ---------------------------------------------------------------- dashboard & search
 
+    /**
+     * {@code lat}/{@code lng} (optional) are the phone's current position; when sent, the job
+     * lists are filtered and their distances measured from there rather than the home pin.
+     */
     @GetMapping("/dashboard")
-    public WorkerDashboardDto dashboard() {
-        return workerService.dashboard(AuthenticationUtils.currentWorker());
+    public WorkerDashboardDto dashboard(@RequestParam(required = false) Double lat,
+                                        @RequestParam(required = false) Double lng) {
+        return workerService.dashboard(AuthenticationUtils.currentWorker(), lat, lng);
     }
 
     @PostMapping("/jobs/search")
@@ -171,8 +176,13 @@ public class WorkerController {
 
     // ---------------------------------------------------------------- employments
 
+    /**
+     * {@code scope}: UPCOMING (accepted, not started yet), CURRENT (started, or due today or
+     * earlier), PAST (completed / ended) or ALL. Left out, it is LIVE - UPCOMING and CURRENT
+     * together - which is what this list always returned without a scope.
+     */
     @GetMapping("/employments")
-    public List<EmploymentDto> employments(@RequestParam(required = false, defaultValue = "CURRENT") String scope) {
+    public List<EmploymentDto> employments(@RequestParam(required = false, defaultValue = "LIVE") String scope) {
         return employmentService.listForWorker(AuthenticationUtils.currentWorker(), scope);
     }
 
@@ -203,14 +213,18 @@ public class WorkerController {
 
     @PostMapping("/attendance/check-in")
     public AttendanceDto checkIn(@RequestBody(required = false) AttendanceRequest request) {
-        return employmentService.checkIn(AuthenticationUtils.currentWorker(),
-                request != null ? request.employmentId() : null);
+        return request == null
+                ? employmentService.checkIn(AuthenticationUtils.currentWorker(), null)
+                : employmentService.checkIn(AuthenticationUtils.currentWorker(), request.employmentId(),
+                        request.latitude(), request.longitude(), request.accuracyM());
     }
 
     @PostMapping("/attendance/check-out")
     public AttendanceDto checkOut(@RequestBody(required = false) AttendanceRequest request) {
-        return employmentService.checkOut(AuthenticationUtils.currentWorker(),
-                request != null ? request.employmentId() : null);
+        return request == null
+                ? employmentService.checkOut(AuthenticationUtils.currentWorker(), null)
+                : employmentService.checkOut(AuthenticationUtils.currentWorker(), request.employmentId(),
+                        request.latitude(), request.longitude(), request.accuracyM());
     }
 
     /** One card per active employment: one button each, and the label IS the instruction. */

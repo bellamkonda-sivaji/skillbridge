@@ -52,15 +52,23 @@ public class WorkerService {
     // ------------------------------------------------------------------ dashboard
 
     public WorkerDashboardDto dashboard(WorkerAccount worker) {
+        return dashboard(worker, null, null);
+    }
+
+    /**
+     * The dashboard, with distances measured from {@code lat,lng} (the phone's current position)
+     * when the app sent a usable one, and from the profile's home pin otherwise.
+     */
+    public WorkerDashboardDto dashboard(WorkerAccount worker, Double lat, Double lng) {
         WorkerProfile profile = profileRepository.findByAccountId(worker.getId()).orElse(null);
-        JobCardAssembler.CardContext context = assembler.contextFor(worker, profile);
+        JobCardAssembler.CardContext context = assembler.contextFor(worker, profile).withOrigin(lat, lng);
         List<JobPost> openJobs = jobRepository.findByStatusOrderByPostedAtDesc(JobStatus.OPEN);
 
         // "Work for you" is work they can reach. It listed every open job in the country, so a
         // worker who said 3 km was shown jobs 200 km away. Their own radius first; only if
         // nothing is that close, widen so the home screen is never empty.
-        List<JobPost> reachable = within(profile, openJobs, radiusOf(profile));
-        if (reachable.isEmpty()) reachable = within(profile, openJobs, WIDER_RADIUS_KM);
+        List<JobPost> reachable = within(context, openJobs, radiusOf(profile));
+        if (reachable.isEmpty()) reachable = within(context, openJobs, WIDER_RADIUS_KM);
         if (reachable.isEmpty()) reachable = openJobs;
         List<JobCardDto> recommended = assembler.sorted(assembler.cards(reachable, context)).stream()
                 .limit(RECOMMENDED_LIMIT).toList();
@@ -69,7 +77,7 @@ public class WorkerService {
                 worker.getName(),
                 profileCompletion(worker, profile),
                 profileCompletionHint(profileCompletion(worker, profile)),
-                jobsNearYou(profile, openJobs),
+                jobsNearYou(context, profile, openJobs),
                 applicationRepository.countByWorker(worker),
                 interviewRepository.countByWorkerAndStatusNot(worker, InterviewStatus.CANCELLED),
                 walletService.earningsFor(AccountType.WORKER, worker.getId()),
@@ -116,8 +124,8 @@ public class WorkerService {
                 : "Near " + p.getCity();
     }
 
-    private long jobsNearYou(WorkerProfile p, List<JobPost> openJobs) {
-        return within(p, openJobs, radiusOf(p)).size();
+    private long jobsNearYou(JobCardAssembler.CardContext context, WorkerProfile p, List<JobPost> openJobs) {
+        return within(context, openJobs, radiusOf(p)).size();
     }
 
     /** How far you can go to find work in a nearby town when nothing is within your own range. */
@@ -128,14 +136,16 @@ public class WorkerService {
                 ? p.getPreferredRadiusKm() : DEFAULT_RADIUS_KM;
     }
 
-    /** Jobs inside the radius; everything when we do not know where they are. */
-    private List<JobPost> within(WorkerProfile p, List<JobPost> jobs, double radiusKm) {
-        if (p == null || (p.getLatitude() == 0 && p.getLongitude() == 0)) {
+    /**
+     * Jobs inside the radius of the context's origin (the current position when sent, else the
+     * home pin); everything when we do not know where they are.
+     */
+    private List<JobPost> within(JobCardAssembler.CardContext context, List<JobPost> jobs, double radiusKm) {
+        if (context.origin() == null) {
             return jobs;
         }
         return jobs.stream().filter(j -> {
-            Double d = geoService.distanceKmOrNull(p.getLatitude(), p.getLongitude(),
-                    j.getLatitude(), j.getLongitude());
+            Double d = assembler.distanceKm(context, j);
             return d != null && d <= radiusKm;
         }).toList();
     }
@@ -145,7 +155,10 @@ public class WorkerService {
     public List<JobCardDto> search(WorkerAccount worker, WorkerJobSearchRequest request) {
         WorkerJobSearchRequest req = request != null ? request : WorkerJobSearchRequest.empty();
         WorkerProfile profile = profileRepository.findByAccountId(worker.getId()).orElse(null);
-        JobCardAssembler.CardContext context = assembler.contextFor(worker, profile);
+        // A usable lat/lng in the request means "from where I am standing": it becomes the
+        // origin for both the distance filter and the distance printed on each card.
+        JobCardAssembler.CardContext context = assembler.contextFor(worker, profile)
+                .withOrigin(req.lat(), req.lng());
 
         Double maxDistanceKm = req.maxDistanceKm();
         if (req.quickFilter() == QuickFilter.NEARBY && maxDistanceKm == null) {
@@ -162,14 +175,14 @@ public class WorkerService {
 
         List<JobPost> candidates = new ArrayList<>();
         for (JobPost job : jobRepository.findByStatusOrderByPostedAtDesc(JobStatus.OPEN)) {
-            if (matches(job, req, profile, maxDistanceKm)) {
+            if (matches(job, req, context, maxDistanceKm)) {
                 candidates.add(job);
             }
         }
         return assembler.sorted(assembler.cards(candidates, context));
     }
 
-    private boolean matches(JobPost job, WorkerJobSearchRequest req, WorkerProfile profile,
+    private boolean matches(JobPost job, WorkerJobSearchRequest req, JobCardAssembler.CardContext context,
                             Double maxDistanceKm) {
         if (!matchesText(job, req.q())) {
             return false;
@@ -202,11 +215,10 @@ public class WorkerService {
             return false;
         }
         if (maxDistanceKm != null) {
-            if (profile == null) {
+            if (context.profile() == null && !context.hasOriginOverride()) {
                 return false;
             }
-            Double d = geoService.distanceKmOrNull(profile.getLatitude(), profile.getLongitude(),
-                    job.getLatitude(), job.getLongitude());
+            Double d = assembler.distanceKm(context, job);
             return d != null && d <= maxDistanceKm;
         }
         return true;

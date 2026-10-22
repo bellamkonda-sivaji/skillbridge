@@ -38,6 +38,9 @@ import java.util.Set;
 @Service
 public class AttendanceService {
 
+    /** A punch further than this many metres from the job's pin is flagged FAR. */
+    public static final int FAR_METRES = AttendanceRules.FAR_METRES;
+
     /** Older than this and we stop taking corrections: memory and payroll have both moved on. */
     private static final int MAX_REQUEST_AGE_DAYS = 30;
 
@@ -646,7 +649,7 @@ public class AttendanceService {
         return new AttendanceDto(null, e.getId(), e.getWorker().getId(), e.getWorker().getName(),
                 e.getWorker().getPhone(), e.getJob().getId(), e.getJob().getTitle(), on,
                 null, null, AttendanceStatus.NOT_CHECKED_IN, "Not marked", null, null,
-                null, null, false, hasOpenRequest, false, null);
+                null, null, false, hasOpenRequest, false, null, null, null, "UNKNOWN");
     }
 
     private boolean isLive(Employment e, LocalDate on) {

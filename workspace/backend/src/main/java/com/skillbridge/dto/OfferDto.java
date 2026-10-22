@@ -60,7 +60,9 @@ public record OfferDto(
         LocalDate endDate,
         List<String> workingDays,
         LocalTime startTime,
-        LocalTime endTime
+        LocalTime endTime,
+        /** When the worker first opened the offer; null until they have. */
+        LocalDateTime viewedAt
 ) {
     /** {@code employerName} is the business name when there is one, else the account name. */
     public static OfferDto from(JobOffer o, String employerName) {
@@ -94,7 +96,8 @@ public record OfferDto(
                 benefits, o.getMessage(), workerPay, platformFee, employerTotal, workerSalary,
                 job.getEngagementModel(), job.getStartDate(), job.getEndDate(),
                 job.getWorkingDays() == null ? List.of() : List.copyOf(job.getWorkingDays()),
-                shift == null ? null : shift.getStartTime(), shift == null ? null : shift.getEndTime());
+                shift == null ? null : shift.getStartTime(), shift == null ? null : shift.getEndTime(),
+                o.getViewedAt());
     }
 
     /** The plain-language name the offer screens print for the paperwork the offer carries. */

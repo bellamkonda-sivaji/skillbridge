@@ -44,6 +44,16 @@ public class Earning {
     @Column(name = "earning_status", nullable = false, length = 20)
     private EarningStatus status = EarningStatus.ACCRUED;
 
+    /**
+     * What was ring-fenced at acceptance, kept when completion pays by days worked and trims the
+     * earning down (see {@code ProRataPay}). Null while the earning is still the full reservation.
+     */
+    @Column(name = "reserved_minor") private Long reservedMinor;
+
+    /** How many days the pro-rata pay counted, and from what (ATTENDANCE / WORKING_DAYS). */
+    @Column(name = "days_paid") private Integer daysPaid;
+    @Column(name = "days_basis", length = 20) private String daysBasis;
+
     @Column(name = "payable_at") private LocalDateTime payableAt;
     @Column(name = "paid_at")    private LocalDateTime paidAt;
 

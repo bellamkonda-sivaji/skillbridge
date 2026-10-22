@@ -59,13 +59,16 @@ public class EmployerService {
     private final NotificationService notificationService;
     private final ChatService chatService;
     private final WorkerHistoryAssembler historyAssembler;
+    private final AccountDirectory accountDirectory;
 
     public EmployerService(JobPostRepository jobRepository, JobApplicationRepository applicationRepository,
                            InterviewRepository interviewRepository, WorkerProfileRepository workerProfileRepository,
                            EmployerProfileRepository employerProfileRepository,
                            EmployerAccountRepository employerAccountRepository,
                            ApplicantCardAssembler assembler, NotificationService notificationService,
-                           ChatService chatService, WorkerHistoryAssembler historyAssembler) {
+                           ChatService chatService, WorkerHistoryAssembler historyAssembler,
+                           AccountDirectory accountDirectory) {
+        this.accountDirectory = accountDirectory;
         this.historyAssembler = historyAssembler;
         this.jobRepository = jobRepository;
         this.applicationRepository = applicationRepository;
@@ -355,7 +358,7 @@ public class EmployerService {
         chatService.sendMessage(employer, new com.skillbridge.dto.SendMessageRequest(
                 conversation.getId(), null, null, body));
         notificationService.notify(worker, "You have been invited to apply",
-                employer.getName() + " invited you to apply for \"" + job.getTitle() + "\"",
+                accountDirectory.businessNameOf(employer) + " invited you to apply for \"" + job.getTitle() + "\"",
                 NotificationType.JOB_MATCH, "/jobs/" + job.getId());
     }
 

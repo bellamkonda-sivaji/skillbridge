@@ -33,13 +33,16 @@ public class InterviewService {
     private final JobApplicationRepository applicationRepository;
     private final ApplicationService applicationService;
     private final EmployerProfileRepository employerProfileRepository;
+    private final AccountDirectory accountDirectory;
 
     public InterviewService(InterviewRepository interviewRepository, WorkerAccountRepository workerRepository,
                             JobPostRepository jobRepository, ConversationRepository conversationRepository,
                             ChatService chatService, NotificationService notificationService,
                             JobApplicationRepository applicationRepository,
                             ApplicationService applicationService,
-                            EmployerProfileRepository employerProfileRepository) {
+                            EmployerProfileRepository employerProfileRepository,
+                            AccountDirectory accountDirectory) {
+        this.accountDirectory = accountDirectory;
         this.interviewRepository = interviewRepository;
         this.workerRepository = workerRepository;
         this.jobRepository = jobRepository;
@@ -101,7 +104,7 @@ public class InterviewService {
                             + (request.notes() != null && !request.notes().isBlank()
                                     ? ". " + request.notes() : "")));
             notificationService.notify(worker, "Interview invitation",
-                    employer.getName() + " invited you to an interview"
+                    businessName(employer) + " invited you to an interview"
                             + (job != null ? " for \"" + job.getTitle() + "\"" : ""),
                     NotificationType.INTERVIEW, "/worker/interviews");
         }
@@ -145,7 +148,7 @@ public class InterviewService {
         interview.setStatus(InterviewStatus.CANCELLED);
         interviewRepository.save(interview);
         notificationService.notify(interview.getWorker(), "Interview cancelled",
-                interview.getEmployer().getName() + " cancelled the interview"
+                businessName(interview.getEmployer()) + " cancelled the interview"
                         + (interview.getJob() != null ? " for \"" + interview.getJob().getTitle() + "\"" : ""),
                 NotificationType.INTERVIEW, "/worker/interviews");
         return InterviewDto.from(interview);
@@ -189,7 +192,7 @@ public class InterviewService {
                                 + " on " + request.scheduledAt().toString().replace("T", " ")
                                 + (request.notes() != null ? ". " + request.notes() : "")));
         notificationService.notify(worker, "Interview invitation",
-                employer.getName() + " invited you to an interview"
+                businessName(employer) + " invited you to an interview"
                         + (job != null ? " for \"" + job.getTitle() + "\"" : ""),
                 NotificationType.INTERVIEW, "/worker/interviews");
         return InterviewDto.from(interview);
@@ -232,7 +235,7 @@ public class InterviewService {
         interview.setStatus(InterviewStatus.COMPLETED);
         interviewRepository.save(interview);
         notificationService.notify(interview.getWorker(), "Interview completed",
-                "Your interview with " + interview.getEmployer().getName() + " was completed",
+                "Your interview with " + businessName(interview.getEmployer()) + " was completed",
                 NotificationType.INTERVIEW, "/worker/interviews");
         return InterviewDto.from(interview);
     }
@@ -333,10 +336,7 @@ public class InterviewService {
     }
 
     private String businessName(EmployerAccount employer) {
-        return employerProfileRepository.findByAccountId(employer.getId())
-                .map(EmployerProfile::getBusinessName)
-                .filter(n -> n != null && !n.isBlank())
-                .orElse(employer.getName());
+        return accountDirectory.businessNameOf(employer);
     }
 
     private boolean isParty(Interview interview, Account account) {

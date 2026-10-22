@@ -17,8 +17,9 @@ import java.util.List;
  * prefers the take-home - would fall back to showing the employer's gross. That is exactly
  * the mismatch the feature exists to prevent, so it is worth a pass at boot.
  *
- * It only touches jobs whose split has never been computed, so it is safe to run every start
- * and it never overwrites a price an employer has since changed.
+ * It only touches jobs whose split is missing or was computed at the wrong slab (before slabs
+ * were chosen on the daily-equivalent rate), so it is safe to run every start, and it never
+ * changes the price an employer posted - only the commission split derived from it.
  */
 @Component
 @Order(5)
@@ -38,13 +39,20 @@ public class PricingBackfill implements CommandLineRunner {
         List<JobPost> all = jobs.findAll();
         int fixed = 0;
         for (JobPost job : all) {
-            if (job.getSalary() <= 0 || job.getWorkerSalary() > 0) {
+            if (job.getSalary() <= 0) {
+                continue;
+            }
+            double percent = pricing.feePercent(job.getSalary(), job.getSalaryUnit());
+            // A split already computed at the right slab is left alone. One computed before the
+            // slab was chosen on the daily equivalent (a monthly job slabbed at 20% on its raw
+            // figure) is re-derived: the split is arithmetic on the price, never the price.
+            if (job.getWorkerSalary() > 0 && job.getFeePercent() == percent) {
                 continue;
             }
             job.applyPricing(
-                    pricing.feePercent(job.getSalary()),
-                    pricing.fee(job.getSalary()),
-                    pricing.takeHome(job.getSalary()));
+                    percent,
+                    pricing.fee(job.getSalary(), job.getSalaryUnit()),
+                    pricing.takeHome(job.getSalary(), job.getSalaryUnit()));
             if (job.getOriginalSalary() <= 0) {
                 job.setOriginalSalary(job.getSalary());
             }

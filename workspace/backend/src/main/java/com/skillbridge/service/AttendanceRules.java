@@ -15,6 +15,34 @@ public final class AttendanceRules {
     private AttendanceRules() {
     }
 
+    /** Further than this from the workplace and a punch is flagged FAR to the shop owner. */
+    public static final int FAR_METRES = 300;
+
+    /**
+     * "OK" within {@link #FAR_METRES} of the workplace, "FAR" beyond it, "UNKNOWN" when the
+     * phone sent no point or the job has no pin (the distance is then null).
+     */
+    public static String locationFlag(Integer distanceM) {
+        if (distanceM == null) {
+            return "UNKNOWN";
+        }
+        return distanceM <= FAR_METRES ? "OK" : "FAR";
+    }
+
+    /** The row's flag: check-in decides; a day checked in with no point falls back to check-out. */
+    public static String locationFlag(Attendance a) {
+        Integer d = a.getCheckInDistanceM() != null ? a.getCheckInDistanceM() : a.getCheckOutDistanceM();
+        return locationFlag(d);
+    }
+
+    /** "about 1.2 km" / "about 450 m", the way a person would say how far it was. */
+    public static String distanceLabel(int metres) {
+        if (metres >= 1000) {
+            return "about " + (Math.round(metres / 100.0) / 10.0) + " km";
+        }
+        return "about " + metres + " m";
+    }
+
     /**
      * Does the shop owner have to confirm each day of this job?
      *

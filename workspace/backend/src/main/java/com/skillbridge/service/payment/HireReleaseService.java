@@ -36,7 +36,13 @@ public class HireReleaseService {
             LocalDateTime offeredAt, LocalDateTime acceptedAt, LocalDate joiningDate,
             LocalDateTime startedAt, LocalDateTime completedAt,
             int daysWorked, long grossMinor, long feeMinor, long netMinor,
-            String paymentStatus, LocalDateTime releasedAt
+            String paymentStatus, LocalDateTime releasedAt,
+            /** What was reserved at acceptance; equals grossMinor unless completion paid pro-rata. */
+            long reservedMinor,
+            /** True when grossMinor is the days-worked amount rather than the full reservation. */
+            boolean prorated,
+            /** ATTENDANCE (distinct check-in days) or WORKING_DAYS (no attendance: joining to completion). */
+            String daysBasis
     ) {}
 
     private final EmploymentRepository employments;
@@ -68,6 +74,16 @@ public class HireReleaseService {
         Earning earning = earnings.lockByEmploymentId(e.getId()).orElse(null);
         if (earning == null || earning.getStatus() != EarningStatus.ACCRUED) {
             return; // nothing reserved, or already held / released
+        }
+        // Pay what was worked, not what was reserved: a month's salary for a month, a day's for
+        // a day. The rest goes back to the job's escrow as available money for the employer.
+        ProRataPay.Result pay = payFor(e, earning.getGrossMinor());
+        earning.setDaysPaid(pay.daysWorked());
+        earning.setDaysBasis(pay.daysBasis());
+        if (pay.prorated()) {
+            earning = escrow.trimReservation(e, pay.grossMinor(), rateOf(e), unitOf(e), "SYSTEM", null);
+            earning.setDaysPaid(pay.daysWorked());
+            earning.setDaysBasis(pay.daysBasis());
         }
         earning.setStatus(EarningStatus.HELD);
         earnings.save(earning);
@@ -124,13 +140,45 @@ public class HireReleaseService {
 
     // ---------------------------------------------------------------- helpers
 
+    /** The days-worked pay for this hire, from its attendance (or its working days without any). */
+    ProRataPay.Result payFor(Employment e, long reservedMinor) {
+        List<LocalDate> checkIns = attendances.findByEmploymentOrderByWorkDateDesc(e).stream()
+                .filter(a -> a.getCheckInAt() != null)
+                .map(a -> a.getWorkDate())
+                .distinct()
+                .toList();
+        LocalDate joined = e.getActualJoiningDate() != null ? e.getActualJoiningDate()
+                : e.getStartedAt() != null ? e.getStartedAt().toLocalDate() : null;
+        LocalDate completed = e.getEndedAt() != null ? e.getEndedAt().toLocalDate() : LocalDate.now();
+        return ProRataPay.compute(reservedMinor, rateOf(e), unitOf(e), checkIns, joined, completed,
+                e.getJob() == null ? List.of() : e.getJob().getWorkingDays());
+    }
+
+    private static double rateOf(Employment e) {
+        return e.getSalary() > 0 ? e.getSalary() : e.getJob().getSalary();
+    }
+
+    private static SalaryUnit unitOf(Employment e) {
+        return e.getSalary() > 0 && e.getSalaryUnit() != null ? e.getSalaryUnit() : e.getJob().getSalaryUnit();
+    }
+
     private HireDto toDto(Employment e) {
         Earning earning = earnings.findByEmploymentId(e.getId()).orElse(null);
-        int days = (int) attendances.findByEmploymentOrderByWorkDateDesc(e).stream()
-                .filter(a -> a.getCheckOutAt() != null).count();
         JobOffer offer = e.getOffer();
         long gross = earning == null ? 0 : earning.getGrossMinor();
         long fee = earning == null ? 0 : earning.getFeeMinor();
+        long reserved = earning == null ? 0
+                : earning.getReservedMinor() != null ? earning.getReservedMinor() : gross;
+        int days;
+        String basis;
+        if (earning != null && earning.getDaysPaid() != null) {
+            days = earning.getDaysPaid();
+            basis = earning.getDaysBasis();
+        } else {
+            ProRataPay.Result live = payFor(e, gross);
+            days = live.daysWorked();
+            basis = live.daysBasis();
+        }
         return new HireDto(
                 e.getId(), e.getWorker().getId(), e.getWorker().getName(), e.getWorker().getPhone(),
                 e.getEmployer().getId(), businessName(e), e.getJob().getId(), e.getJob().getTitle(),
@@ -139,7 +187,8 @@ public class HireReleaseService {
                 e.getJoiningDate(), e.getStartedAt(), e.getEndedAt(),
                 days, gross, fee, gross - fee,
                 earning == null ? "NONE" : paymentStatus(earning.getStatus()),
-                earning == null ? null : earning.getPayableAt());
+                earning == null ? null : earning.getPayableAt(),
+                reserved, reserved != gross, basis);
     }
 
     /** Where the hire is, in the words the back office uses. */

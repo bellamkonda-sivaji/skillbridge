@@ -3,6 +3,7 @@ package com.skillbridge.service;
 import com.skillbridge.exception.ApiException;
 import com.skillbridge.model.Account;
 import com.skillbridge.model.AccountType;
+import com.skillbridge.model.EmployerAccount;
 import com.skillbridge.repository.AdminAccountRepository;
 import com.skillbridge.repository.EmployerAccountRepository;
 import com.skillbridge.repository.EmployerProfileRepository;
@@ -62,5 +63,22 @@ public class AccountDirectory {
             }
         }
         return nameOf(type, id);
+    }
+
+    /**
+     * The name a worker knows this employer by: the shop's business name when the profile has
+     * one, the account holder's own name otherwise. Every message, card and earning shown to a
+     * worker goes through here, so "Sivaji invited you" reads "LocalWork Demo Mart invited you".
+     */
+    public String businessNameOf(EmployerAccount employer) {
+        if (employer == null) {
+            return "Unknown";
+        }
+        Optional<String> business = employer.getId() == null ? Optional.empty()
+                : employerProfileRepository.findByAccountId(employer.getId()).map(p -> p.getBusinessName());
+        if (business.isPresent() && business.get() != null && !business.get().isBlank()) {
+            return business.get();
+        }
+        return employer.getName() != null && !employer.getName().isBlank() ? employer.getName() : "Unknown";
     }
 }

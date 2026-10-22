@@ -40,17 +40,20 @@ public class EmploymentService {
     private final NotificationService notificationService;
     private final ScheduleCalculator scheduleCalculator;
     private final PricingService pricing = new PricingService();
+    private final GeoService geoService;
 
     public EmploymentService(EmploymentRepository employmentRepository,
                              AttendanceRepository attendanceRepository,
                              EmployerProfileRepository employerProfileRepository,
                              NotificationService notificationService,
-                             ScheduleCalculator scheduleCalculator) {
+                             ScheduleCalculator scheduleCalculator,
+                             GeoService geoService) {
         this.employmentRepository = employmentRepository;
         this.attendanceRepository = attendanceRepository;
         this.employerProfileRepository = employerProfileRepository;
         this.notificationService = notificationService;
         this.scheduleCalculator = scheduleCalculator;
+        this.geoService = geoService;
     }
 
     // ---------------------------------------------------------------- creation
@@ -103,14 +106,14 @@ public class EmploymentService {
 
     public List<EmploymentDto> listForWorker(WorkerAccount worker, String scope) {
         return employmentRepository.findByWorkerOrderByJoiningDateDesc(worker).stream()
-                .filter(e -> matchesScope(e, scope))
+                .filter(e -> matchesScope(e, scope, LocalDate.now()))
                 .map(this::toCard)
                 .toList();
     }
 
     public List<EmploymentDto> listForEmployer(EmployerAccount employer, String scope) {
         return employmentRepository.findByEmployerOrderByJoiningDateDesc(employer).stream()
-                .filter(e -> matchesScope(e, scope))
+                .filter(e -> matchesScope(e, scope, LocalDate.now()))
                 .map(this::toCard)
                 .toList();
     }
@@ -203,6 +206,18 @@ public class EmploymentService {
 
     @Transactional
     public AttendanceDto checkIn(WorkerAccount worker, Long employmentId) {
+        return checkIn(worker, employmentId, null, null, null);
+    }
+
+    /**
+     * Check-in, with the phone's position when the app had one. The point is stored and measured
+     * against the workplace, but it never blocks the punch: no fix, a bad fix or a job with no pin
+     * all simply read UNKNOWN. A FAR check-in tells the shop owner, once (there is one check-in
+     * per day).
+     */
+    @Transactional
+    public AttendanceDto checkIn(WorkerAccount worker, Long employmentId,
+                                 Double latitude, Double longitude, Double accuracyM) {
         if (employmentId == null) {
             throw ApiException.badRequest("employmentId is required");
         }
@@ -223,7 +238,24 @@ public class EmploymentService {
         }
         attendance.setCheckInAt(LocalDateTime.now());
         attendance.setStatus(AttendanceStatus.CHECKED_IN);
+        Integer distanceM = null;
+        if (JobCardAssembler.isUsablePoint(latitude, longitude)) {
+            attendance.setCheckInLat(latitude);
+            attendance.setCheckInLng(longitude);
+            attendance.setCheckInAccuracyM(accuracyM);
+            distanceM = distanceFromWorkplace(employment, latitude, longitude);
+            attendance.setCheckInDistanceM(distanceM);
+        }
         attendanceRepository.save(attendance);
+
+        if ("FAR".equals(AttendanceRules.locationFlag(distanceM))) {
+            EmployerProfile profile = employerProfileRepository
+                    .findByAccountId(employment.getEmployer().getId()).orElse(null);
+            notificationService.notify(employment.getEmployer(), "Check-in far from the shop",
+                    worker.getName() + " checked in " + AttendanceRules.distanceLabel(distanceM)
+                            + " from " + businessName(employment.getEmployer(), profile) + ".",
+                    NotificationType.SYSTEM, "/employer/attendance");
+        }
 
         if (employment.getStatus() == EmploymentStatus.JOINING_CONFIRMED) {
             employment.setStatus(EmploymentStatus.ACTIVE);
@@ -237,6 +269,13 @@ public class EmploymentService {
 
     @Transactional
     public AttendanceDto checkOut(WorkerAccount worker, Long employmentId) {
+        return checkOut(worker, employmentId, null, null, null);
+    }
+
+    /** Check-out, with the phone's position when the app had one. Never blocks on location. */
+    @Transactional
+    public AttendanceDto checkOut(WorkerAccount worker, Long employmentId,
+                                  Double latitude, Double longitude, Double accuracyM) {
         if (employmentId == null) {
             throw ApiException.badRequest("employmentId is required");
         }
@@ -253,6 +292,12 @@ public class EmploymentService {
         LocalDateTime now = LocalDateTime.now();
         attendance.setCheckOutAt(now);
         attendance.setStatus(AttendanceStatus.CHECKED_OUT);
+        if (JobCardAssembler.isUsablePoint(latitude, longitude)) {
+            attendance.setCheckOutLat(latitude);
+            attendance.setCheckOutLng(longitude);
+            attendance.setCheckOutAccuracyM(accuracyM);
+            attendance.setCheckOutDistanceM(distanceFromWorkplace(employment, latitude, longitude));
+        }
         attendance.setMinutesWorked(
                 (int) Math.max(0, Duration.between(attendance.getCheckInAt(), now).toMinutes()));
 
@@ -462,18 +507,43 @@ public class EmploymentService {
         return employment;
     }
 
-    /** CURRENT (the default) or PAST; anything else means "no filter". */
-    private boolean matchesScope(Employment e, String scope) {
-        if (scope == null || scope.isBlank() || "ALL".equalsIgnoreCase(scope)) {
+    /**
+     * The list scopes, the same for the worker and the employer:
+     * <ul>
+     *   <li>UPCOMING - accepted (OFFER_ACCEPTED / JOINING_CONFIRMED), not started, and the joining
+     *       date is still ahead (or not set);</li>
+     *   <li>CURRENT - ACTIVE, or accepted with a joining date of today or earlier, or already
+     *       started;</li>
+     *   <li>PAST - COMPLETED / ENDED;</li>
+     *   <li>LIVE - UPCOMING and CURRENT together (the default when no scope is sent);</li>
+     *   <li>ALL, blank or anything unknown - no filter.</li>
+     * </ul>
+     * UPCOMING used to fall through to "no filter" and so listed completed jobs as upcoming.
+     */
+    static boolean matchesScope(Employment e, String scope, LocalDate today) {
+        if (scope == null || scope.isBlank()) {
             return true;
         }
-        if ("PAST".equalsIgnoreCase(scope)) {
-            return !e.isCurrent();
+        String s = scope.trim().toUpperCase(java.util.Locale.ROOT);
+        return switch (s) {
+            case "PAST" -> !e.isCurrent();
+            case "LIVE" -> e.isCurrent();
+            case "UPCOMING" -> e.isCurrent() && isUpcoming(e, today);
+            case "CURRENT" -> e.isCurrent() && !isUpcoming(e, today);
+            default -> true;
+        };
+    }
+
+    /** Accepted but not begun: not ACTIVE, never started, and the joining date not yet reached. */
+    private static boolean isUpcoming(Employment e, LocalDate today) {
+        if (e.getStatus() != EmploymentStatus.OFFER_ACCEPTED
+                && e.getStatus() != EmploymentStatus.JOINING_CONFIRMED) {
+            return false;
         }
-        if ("CURRENT".equalsIgnoreCase(scope)) {
-            return e.isCurrent();
+        if (e.getStartedAt() != null || e.getActualJoiningDate() != null) {
+            return false;
         }
-        return true;
+        return e.getJoiningDate() == null || e.getJoiningDate().isAfter(today);
     }
 
     private boolean worksOn(Employment employment, String dayKey) {
@@ -509,7 +579,7 @@ public class EmploymentService {
                 e.getSalary(), e.getSalaryUnit(),
                 new ArrayList<>(e.getJob().getWorkingDays()),
                 shiftLabel(e.getJob()), e.getWorkLocation(), e.isCurrent(),
-                pricing.takeHome(e.getSalary()),
+                pricing.takeHome(e.getSalary(), e.getSalaryUnit()),
                 e.getWorker().getId(), e.getWorker().getName(), e.getWorker().getPhotoUrl(),
                 e.getActualJoiningDate());
     }
@@ -531,7 +601,16 @@ public class EmploymentService {
                 e.getJoiningAcknowledgedAt() != null,
                 latitude(e, profile), longitude(e, profile),
                 new ArrayList<>(e.getJob().getBenefits()),
-                pricing.takeHome(e.getSalary()));
+                pricing.takeHome(e.getSalary(), e.getSalaryUnit()));
+    }
+
+    /** Metres from the job's own pin to the given point; null when the job has no coordinates. */
+    private Integer distanceFromWorkplace(Employment e, double lat, double lng) {
+        JobPost job = e.getJob();
+        if (job == null || (job.getLatitude() == 0 && job.getLongitude() == 0)) {
+            return null;
+        }
+        return geoService.distanceMetresOrNull(job.getLatitude(), job.getLongitude(), lat, lng);
     }
 
     private Double latitude(Employment e, EmployerProfile profile) {

@@ -19,6 +19,12 @@ public class GeoService {
         return exact == null ? null : Math.round(exact * 10.0) / 10.0;
     }
 
+    /** Whole metres between two points; null when either side has no pin. */
+    public Integer distanceMetresOrNull(double lat1, double lng1, double lat2, double lng2) {
+        Double exact = exactDistanceKm(lat1, lng1, lat2, lng2);
+        return exact == null ? null : (int) Math.round(exact * 1000.0);
+    }
+
     private Double exactDistanceKm(double lat1, double lng1, double lat2, double lng2) {
         if ((lat1 == 0 && lng1 == 0) || (lat2 == 0 && lng2 == 0)) {
             return null;

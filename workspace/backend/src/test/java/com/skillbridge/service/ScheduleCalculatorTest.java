@@ -196,6 +196,21 @@ class ScheduleCalculatorTest {
     }
 
     @Test
+    void aMonthlySalaryIsSlabbedOnItsDailyEquivalent() {
+        // Rs 14,000 a month is about Rs 538 a day - the 10% band - so the worker takes home
+        // Rs 12,600, not the Rs 11,200 the 20% band of a raw "14,000" would have left.
+        var in = input(EngagementModel.MONTHS, null, LocalDate.of(2026, 10, 1), null,
+                JobDuration.ONGOING,
+                SIX_DAYS, List.of(shift("09:00", "18:00", null, null)),
+                ShiftArrangement.ALL_SHIFTS, false, 14000, SalaryUnit.MONTHLY);
+        calculator.validate(in);
+        ScheduleEstimateDto dto = calculator.estimate(in);
+        assertEquals(14000.0, dto.estimatedEmployerTotal());
+        assertEquals(1400.0, dto.platformFee());
+        assertEquals(12600.0, dto.estimatedWorkerEarnings());
+    }
+
+    @Test
     void aFewDaysJobCalculatesEachDayFromItsOwnTiming() {
         List<DayTime> dayTimes = List.of(
                 DayTime.builder().dayCode("MON").startTime(LocalTime.of(9, 0))

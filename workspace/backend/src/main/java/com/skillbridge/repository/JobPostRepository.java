@@ -6,6 +6,7 @@ import com.skillbridge.model.JobStatus;
 import com.skillbridge.model.WorkType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,6 +19,14 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JpaSpec
 
     long countByStatus(JobStatus status);
     long countByWorkType(WorkType type);
+
+    /**
+     * Adds one view in the database itself, so a long-running save of a stale copy of the job
+     * (the demand sweep, an edit) cannot write the counter back to an older number.
+     */
+    @Modifying
+    @Query("update JobPost j set j.jobViews = j.jobViews + 1 where j.id = :id")
+    int incrementViews(@Param("id") Long id);
     long countByUrgentTrueAndStatus(JobStatus status);
     long countByStatusAndPostedAtAfter(JobStatus status, java.time.LocalDateTime time);
     long countByEmployerIdAndStatus(Long employerAccountId, JobStatus status);

@@ -43,6 +43,39 @@ public class Attendance {
 
     private String note;
 
+    // ------------------------------------------------------------------ where the punch was made
+
+    /*
+     * The phone's position at check-in / check-out, when the app could get one, and how far that
+     * was from the workplace. All nullable: a punch never fails for want of a GPS fix. The
+     * distance is a signal for the shop owner, not a gate.
+     */
+
+    @Column(name = "check_in_lat")
+    private Double checkInLat;
+
+    @Column(name = "check_in_lng")
+    private Double checkInLng;
+
+    @Column(name = "check_in_accuracy_m")
+    private Double checkInAccuracyM;
+
+    /** Metres from the job's pin to where the worker checked in; null when either is unknown. */
+    @Column(name = "check_in_distance_m")
+    private Integer checkInDistanceM;
+
+    @Column(name = "check_out_lat")
+    private Double checkOutLat;
+
+    @Column(name = "check_out_lng")
+    private Double checkOutLng;
+
+    @Column(name = "check_out_accuracy_m")
+    private Double checkOutAccuracyM;
+
+    @Column(name = "check_out_distance_m")
+    private Integer checkOutDistanceM;
+
     // ------------------------------------------------------------------ approval
 
     /**

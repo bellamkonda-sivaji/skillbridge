@@ -47,7 +47,8 @@ public class JobDemandService {
     private static final double MAX_SUGGESTED_RAISE = 0.40;
 
     /** Do not nag the same employer about the same job more often than this. */
-    private static final Duration ALERT_COOLDOWN = Duration.ofHours(6);
+    /** A given job gets at most one pricing nudge in this long, however many sweeps run. */
+    static final Duration ALERT_COOLDOWN = Duration.ofHours(24);
 
     private final JobPostRepository jobs;
     private final JobApplicationRepository applications;
@@ -55,10 +56,16 @@ public class JobDemandService {
     private final JobPriceChangeRepository priceChanges;
     private final PricingService pricing;
     private final NotificationService notifications;
+    private final NotificationRepository notificationRepository;
+    private final EmploymentRepository employments;
 
     public JobDemandService(JobPostRepository jobs, JobApplicationRepository applications,
                             WorkerProfileRepository workers, JobPriceChangeRepository priceChanges,
-                            PricingService pricing, NotificationService notifications) {
+                            PricingService pricing, NotificationService notifications,
+                            NotificationRepository notificationRepository,
+                            EmploymentRepository employments) {
+        this.notificationRepository = notificationRepository;
+        this.employments = employments;
         this.jobs = jobs;
         this.applications = applications;
         this.workers = workers;
@@ -168,8 +175,8 @@ public class JobDemandService {
 
         // ---- how many workers the price actually reaches ---------------------------
         Integer reachNow = reach(job, job.getWorkerSalary() > 0
-                ? job.getWorkerSalary() : pricing.takeHome(job.getSalary()));
-        Integer reachAt = suggested == null ? null : reach(job, pricing.takeHome(suggested));
+                ? job.getWorkerSalary() : pricing.takeHome(job.getSalary(), job.getSalaryUnit()));
+        Integer reachAt = suggested == null ? null : reach(job, pricing.takeHome(suggested, job.getSalaryUnit()));
 
         job.setDemandVerdict(verdict);
         job.setSuggestedSalary(suggested);
@@ -405,8 +412,12 @@ public class JobDemandService {
 
     /**
      * Every ten minutes, look at every open job and alert the employers whose jobs are in
-     * trouble. Ten minutes is fine-grained enough for the one-hour window on a next-day job
-     * without waking the employer's phone more than the cooldown allows.
+     * trouble. Ten minutes is fine-grained enough for the one-hour window on a next-day job;
+     * {@link #shouldNudge} is what keeps it to one nudge per job per day.
+     *
+     * The last nudge is read from BOTH the job's {@code demandAlertedAt} and the employer's own
+     * notification list, because the job field is cleared on a price change and was the only
+     * guard before: the same "raise the pay" message reached employers several times a day.
      */
     @Scheduled(fixedDelay = 600_000, initialDelay = 120_000)
     @Transactional
@@ -415,25 +426,57 @@ public class JobDemandService {
         LocalDateTime now = LocalDateTime.now();
         for (JobPost job : open) {
             try {
+                if (job.getEmployer() == null) {
+                    continue;
+                }
+                String link = "/employer/jobs/" + job.getId();
+                LocalDateTime lastNudge = job.getDemandAlertedAt();
+                LocalDateTime lastNotified = notificationRepository
+                        .findFirstByOwnerTypeAndOwnerIdAndTypeAndLinkOrderByCreatedAtDesc(
+                                AccountType.EMPLOYER, job.getEmployer().getId(), NotificationType.PRICING, link)
+                        .map(n -> n.getCreatedAt()).orElse(null);
+                if (lastNotified != null && (lastNudge == null || lastNotified.isAfter(lastNudge))) {
+                    lastNudge = lastNotified;
+                }
+                boolean hireDone = employments.existsByJob_IdAndStatus(job.getId(), EmploymentStatus.COMPLETED);
+                if (!shouldNudge(job, lastNudge, hireDone, now)) {
+                    continue;
+                }
                 JobDemandDto read = assess(job);
                 boolean needsAlert = read.verdict() == DemandVerdict.STALLED
                         || read.verdict() == DemandVerdict.SLOW;
-                boolean cooled = job.getDemandAlertedAt() == null
-                        || Duration.between(job.getDemandAlertedAt(), now).compareTo(ALERT_COOLDOWN) >= 0;
-                if (needsAlert && cooled && job.getEmployer() != null) {
+                if (needsAlert) {
+                    // Stamp first, so a failure after the push can never leave the job un-stamped
+                    // and due for the same message on the next sweep.
+                    job.setDemandAlertedAt(now);
+                    jobs.save(job);
                     notifications.notify(
                             AccountType.EMPLOYER,
                             job.getEmployer().getId(),
                             read.headline(),
                             read.detail(),
                             NotificationType.PRICING,
-                            "/employer/jobs/" + job.getId());
-                    job.setDemandAlertedAt(now);
+                            link);
                 }
                 jobs.save(job);
             } catch (RuntimeException ex) {
                 // One bad job must never stop the sweep for every other employer.
             }
         }
+    }
+
+    /**
+     * Whether a job may get a pricing nudge now: only an OPEN job that still has seats to fill,
+     * whose employer has not already marked a hire on it done, and that has not been nudged in
+     * the last {@link #ALERT_COOLDOWN}. Whether the job actually NEEDS one is the verdict's call.
+     */
+    static boolean shouldNudge(JobPost job, LocalDateTime lastNudge, boolean hireDone, LocalDateTime now) {
+        if (job == null || job.getStatus() != JobStatus.OPEN) {
+            return false;
+        }
+        if (job.getWorkersNeeded() <= 0 || hireDone) {
+            return false;
+        }
+        return lastNudge == null || Duration.between(lastNudge, now).compareTo(ALERT_COOLDOWN) >= 0;
     }
 }

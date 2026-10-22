@@ -490,7 +490,7 @@ public class ScheduleCalculator {
             // card took off when it showed the worker their take-home.
             platformFee = platformFeePercent > 0
                     ? Math.round(earnings * platformFeePercent) / 100.0
-                    : (double) Math.round(earnings * pricing.feePercent(in.salary()) / 100d);
+                    : (double) Math.round(earnings * pricing.feePercent(in.salary(), in.salaryUnit()) / 100d);
             if (platformFee != null && platformFee > 0) {
                 workerTakeHome = round2(earnings - platformFee);
             }

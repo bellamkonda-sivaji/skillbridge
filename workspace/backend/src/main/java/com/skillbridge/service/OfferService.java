@@ -586,7 +586,7 @@ public class OfferService {
         String employerName = accountDirectory.displayNameOf(AccountType.EMPLOYER, job.getEmployer().getId());
         return OfferDto.from(offer, employerName, estimate.estimatedWorkerEarnings(),
                 estimate.platformFee(), estimate.estimatedEmployerTotal(),
-                pricingService.takeHome(offer.getSalary()));
+                pricingService.takeHome(offer.getSalary(), priced.salaryUnit()));
     }
 
     // ================================================================== labels

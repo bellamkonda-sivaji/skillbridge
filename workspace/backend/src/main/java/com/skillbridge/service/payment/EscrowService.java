@@ -87,13 +87,24 @@ public class EscrowService {
      * 20% and paid the worker less than every screen had promised. Whole rupees, as quoted.
      */
     public long feeOn(long agreedMinor, double rateRupees) {
+        return feeOn(agreedMinor, rateRupees, null);
+    }
+
+    /**
+     * As {@link #feeOn(long, double)}, with the unit the rate is posted in, so the slab is the
+     * daily equivalent's (Rs 14,000 a month is the 10% band) - the same percentage the job card
+     * took off when it showed the worker their take-home.
+     */
+    public long feeOn(long agreedMinor, double rateRupees, SalaryUnit unit) {
         if (agreedMinor <= 0) {
             return 0L;
         }
         if (platformFeePercent > 0) {
             return Math.round(agreedMinor * platformFeePercent / 100.0);
         }
-        double pct = pricing.feePercent(rateRupees > 0 ? rateRupees : agreedMinor / 100d);
+        double pct = rateRupees > 0
+                ? pricing.feePercent(rateRupees, unit)
+                : pricing.feePercent(agreedMinor / 100d);
         return Math.round(agreedMinor / 100d * pct / 100d) * 100L;
     }
 
@@ -209,7 +220,9 @@ public class EscrowService {
         if (agreedMinor <= 0) {
             throw ApiException.badRequest("This engagement has no agreed amount to reserve.");
         }
-        long feeMinor = feeOn(agreedMinor, rate);
+        SalaryUnit unit = employment.getSalary() > 0 && employment.getSalaryUnit() != null
+                ? employment.getSalaryUnit() : employment.getJob().getSalaryUnit();
+        long feeMinor = feeOn(agreedMinor, rate, unit);
         // The employer funds the price they posted. The commission comes out of that, so the
         // gross reserved IS the agreed amount and the worker's net is what is left.
         long grossMinor = agreedMinor;
@@ -345,6 +358,57 @@ public class EscrowService {
     public Earning releaseByEmploymentId(Long employmentId, String byType, Long byId) {
         Employment employment = employments.findById(employmentId).orElse(null);
         return employment == null ? null : release(employment, byType, byId);
+    }
+
+    // ============================================================ 3b. TRIM
+
+    /**
+     * Shrinks a reservation to what the hire actually earned, before it is released.
+     *
+     * The excess goes back from WORKER_PAYABLE to the job's escrow - the exact reverse legs of
+     * {@link #reserve} - so it is unreserved, available money on that job again (for the next
+     * hire, or for {@link #refundUnreserved} when the job closes). The earning keeps the
+     * original figure in {@code reservedMinor} so the trail shows what was held and what was due.
+     *
+     * Only an ACCRUED or HELD earning can be trimmed, never upwards, and once per employment
+     * (the ledger post is idempotent on the employment).
+     */
+    @Transactional
+    public Earning trimReservation(Employment employment, long newGrossMinor, double rateRupees,
+                                   SalaryUnit unit, String byType, Long byId) {
+        Earning earning = earnings.lockByEmploymentId(employment.getId()).orElse(null);
+        if (earning == null
+                || (earning.getStatus() != EarningStatus.ACCRUED && earning.getStatus() != EarningStatus.HELD)) {
+            return earning;
+        }
+        long gross = earning.getGrossMinor();
+        if (newGrossMinor <= 0 || newGrossMinor >= gross || earning.getReservedMinor() != null) {
+            return earning;
+        }
+        long excess = gross - newGrossMinor;
+        Long jobId = earning.getJobId();
+
+        ledger.post(new LedgerService.Post("RESERVATION_TRIMMED")
+                .job(jobId).employment(employment.getId())
+                .memo("Pro-rata: " + Money.inr(excess) + " unreserved back to job #" + jobId
+                        + " for employment #" + employment.getId())
+                .by(byType, byId)
+                .idempotent("TRIM-EMP-" + employment.getId())
+                .leg(LedgerService.Leg.debit(LedgerAccountType.WORKER_PAYABLE, earning.getWorkerId(), excess))
+                .leg(LedgerService.Leg.credit(LedgerAccountType.JOB_ESCROW, jobId, excess)));
+
+        JobEscrow escrow = escrows.lockByJobId(jobId).orElseGet(() -> escrowOf(jobId));
+        escrow.setReservedMinor(Math.max(0, escrow.getReservedMinor() - excess));
+        escrow.setUpdatedAt(LocalDateTime.now());
+        assertConservation(escrow);
+        escrows.save(escrow);
+
+        long fee = feeOn(newGrossMinor, rateRupees, unit);
+        earning.setReservedMinor(gross);
+        earning.setGrossMinor(newGrossMinor);
+        earning.setFeeMinor(fee);
+        earning.setNetMinor(newGrossMinor - fee);
+        return earnings.save(earning);
     }
 
     // =============================================================== 4. REFUND

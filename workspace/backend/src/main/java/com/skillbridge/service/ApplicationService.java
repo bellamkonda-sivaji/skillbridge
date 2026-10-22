@@ -134,13 +134,26 @@ public class ApplicationService {
         return offerRepository.findByWorkerId(worker.getId()).stream().map(this::toOfferDto).toList();
     }
 
+    @Transactional
     public OfferDto offerForWorker(WorkerAccount worker, Long offerId) {
-        return toOfferDto(requireWorkerOffer(worker, offerId));
+        JobOffer offer = requireWorkerOffer(worker, offerId);
+        markViewed(offer);
+        return toOfferDto(offer);
+    }
+
+    /** Stamps the first time the worker opened this offer; later opens leave it alone. */
+    private void markViewed(JobOffer offer) {
+        if (offer.getViewedAt() == null) {
+            offer.setViewedAt(LocalDateTime.now());
+            offerRepository.save(offer);
+        }
     }
 
     @Transactional(noRollbackFor = FundsNeededException.class)
     public OfferDto acceptOffer(WorkerAccount worker, Long offerId) {
         JobOffer offer = requireWorkerOffer(worker, offerId);
+        // Accepting from a list without opening it still means they saw it.
+        markViewed(offer);
         if (!offer.getStatus().isOpen()) {
             throw ApiException.badRequest("This offer has already been "
                     + offer.getStatus().name().toLowerCase());
@@ -179,6 +192,7 @@ public class ApplicationService {
     @Transactional
     public OfferDto declineOffer(WorkerAccount worker, Long offerId) {
         JobOffer offer = requireWorkerOffer(worker, offerId);
+        markViewed(offer);
         if (!offer.getStatus().isOpen()) {
             throw ApiException.badRequest("This offer has already been "
                     + offer.getStatus().name().toLowerCase());
@@ -321,14 +335,40 @@ public class ApplicationService {
         }
         applicationRepository.save(application);
 
-        if (notify && next != ApplicationStatus.WITHDRAWN) {
-            notificationService.notify(application.getWorker(),
-                    "Application " + next.name().toLowerCase().replace("_", " "),
-                    "Your application for \"" + application.getJob().getTitle() + "\" is now "
-                            + next.name().toLowerCase().replace("_", " "),
-                    NotificationType.APPLICATION, "/worker/applications");
+        if (notify) {
+            String[] notice = workerNoticeFor(next, application.getJob().getTitle(),
+                    accountDirectory.businessNameOf(application.getJob().getEmployer()));
+            if (notice != null) {
+                notificationService.notify(application.getWorker(), notice[0], notice[1],
+                        NotificationType.APPLICATION, "/worker/applications");
+            }
         }
         return application;
+    }
+
+    /**
+     * What the worker is told when their application moves to {@code next}, as {title, body},
+     * or null when they should hear nothing from here.
+     *
+     * Null for the moves that already carry their own, more specific message, so the worker
+     * never gets the same news twice: OFFERED ("You received a job offer"), INTERVIEW_SCHEDULED
+     * ("Interview invitation"), ACCEPTED (the worker accepted it themselves) and WITHDRAWN (the
+     * worker's own action).
+     */
+    static String[] workerNoticeFor(ApplicationStatus next, String jobTitle, String businessName) {
+        if (next == null) {
+            return null;
+        }
+        String where = jobTitle + " at " + businessName;
+        return switch (next) {
+            case VIEWED -> new String[]{"Application viewed",
+                    businessName + " has looked at your application for " + jobTitle + "."};
+            case SHORTLISTED -> new String[]{"You've been shortlisted",
+                    "You've been shortlisted for " + where + "."};
+            case REJECTED -> new String[]{"Application update",
+                    where + " has decided not to go ahead with your application this time."};
+            case APPLIED, INTERVIEW_SCHEDULED, OFFERED, ACCEPTED, WITHDRAWN -> null;
+        };
     }
 
     /** Backfills the stages the application must have passed through to reach {@code next}. */
@@ -420,9 +460,11 @@ public class ApplicationService {
         Long employerId = offer.getApplication().getJob().getEmployer().getId();
         // The whole engagement as well as the rate, so the worker sees what the work adds up to.
         double total = engagementCost.totalMinor(offer) / 100d;
-        double fee = Math.round(total * pricingService.feePercent(offer.getSalary()) / 100d);
+        SalaryUnit unit = offer.getSalaryUnit() != null
+                ? offer.getSalaryUnit() : offer.getApplication().getJob().getSalaryUnit();
+        double fee = Math.round(total * pricingService.feePercent(offer.getSalary(), unit) / 100d);
         return OfferDto.from(offer, accountDirectory.displayNameOf(AccountType.EMPLOYER, employerId),
-                total - fee, fee, total, pricingService.takeHome(offer.getSalary()));
+                total - fee, fee, total, pricingService.takeHome(offer.getSalary(), unit));
     }
 
     // ------------------------------------------------------------------ helpers

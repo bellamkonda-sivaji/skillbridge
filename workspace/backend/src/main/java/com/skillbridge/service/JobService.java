@@ -41,13 +41,15 @@ public class JobService {
     private final PricingService pricingService;
     private final JobPriceChangeRepository priceChangeRepository;
     private final JobDemandService demandService;
+    private final JobViewRepository jobViewRepository;
 
     public JobService(JobPostRepository jobRepository, WorkerProfileRepository workerProfileRepository,
                       EmployerProfileRepository employerProfileRepository, MatchRepository matchRepository,
                       GeoService geoService, SkillLexicon lexicon, MatchingService matchingService,
                       ScheduleCalculator scheduleCalculator, PricingService pricingService,
                       JobPriceChangeRepository priceChangeRepository, JobDemandService demandService,
-                      ShopService shopService) {
+                      ShopService shopService, JobViewRepository jobViewRepository) {
+        this.jobViewRepository = jobViewRepository;
         this.shopService = shopService;
         this.pricingService = pricingService;
         this.priceChangeRepository = priceChangeRepository;
@@ -74,13 +76,22 @@ public class JobService {
         if (viewer instanceof WorkerAccount worker) {
             match = matchRepository.findByWorkerAndJob(worker, job).map(Match::getScore).orElse(null);
         }
-        // Anyone but the owning employer counts as a view - that is what jobViews measures.
+        // Anyone but the owning employer counts as a view - that is what jobViews measures. A
+        // worker counts once per job however often they reopen it; a signed-out visitor, whom we
+        // cannot tell apart, counts per open.
         boolean owner = viewer instanceof EmployerAccount e && job.getEmployer().getId().equals(e.getId());
-        if (!owner) {
-            job.setJobViews(job.getJobViews() + 1);
-            jobRepository.save(job);
+        boolean counts = !owner;
+        if (viewer instanceof WorkerAccount worker) {
+            counts = !jobViewRepository.existsByJobIdAndWorkerId(job.getId(), worker.getId());
+            if (counts) {
+                jobViewRepository.save(JobView.builder().jobId(job.getId()).workerId(worker.getId()).build());
+            }
         }
-        return JobDto.from(job, match);
+        JobDto dto = JobDto.from(job, match);
+        if (counts) {
+            jobRepository.incrementViews(job.getId());
+        }
+        return dto;
     }
 
     @Transactional
@@ -566,10 +577,11 @@ public class JobService {
      */
     public void reprice(JobPost job) {
         double salary = job.getSalary();
+        SalaryUnit unit = job.getSalaryUnit();
         job.applyPricing(
-                pricingService.feePercent(salary),
-                pricingService.fee(salary),
-                pricingService.takeHome(salary));
+                pricingService.feePercent(salary, unit),
+                pricingService.fee(salary, unit),
+                pricingService.takeHome(salary, unit));
         if (job.getOriginalSalary() <= 0) {
             job.setOriginalSalary(salary);
         }
@@ -585,7 +597,7 @@ public class JobService {
                 job.getFeePercent(),
                 job.getWorkerSalary(),
                 job.getSalaryUnit(),
-                pricingService.slabLabel(job.getSalary()),
+                pricingService.slabLabel(job.getSalary(), job.getSalaryUnit()),
                 job.getOriginalSalary() > 0 && job.getOriginalSalary() != job.getSalary()
                         ? job.getOriginalSalary() : null,
                 job.getPriceChangeCount());
@@ -595,11 +607,11 @@ public class JobService {
     public JobPricingDto quote(double salary, SalaryUnit unit) {
         return new JobPricingDto(
                 salary,
-                pricingService.fee(salary),
-                pricingService.feePercent(salary),
-                pricingService.takeHome(salary),
+                pricingService.fee(salary, unit),
+                pricingService.feePercent(salary, unit),
+                pricingService.takeHome(salary, unit),
                 unit,
-                pricingService.slabLabel(salary),
+                pricingService.slabLabel(salary, unit),
                 null,
                 0);
     }

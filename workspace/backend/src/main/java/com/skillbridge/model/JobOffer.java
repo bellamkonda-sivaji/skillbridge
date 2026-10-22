@@ -52,6 +52,13 @@ public class JobOffer {
 
     private LocalDateTime respondedAt;
 
+    /**
+     * When the worker first opened the offer (its detail screen, or accepting/declining it
+     * straight from a list). The employer's offer timeline shows "Worker opened it" from this.
+     */
+    @Column(name = "viewed_at")
+    private LocalDateTime viewedAt;
+
     // ------------------------------------------------------------------ offer lifecycle
 
     /** The paperwork this offer carries, derived from the job's duration when it is created. */

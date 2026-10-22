@@ -43,7 +43,13 @@ public record AttendanceDto(
          * moment the number is worth a round trip - the worker app turns it
          * into a milestone stamp. Null everywhere else.
          */
-        Long daysWorkedTotal
+        Long daysWorkedTotal,
+        /** Metres from the job's pin to where the worker checked in; null when unknown. */
+        Integer checkInDistanceM,
+        /** Metres from the job's pin to where the worker checked out; null when unknown. */
+        Integer checkOutDistanceM,
+        /** "OK" (within 300 m), "FAR" (beyond it) or "UNKNOWN" (no point, or the job has no pin). */
+        String locationFlag
 ) {
 
     public static AttendanceDto from(Attendance a) {
@@ -59,7 +65,8 @@ public record AttendanceDto(
                 base.checkInAt(), base.checkOutAt(), base.status(), base.statusLabel(),
                 base.minutesWorked(), base.workedLabel(), base.approvalStatus(),
                 base.approvalLabel(), base.needsApproval(), base.hasOpenRequest(),
-                base.editedByAdmin(), daysWorkedTotal);
+                base.editedByAdmin(), daysWorkedTotal,
+                base.checkInDistanceM(), base.checkOutDistanceM(), base.locationFlag());
     }
 
     public static AttendanceDto from(Attendance a, boolean hasOpenRequest) {
@@ -86,6 +93,9 @@ public record AttendanceDto(
                 AttendanceRules.needsApproval(a),
                 hasOpenRequest,
                 a.isEditedByAdmin(),
-                null);
+                null,
+                a.getCheckInDistanceM(),
+                a.getCheckOutDistanceM(),
+                AttendanceRules.locationFlag(a));
     }
 }

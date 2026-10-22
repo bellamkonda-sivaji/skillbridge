@@ -1,5 +1,6 @@
 package com.skillbridge.service.payment;
 
+import com.skillbridge.service.AccountDirectory;
 import com.skillbridge.dto.payment.PaymentDtos.*;
 import com.skillbridge.model.JobPost;
 import com.skillbridge.model.money.*;
@@ -25,12 +26,15 @@ public class FinanceQueryService {
     private final JobPostRepository jobs;
     private final EmploymentRepository employments;
     private final PayoutService payoutService;
+    private final AccountDirectory accountDirectory;
 
     public FinanceQueryService(LedgerService ledger, LedgerTransactionRepository transactions,
                                JobEscrowRepository escrows, PayoutRepository payouts,
                                PaymentOrderRepository orders, WebhookEventRepository webhooks,
                                EarningRepository earnings, JobPostRepository jobs,
-                               EmploymentRepository employments, PayoutService payoutService) {
+                               EmploymentRepository employments, PayoutService payoutService,
+                               AccountDirectory accountDirectory) {
+        this.accountDirectory = accountDirectory;
         this.ledger = ledger;
         this.transactions = transactions;
         this.escrows = escrows;
@@ -162,9 +166,10 @@ public class FinanceQueryService {
                 e.getNetMinor(), e.getStatus(), e.getPayableAt(), e.getPaidAt(), e.getCreatedAt());
     }
 
+    /** The shop's business name, as the worker knows it - not the owner's account name. */
     private String employerName(Earning e) {
         return employments.findById(e.getEmploymentId())
-                .map(emp -> emp.getEmployer().getName()).orElse(null);
+                .map(emp -> accountDirectory.businessNameOf(emp.getEmployer())).orElse(null);
     }
 
     public List<EarningDto> earningsOf(Long workerId) {

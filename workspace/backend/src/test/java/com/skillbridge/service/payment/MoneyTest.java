@@ -195,14 +195,20 @@ class MoneyTest {
     // ------------------------------------------------------------------ 7. the fee
 
     @Test
+    @org.springframework.transaction.annotation.Transactional
     void theFeeComesFromConfigurationAndNetReconcilesExactly() {
         List<Earning> all = earnings.findAll();
         assertFalse(all.isEmpty());
         for (Earning e : all) {
             assertEquals(e.getGrossMinor(), e.getNetMinor() + e.getFeeMinor(),
                     "net + fee must reconcile exactly against gross for earning " + e.getId());
-            // The commission is taken OUT of the agreed amount, so it is a fee on the gross.
-            long expectedFee = escrow.feeOn(e.getGrossMinor());
+            // The commission is taken OUT of the agreed amount, so it is a fee on the gross, at
+            // the slab of the agreed RATE's daily equivalent (Rs 18,000 a month is ~Rs 692 a day).
+            Employment emp = employments.findById(e.getEmploymentId()).orElseThrow();
+            double rate = emp.getSalary() > 0 ? emp.getSalary() : emp.getJob().getSalary();
+            SalaryUnit unit = emp.getSalary() > 0 && emp.getSalaryUnit() != null
+                    ? emp.getSalaryUnit() : emp.getJob().getSalaryUnit();
+            long expectedFee = escrow.feeOn(e.getGrossMinor(), rate, unit);
             assertEquals(expectedFee, e.getFeeMinor(),
                     "the fee must come from the pricing slabs, never a hard-coded one");
         }

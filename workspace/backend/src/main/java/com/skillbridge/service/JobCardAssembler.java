@@ -37,8 +37,64 @@ public class JobCardAssembler {
         this.geoService = geoService;
     }
 
-    /** Worker-scoped context, loaded once so a list of cards is not N+1 lookups. */
-    public record CardContext(WorkerProfile profile, Set<Long> savedJobIds, Set<Long> appliedJobIds) {}
+    /**
+     * Worker-scoped context, loaded once so a list of cards is not N+1 lookups.
+     *
+     * {@code originLat}/{@code originLng} override where distances are measured FROM. They are
+     * null unless the app sent the phone's current position ("jobs near me right now"); then
+     * the profile's home pin is used, exactly as before.
+     */
+    public record CardContext(WorkerProfile profile, Set<Long> savedJobIds, Set<Long> appliedJobIds,
+                              Double originLat, Double originLng) {
+
+        public CardContext(WorkerProfile profile, Set<Long> savedJobIds, Set<Long> appliedJobIds) {
+            this(profile, savedJobIds, appliedJobIds, null, null);
+        }
+
+        /** The same context measuring from {@code lat,lng} when that is a usable point; unchanged otherwise. */
+        public CardContext withOrigin(Double lat, Double lng) {
+            return isUsablePoint(lat, lng)
+                    ? new CardContext(profile, savedJobIds, appliedJobIds, lat, lng)
+                    : this;
+        }
+
+        public boolean hasOriginOverride() {
+            return originLat != null && originLng != null;
+        }
+
+        /** Where distance is measured from, or null when neither an override nor a home pin is known. */
+        public double[] origin() {
+            if (hasOriginOverride()) {
+                return new double[]{originLat, originLng};
+            }
+            if (profile == null || (profile.getLatitude() == 0 && profile.getLongitude() == 0)) {
+                return null;
+            }
+            return new double[]{profile.getLatitude(), profile.getLongitude()};
+        }
+    }
+
+    /**
+     * A point the app sent that we can measure from: both halves present, finite, on the globe,
+     * and not the 0,0 that an unset GPS fix reports.
+     */
+    public static boolean isUsablePoint(Double lat, Double lng) {
+        if (lat == null || lng == null || lat.isNaN() || lng.isNaN()
+                || lat.isInfinite() || lng.isInfinite()) {
+            return false;
+        }
+        if (Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+            return false;
+        }
+        return !(lat == 0 && lng == 0);
+    }
+
+    /** Distance in km (1 dp) from the context's origin to the job; null when either side is unknown. */
+    public Double distanceKm(CardContext context, JobPost job) {
+        double[] origin = context.origin();
+        return origin == null ? null
+                : geoService.distanceKmOrNull(origin[0], origin[1], job.getLatitude(), job.getLongitude());
+    }
 
     public CardContext contextFor(WorkerAccount worker, WorkerProfile profile) {
         Set<Long> saved = savedJobRepository.findByWorkerOrderByCreatedAtDesc(worker).stream()
@@ -54,8 +110,7 @@ public class JobCardAssembler {
 
     public JobCardDto card(JobPost job, CardContext context) {
         WorkerProfile profile = context.profile();
-        Double distanceKm = profile == null ? null : geoService.distanceKmOrNull(
-                profile.getLatitude(), profile.getLongitude(), job.getLatitude(), job.getLongitude());
+        Double distanceKm = distanceKm(context, job);
         Double matchScore = profile == null ? null
                 : Math.round(matchingService.evaluate(profile, job).score() * 10.0) / 10.0;
         return new JobCardDto(

@@ -35,7 +35,8 @@ class JobDemandServiceTest {
         workers = mock(WorkerProfileRepository.class);
         service = new JobDemandService(jobs, applications, workers,
                 mock(JobPriceChangeRepository.class), new PricingService(),
-                mock(NotificationService.class));
+                mock(NotificationService.class), mock(NotificationRepository.class),
+                mock(EmploymentRepository.class));
         when(workers.findByCityIgnoreCase(anyString())).thenReturn(List.of());
         when(jobs.findComparables(any(), anyString(), any(), any(), any())).thenReturn(List.of());
     }
@@ -218,5 +219,26 @@ class JobDemandServiceTest {
         w.setExpectedSalary(expected);
         w.setSalaryUnit(SalaryUnit.DAILY);
         return w;
+    }
+
+    @Test
+    void aJobIsNudgedAtMostOncePerDayAndOnlyWhileItStillNeedsPeople() {
+        LocalDateTime now = LocalDateTime.of(2026, 10, 22, 10, 31);
+        JobPost job = JobPost.builder().status(JobStatus.OPEN).workersNeeded(1).build();
+
+        assertTrue(JobDemandService.shouldNudge(job, null, false, now));
+        // Nudged at 08:10 the same day: not again at 10:31, nor at 08:09 tomorrow.
+        assertFalse(JobDemandService.shouldNudge(job, now.withHour(8).withMinute(10), false, now));
+        assertFalse(JobDemandService.shouldNudge(job, now.minusHours(23), false, now));
+        assertTrue(JobDemandService.shouldNudge(job, now.minusHours(24), false, now));
+
+        // The employer marked a hire on it done: never.
+        assertFalse(JobDemandService.shouldNudge(job, null, true, now));
+
+        JobPost filled = JobPost.builder().status(JobStatus.OPEN).workersNeeded(0).build();
+        assertFalse(JobDemandService.shouldNudge(filled, null, false, now));
+
+        JobPost closed = JobPost.builder().status(JobStatus.FILLED).workersNeeded(1).build();
+        assertFalse(JobDemandService.shouldNudge(closed, null, false, now));
     }
 }

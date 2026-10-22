@@ -8,8 +8,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+ * DynamicUpdate: an UPDATE writes only the columns that changed, so a save of a copy loaded
+ * earlier (the ten-minute demand sweep, for one) cannot put back an older view count.
+ */
 @Entity
 @Table(name = "job_posts")
+@org.hibernate.annotations.DynamicUpdate
 @Getter
 @Setter
 @NoArgsConstructor

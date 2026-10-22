@@ -33,6 +33,7 @@ public record WorkerProfileDto(
         String bio,
         String city,
         String area,
+        String pincode,
         double latitude,
         double longitude,
         boolean locationEnabled,
@@ -63,7 +64,7 @@ public record WorkerProfileDto(
                 Privacy.contactFor(w.getAlternatePhone(), AccountType.WORKER, w.getAccount().getId()),
                 w.getJobCategories(), w.getEmploymentTypes(),
                 w.getSkills(), w.getExperienceYears(), w.isFresher(), w.getJobTitle(), w.getBio(),
-                w.getCity(), w.getArea(), w.getLatitude(), w.getLongitude(), w.isLocationEnabled(),
+                w.getCity(), w.getArea(), w.getPincode(), w.getLatitude(), w.getLongitude(), w.isLocationEnabled(),
                 w.getPreferredRadiusKm(), w.getAvailability(), w.getExpectedSalary(), w.getSalaryUnit(),
                 w.getVerificationStatus(), w.isProfileCompleted());
     }
