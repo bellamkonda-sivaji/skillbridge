@@ -12,10 +12,13 @@ import JobCard from '../ui/JobCard'
 import { hhmm } from '../ui/format'
 import * as jobsApi from '../api/jobs'
 import * as attendanceApi from '../api/attendance'
+import * as moneyApi from '../api/money'
 import { errorText } from '../api/client'
 import { useSession } from '../session/SessionProvider'
 import { colors, radius, space } from '../theme'
 import LanguagePicker from '../ui/LanguagePicker'
+import NearFrom from '../ui/NearFrom'
+import { useSearchOrigin } from '../location/origin'
 
 const greetingKey = () => {
   const h = new Date().getHours()
@@ -34,33 +37,51 @@ const greetingKey = () => {
 export default function Dashboard({ navigation }) {
   const { t } = useTranslation()
   const { user } = useSession()
+  const near = useSearchOrigin()
   const [data, setData] = useState(null)
   const [today, setToday] = useState([])
+  const [wallet, setWallet] = useState(null)
   const [error, setError] = useState('')
   const [refreshing, setRefreshing] = useState(false)
 
+  const { lat, lng } = near.params
   const load = useCallback(async () => {
     setError('')
     try {
-      const [dash, shifts] = await Promise.all([
-        jobsApi.dashboard(),
+      const [dash, shifts, money] = await Promise.all([
+        jobsApi.dashboard({ lat, lng }),
         attendanceApi.today().catch(() => []),
+        // The dashboard's own figure is only what can be taken out today;
+        // money still being released is real money too, and leaving it out
+        // showed ₹0 to someone with a week's pay on its way.
+        moneyApi.earnings().catch(() => null),
       ])
       setData(dash)
       setToday(Array.isArray(shifts) ? shifts : [])
+      setWallet(money)
     } catch (err) {
       setError(errorText(err, 'We could not load your home screen.'))
     }
-  }, [])
+  }, [lat, lng])
 
-  useFocusEffect(useCallback(() => { load() }, [load]))
+  // Waits for the origin so the first list is not measured from the wrong place.
+  useFocusEffect(useCallback(() => { if (near.ready) load() }, [load, near.ready]))
 
   const refresh = async () => { setRefreshing(true); await load(); setRefreshing(false) }
 
   const firstName = String(data?.greetingName || user?.name || '').split(' ')[0] || 'there'
   const recommended = data?.recommendedJobs || data?.matches || []
 
-  if (!data && !error) return <SafeAreaView style={s.fill}><Loader label={t('common.loading')} /></SafeAreaView>
+  const availableMinor = Number(wallet?.availableMinor) || 0
+  const pendingMinor = Number(wallet?.pendingMinor) || 0
+  const moneyValue = wallet ? (availableMinor + pendingMinor) / 100 : (data?.earnings ?? 0)
+  const moneyCaption = pendingMinor > 0
+    ? (availableMinor > 0
+      ? t('dashboard.partOnTheWay', { amount: money(pendingMinor / 100) })
+      : t('dashboard.onTheWay'))
+    : null
+
+  if ((!data && !error) || !near.ready) return <SafeAreaView style={s.fill}><Loader label={t('common.loading')} /></SafeAreaView>
 
   return (
     <SafeAreaView style={s.fill} edges={['top', 'left', 'right']}>
@@ -169,7 +190,7 @@ export default function Dashboard({ navigation }) {
             value={data?.interviewsCount ?? 0} label={t('dashboard.interviews')}
             onPress={() => navigation.navigate('MyWorkTab', { screen: 'Interviews' })} />
           <Tile tone={colors.orangeSoft} fg={colors.orangeText} icon="wallet-outline"
-            value={money(data?.earnings ?? 0)} label={t('dashboard.earnings')}
+            value={money(moneyValue)} caption={moneyCaption} label={t('dashboard.earnings')}
             onPress={() => navigation.navigate('ProfileTab', { screen: 'Earnings' })} />
         </View>
 
@@ -179,6 +200,7 @@ export default function Dashboard({ navigation }) {
             {t('common.viewAll')}
           </Text>
         </View>
+        <NearFrom near={near} style={{ marginBottom: space.md }} />
 
         {recommended.length ? (
           recommended.slice(0, 5).map((job) => (
@@ -205,13 +227,14 @@ export default function Dashboard({ navigation }) {
   )
 }
 
-function Tile({ tone, fg, icon, value, label, onPress }) {
+function Tile({ tone, fg, icon, value, caption, label, onPress }) {
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [s.tile, pressed && { opacity: 0.8 }]}>
       <View style={[s.tileIcon, { backgroundColor: tone }]}>
         <Ionicons name={icon} size={19} color={fg} />
       </View>
       <Text style={s.tileValue}>{value}</Text>
+      {caption ? <Text style={s.tileCaption} numberOfLines={1}>{caption}</Text> : null}
       <Small numberOfLines={1}>{label}</Small>
     </Pressable>
   )
@@ -249,6 +272,7 @@ const s = StyleSheet.create({
   },
   tileIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   tileValue: { fontSize: 22, fontWeight: '800', color: colors.ink },
+  tileCaption: { fontSize: 12, fontWeight: '700', color: colors.orangeText, marginTop: -3 },
   sectionHead: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     marginBottom: space.md,

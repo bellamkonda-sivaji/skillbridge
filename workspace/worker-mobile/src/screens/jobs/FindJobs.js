@@ -10,6 +10,8 @@ import * as jobsApi from '../../api/jobs'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 import LanguagePicker from '../../ui/LanguagePicker'
+import NearFrom from '../../ui/NearFrom'
+import { useSearchOrigin } from '../../location/origin'
 
 const TABS = [
   { value: 'NEARBY', key: 'nearby' },
@@ -32,11 +34,13 @@ export default function FindJobs({ navigation, route }) {
   const [savedIds, setSavedIds] = useState([])
   const [error, setError] = useState('')
   const filters = route?.params?.filters || null
+  const near = useSearchOrigin()
+  const { lat, lng } = near.params
 
   const load = useCallback(async () => {
     setError('')
     try {
-      const body = { ...(filters || {}) }
+      const body = { ...(filters || {}), lat, lng }
       if (query.trim()) body.q = query.trim()
       if (tab === 'FULL_TIME' || tab === 'PART_TIME' || tab === 'DAILY') body.employmentType = tab
       const [list, saved] = await Promise.all([
@@ -50,9 +54,10 @@ export default function FindJobs({ navigation, route }) {
       setError(errorText(err, 'We could not load work just now.'))
       setJobs([])
     }
-  }, [tab, query, filters])
+  }, [tab, query, filters, lat, lng])
 
-  useFocusEffect(useCallback(() => { load() }, [load]))
+  // Waits for the origin so the first list is not measured from the wrong place.
+  useFocusEffect(useCallback(() => { if (near.ready) load() }, [load, near.ready]))
 
   const toggleSave = async (job) => {
     const on = savedIds.includes(job.id)
@@ -99,6 +104,7 @@ export default function FindJobs({ navigation, route }) {
           value={tab}
           onChange={setTab}
         />
+        <NearFrom near={near} style={{ marginTop: space.md }} />
         {jobs ? <Small style={{ marginTop: space.sm }}>{jobs.length} {t('jobs.found')}</Small> : null}
       </View>
 

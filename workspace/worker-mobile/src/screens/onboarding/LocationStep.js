@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
-  AppBar, Body, Button, Chip, ChoiceCard, ErrorNote, Field, H1, Input, Screen, Small, Steps,
+  AppBar, Body, Button, Chip, ChoiceCard, ErrorNote, Field, H1, Input, Loader, Screen, Small, Steps,
 } from '../../ui'
 import { AVAILABILITY, RADIUS_OPTIONS } from '../../ui/catalog'
 import AddressPicker from '../../ui/AddressPicker'
@@ -11,6 +11,7 @@ import { emptyAddress } from '../../location/geocode'
 import { errorText } from '../../api/client'
 import * as profileApi from '../../api/profile'
 import { useSession } from '../../session/SessionProvider'
+import { rememberHome } from '../../location/origin'
 import { colors, radius, space } from '../../theme'
 
 /**
@@ -20,14 +21,53 @@ import { colors, radius, space } from '../../theme'
  * and someone with a bike covering 20 km are looking at two different job
  * markets, and getting that wrong wastes everyone's time on both sides.
  */
-export default function LocationStep({ navigation }) {
+export default function LocationStep({ navigation, route }) {
   const { t } = useTranslation()
   const { updateUser } = useSession()
+  // Opened from "Where I live" on the Me tab, this is an edit, not a wizard:
+  // it saves and goes back instead of finishing onboarding.
+  const editing = Boolean(route?.params?.edit)
   const [km, setKm] = useState(3)
   const [availability, setAvailability] = useState('IMMEDIATE')
+  const [availabilityTouched, setAvailabilityTouched] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [address, setAddress] = useState(emptyAddress())
+  const [loaded, setLoaded] = useState(false)
+
+  /**
+   * Start from what is saved.
+   *
+   * This screen used to open blank with 3 km picked, so someone checking
+   * their address saw an empty box and a radius that was not theirs - and
+   * pressing the button overwrote both. A failed load still lets them type a
+   * fresh address; it just starts empty.
+   */
+  useEffect(() => {
+    let alive = true
+    profileApi.getProfile()
+      .then((p) => {
+        if (!alive || !p) return
+        // The server stores "no pin" as 0,0 - which is in the sea off Ghana.
+        const pinned = Number.isFinite(Number(p.latitude)) && Number.isFinite(Number(p.longitude))
+          && !(Number(p.latitude) === 0 && Number(p.longitude) === 0)
+        setAddress({
+          ...emptyAddress(),
+          locality: p.area || '',
+          city: p.city || '',
+          pincode: p.pincode || '',
+          latitude: pinned ? Number(p.latitude) : null,
+          longitude: pinned ? Number(p.longitude) : null,
+        })
+        if (Number(p.preferredRadiusKm) > 0) setKm(Number(p.preferredRadiusKm))
+        // Only "available now" has a choice on this screen. Anything else the
+        // server holds is shown as nothing picked, and left alone on save.
+        setAvailability(p.availability === 'IMMEDIATE' || !p.availability ? 'IMMEDIATE' : null)
+      })
+      .catch(() => {})
+      .finally(() => { if (alive) setLoaded(true) })
+    return () => { alive = false }
+  }, [])
 
   // The pin is optional — someone can finish on town and area alone — but when
   // we do have it, distance ranking on the jobs list finally has real numbers.
@@ -35,7 +75,7 @@ export default function LocationStep({ navigation }) {
   const finish = async () => {
     setBusy(true); setError('')
     try {
-      await profileApi.saveOnboardingStep({
+      const saved = await profileApi.saveOnboardingStep({
         step: 'LOCATION',
         city: address.city || undefined,
         area: address.locality || undefined,
@@ -45,8 +85,20 @@ export default function LocationStep({ navigation }) {
         preferredRadiusKm: km,
         // The server only knows "available now"; "in a week / a month" has no
         // value there yet and was rejected, so it is left at the default.
-        availability: availability === 'IMMEDIATE' ? availability : undefined,
+        // When editing, only send it if they actually changed it.
+        availability: availability === 'IMMEDIATE' && (!editing || availabilityTouched)
+          ? availability : undefined,
       })
+      rememberHome({
+        area: address.locality, city: address.city,
+        latitude: address.latitude, longitude: address.longitude,
+        ...(saved && typeof saved === 'object' ? saved : {}),
+      })
+      if (editing) {
+        updateUser({ city: address.city || undefined })
+        navigation.goBack()
+        return
+      }
       updateUser({ onboarded: true })
       navigation.reset({ index: 0, routes: [{ name: 'Main' }] })
     } catch (err) {
@@ -60,12 +112,15 @@ export default function LocationStep({ navigation }) {
     <Screen
       padded={false}
       bg={colors.white}
-      footer={<Button title={t('onboarding.finish')} icon="checkmark" onPress={finish} loading={busy} />}
+      footer={(
+        <Button title={editing ? t('common.save') : t('onboarding.finish')} icon="checkmark"
+          onPress={finish} loading={busy} disabled={!loaded} />
+      )}
     >
       <AppBar onBack={navigation.goBack} />
       <View style={{ paddingHorizontal: space.lg }}>
-        <Steps total={4} current={4} labels={['You', 'Work', 'Skills', 'Place']} />
-        <H1 style={{ marginTop: space.md }}>{t('onboarding.locationTitle')}</H1>
+        {editing ? null : <Steps total={4} current={4} labels={['You', 'Work', 'Skills', 'Place']} />}
+        <H1 style={{ marginTop: space.md }}>{editing ? t('profile.location') : t('onboarding.locationTitle')}</H1>
         <Body style={{ marginTop: 5, marginBottom: space.lg }}>{t('onboarding.locationSub')}</Body>
 
         <ErrorNote>{error}</ErrorNote>
@@ -74,7 +129,8 @@ export default function LocationStep({ navigation }) {
             search it, take it from the phone, or type it. No map to pin -
             reading a map is a skill, and getting this wrong means never being
             shown the work next door. */}
-        <AddressPicker value={address} onChange={setAddress} />
+        {/* Mounted once the saved address is in, so it opens on the fields. */}
+        {loaded ? <AddressPicker value={address} onChange={setAddress} /> : <Loader />}
 
 
         <Field label={t('onboarding.radius')}>
@@ -90,7 +146,7 @@ export default function LocationStep({ navigation }) {
             <ChoiceCard
               key={a.value}
               selected={availability === a.value}
-              onPress={() => setAvailability(a.value)}
+              onPress={() => { setAvailability(a.value); setAvailabilityTouched(true) }}
               title={t(`onboarding.${a.key}`)}
               icon="time-outline"
             />

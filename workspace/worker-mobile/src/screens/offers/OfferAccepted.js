@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Button, Card, Loader, Row, Screen, Small, Spacer, SuccessPanel,
-  formatDate, hhmm, money, pay,
+  formatDate, hhmm, isOngoing, money, pay,
 } from '../../ui'
 import * as offersApi from '../../api/offers'
 import { colors, space } from '../../theme'
@@ -46,8 +46,9 @@ export default function OfferAccepted({ navigation, route }) {
           <Ionicons name="information-circle-outline" size={18} color={colors.blueDark} />
           <Small style={{ flex: 1, color: colors.blueDark }}>
             {offer.estimatedWorkerPay
-              ? `You will get about ${money(offer.estimatedWorkerPay)} for this work. The money is already kept safe and comes to you as the work is done.`
-              : 'Your joining details are in My work.'}
+              ? t(isOngoing(offer) ? 'offers.youGetMonthly' : 'offers.youGetTotal',
+                { amount: money(offer.estimatedWorkerPay) })
+              : t('offers.detailsInMyWork')}
           </Small>
         </View>
 

@@ -142,7 +142,7 @@ export default function Profile({ navigation }) {
           <Divider />
           <ListRow icon="location-outline" title={t('profile.location')}
             sub={[profile?.area, profile?.city].filter(Boolean).join(', ') || undefined}
-            onPress={() => navigation.navigate('LocationStep')} />
+            onPress={() => navigation.navigate('LocationStep', { edit: true })} />
           <Divider />
           <ListRow icon="heart-outline" title={t('jobs.saved')}
             onPress={() => navigation.navigate('SavedJobs')} />

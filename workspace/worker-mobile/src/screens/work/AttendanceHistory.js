@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Badge, Body, Button, Card, ChoiceCard, EmptyState, ErrorNote, Field,
-  H3, Input, Loader, Row, SegTabs, Small, Spacer, formatDate, isoDay, timeOnly,
+  H3, Input, Loader, Row, SegTabs, Small, Spacer, distance, formatDate, isoDay, timeOnly,
 } from '../../ui'
 import * as attendanceApi from '../../api/attendance'
 import { errorText } from '../../api/client'
@@ -115,6 +115,7 @@ export default function AttendanceHistory({ navigation }) {
                           : t('attendanceHistory.absent')}
                         {d.workedLabel ? ` · ${d.workedLabel}` : ''}
                       </Small>
+                      <PlaceBadge day={d} t={t} />
                     </View>
                     <Badge
                       label={d.approvalLabel || d.approvalStatus || (came ? t('attendanceHistory.present') : t('attendanceHistory.absent'))}
@@ -257,7 +258,29 @@ function AskDialog({ day, onClose, onDone, t }) {
   )
 }
 
+/**
+ * Where they were when they pressed start, as the shop sees it.
+ *
+ * Only shown when the server has an answer; old days have no place at all,
+ * and a badge saying "unknown" on every one of them would read as a fault.
+ */
+function PlaceBadge({ day, t }) {
+  const flag = day.locationFlag
+  if (!flag) return null
+  const metres = day.checkInDistanceM ?? day.checkOutDistanceM
+  const far = metres != null ? distance(Number(metres) / 1000) : null
+  if (flag === 'FAR') {
+    return <Badge tone="orange" style={s.place}
+      label={far ? t('attendanceHistory.placeFarBy', { distance: far }) : t('attendanceHistory.placeFar')} />
+  }
+  if (flag === 'OK') {
+    return <Badge tone="green" style={s.place} label={t('attendanceHistory.placeOk')} />
+  }
+  return <Badge tone="grey" style={s.place} label={t('attendanceHistory.placeUnknown')} />
+}
+
 const s = StyleSheet.create({
+  place: { alignSelf: 'flex-start', marginTop: 6 },
   tabs: {
     paddingHorizontal: space.lg, paddingVertical: space.md, backgroundColor: colors.white,
     borderBottomWidth: 1, borderBottomColor: colors.line,

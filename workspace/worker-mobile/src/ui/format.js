@@ -115,3 +115,20 @@ export function payShort(amount) {
   const k = n / 1000
   return '₹' + (k < 10 ? k.toFixed(1).replace(/\.0$/, '') : Math.round(k)) + 'k'
 }
+
+/**
+ * True when an offer or job has no last day - pay then arrives every month.
+ *
+ * Mirrors the server's schedule engine, which prices an ongoing job as one
+ * month: permanent work always, a months-long job when it has no end date.
+ * Short engagements are always fixed, end date or not.
+ */
+export function isOngoing(o) {
+  const model = o?.engagementModel
+  if (model === 'ONE_DAY' || model === 'FEW_DAYS' || model === 'FEW_WEEKS') return false
+  if (model === 'PERMANENT') return true
+  if (model === 'MONTHS') return !o?.endDate
+  // Older offers carry no engagement model; only a monthly wage with no last
+  // day is safe to call "every month".
+  return !model && o?.salaryUnit === 'MONTHLY' && !o?.endDate
+}

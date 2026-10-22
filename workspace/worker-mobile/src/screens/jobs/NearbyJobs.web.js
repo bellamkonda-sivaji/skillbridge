@@ -6,6 +6,8 @@ import { Ionicons } from '@expo/vector-icons'
 import { AppBar, Loader } from '../../ui'
 import NearbyList from './NearbyList'
 import * as jobsApi from '../../api/jobs'
+import NearFrom from '../../ui/NearFrom'
+import { useSearchOrigin } from '../../location/origin'
 import { colors, radius, space } from '../../theme'
 
 /**
@@ -18,16 +20,19 @@ import { colors, radius, space } from '../../theme'
 export default function NearbyJobsWeb({ navigation }) {
   const { t } = useTranslation()
   const [jobs, setJobs] = useState(null)
+  const near = useSearchOrigin()
+  const { lat, lng } = near.params
 
   useEffect(() => {
-    jobsApi.searchJobs({})
+    if (!near.ready) return
+    jobsApi.searchJobs({ lat, lng })
       .then((d) => {
         const rows = Array.isArray(d) ? d : d?.content || []
         rows.sort((a, b) => (a.distanceKm ?? 999) - (b.distanceKm ?? 999))
         setJobs(rows)
       })
       .catch(() => setJobs([]))
-  }, [])
+  }, [near.ready, lat, lng])
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }} edges={['top', 'left', 'right']}>
@@ -41,6 +46,7 @@ export default function NearbyJobsWeb({ navigation }) {
           </Pressable>
         )}
       />
+      <NearFrom near={near} style={{ paddingHorizontal: space.lg, paddingTop: space.md }} />
       {!jobs ? <Loader /> : (
         <ScrollView>
           <NearbyList

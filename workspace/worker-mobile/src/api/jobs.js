@@ -1,9 +1,22 @@
 import client from './client'
 
-export const dashboard = () => client.get('/worker/dashboard').then((r) => r.data)
+/** Pass `{ lat, lng }` to measure "near you" from the phone instead of home. */
+export const dashboard = (near = {}) =>
+  client.get('/worker/dashboard', { params: pointOnly(near) }).then((r) => r.data)
 
+/** `lat`/`lng` in the body move the distance origin off the saved home. */
 export const searchJobs = (body = {}) =>
-  client.post('/worker/jobs/search', body).then((r) => r.data)
+  client.post('/worker/jobs/search', { ...body, ...pointOnly(body) }).then((r) => r.data)
+
+/** Sends a point only when it is a real one; half a point is no point. */
+function pointOnly(p) {
+  const lat = Number(p?.lat)
+  const lng = Number(p?.lng)
+  if (p?.lat == null || p?.lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return { lat: undefined, lng: undefined }
+  }
+  return { lat, lng }
+}
 
 export const jobDetail = (id) => client.get(`/jobs/${id}`).then((r) => r.data)
 

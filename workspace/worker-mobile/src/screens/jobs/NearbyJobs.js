@@ -10,6 +10,8 @@ import SimpleMap from '../../ui/map/SimpleMap'
 import { haversineKm } from '../../ui/map/tiles'
 import NearbyList from './NearbyList'
 import * as jobsApi from '../../api/jobs'
+import NearFrom from '../../ui/NearFrom'
+import { useSearchOrigin } from '../../location/origin'
 import { colors, radius, space } from '../../theme'
 
 const TIRUPATI = { lat: 13.6288, lng: 79.4192 }
@@ -32,9 +34,12 @@ export default function NearbyJobs({ navigation }) {
   const [picked, setPicked] = useState(null)
   const [mode, setMode] = useState('map')
   const [box, setBox] = useState({ w: 0, h: 0 })
+  const near = useSearchOrigin()
+  const { lat, lng } = near.params
 
   useEffect(() => {
-    jobsApi.searchJobs({})
+    if (!near.ready) return
+    jobsApi.searchJobs({ lat, lng })
       .then((d) => {
         const rows = (Array.isArray(d) ? d : d?.content || [])
         const located = rows.filter((j) => j.latitude && j.longitude)
@@ -42,21 +47,24 @@ export default function NearbyJobs({ navigation }) {
         setJobs(located)
       })
       .catch(() => setJobs([]))
-  }, [])
+  }, [near.ready, lat, lng])
 
   const open = (j) => navigation.navigate('JobDetails', { jobId: j.id })
 
   /**
-   * Centre on the work, not on the town.
+   * Centre on the same place the distances are measured from.
    *
-   * The nearest job is a better guess than a fixed point: if everything on
-   * offer is out by the bypass, opening over the temple shows an empty map.
+   * The phone's position or home, whichever the list is using - so the pin
+   * that says "1.2 km" really is 1.2 km from the middle of the screen. Only
+   * with neither known does it fall back to the nearest job, then the town.
    */
+  const point = near.origin?.point
   const centre = useMemo(() => {
+    if (point) return { lat: point.lat, lng: point.lng }
     const first = jobs?.[0]
     if (first) return { lat: first.latitude, lng: first.longitude }
     return TIRUPATI
-  }, [jobs])
+  }, [jobs, point])
 
   const spread = useMemo(() => {
     if (!jobs?.length) return 13
@@ -95,6 +103,8 @@ export default function NearbyJobs({ navigation }) {
           </Pressable>
         ))}
       </View>
+
+      <NearFrom near={near} style={s.near} />
 
       {!jobs ? <Loader /> : mode === 'list' || !jobs.length ? (
         <ScrollView>
@@ -158,6 +168,7 @@ export default function NearbyJobs({ navigation }) {
 const s = StyleSheet.create({
   fill: { flex: 1, backgroundColor: colors.bg },
   map: { borderRadius: 0 },
+  near: { paddingHorizontal: space.lg, paddingVertical: space.sm, backgroundColor: colors.white },
 
   toggle: {
     flexDirection: 'row', gap: space.sm, paddingHorizontal: space.lg,

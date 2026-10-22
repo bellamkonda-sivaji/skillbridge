@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Badge, Body, Button, Card, ErrorNote, H3, KV, Loader, Row, Screen,
-  Small, Spacer, formatDate, hhmm, money, pay,
+  Small, Spacer, formatDate, hhmm, isOngoing, money, pay,
 } from '../../ui'
 import { EMPLOYMENT_TYPES } from '../../ui/catalog'
 import * as offersApi from '../../api/offers'
@@ -122,7 +122,11 @@ export default function OfferDetails({ navigation, route }) {
           <Text style={s.payBig}>{pay(takeHome, offer.salaryUnit)}</Text>
           {offer.estimatedWorkerPay ? (
             <Small style={{ color: colors.greenText, marginTop: 4 }}>
-              {`About ${money(offer.estimatedWorkerPay)} for the whole work`}
+              {/* An ongoing job has no "whole work" - its estimate is one
+                  month, so that is what it is called. */}
+              {isOngoing(offer)
+                ? t('offers.everyMonth', { amount: money(offer.estimatedWorkerPay) })
+                : t('offers.wholeWork', { amount: money(offer.estimatedWorkerPay) })}
             </Small>
           ) : null}
         </Card>

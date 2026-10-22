@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { Button, Field, Input, Row, Small } from './index'
-import { currentLocation } from '../location/current'
+import { locateWithHelp, openAppSettings } from '../location/current'
 import { addressFromCoords, formatAddress, searchAddress } from '../location/geocode'
 import { colors, radius, space } from '../theme'
 
@@ -21,12 +21,14 @@ import { colors, radius, space } from '../theme'
  */
 export default function AddressPicker({ value, onChange, error }) {
   const { t } = useTranslation()
-  const [mode, setMode] = useState('search')
+  // A saved address opens on its fields, so editing shows what is there.
+  const [mode, setMode] = useState(value?.locality || value?.city || value?.street ? 'manual' : 'search')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [searching, setSearching] = useState(false)
   const [locating, setLocating] = useState(false)
   const [locErr, setLocErr] = useState('')
+  const [locFix, setLocFix] = useState(null) // null | 'turnOn' | 'settings'
   const abort = useRef(null)
 
   const a = value || {}
@@ -50,11 +52,23 @@ export default function AddressPicker({ value, onChange, error }) {
     return () => clearTimeout(id)
   }, [query, mode, a.latitude, a.longitude])
 
-  const useHere = async () => {
-    setLocating(true); setLocErr('')
-    const got = await currentLocation()
+  /**
+   * Location switched off is not an error to show - the helper puts up the
+   * phone's own "turn on location" box (or its settings page) and carries on.
+   * Only a "no" to that box, or a permission refused for good, leaves a note,
+   * and the note carries the button that fixes it.
+   */
+  const useHere = async (fromSettings = false) => {
+    setLocating(true); setLocErr(''); setLocFix(null)
+    const got = fromSettings === true ? await openAppSettings() : await locateWithHelp({ ask: true })
     if (!got.ok) {
-      setLocErr(t(`onboarding.loc_${got.reason}`))
+      if (got.reason === 'off') {
+        setLocErr(t('address.stillOff')); setLocFix('turnOn')
+      } else if (got.reason === 'blocked') {
+        setLocErr(t('address.blocked')); setLocFix('settings')
+      } else {
+        setLocErr(t(`onboarding.loc_${got.reason}`))
+      }
       setLocating(false)
       return
     }
@@ -103,10 +117,25 @@ export default function AddressPicker({ value, onChange, error }) {
         icon="locate"
         tone="outline"
         loading={locating}
-        onPress={useHere}
+        onPress={() => useHere()}
         style={{ marginBottom: space.md }}
       />
-      {locErr ? <Small style={{ color: colors.redText, marginBottom: space.sm }}>{locErr}</Small> : null}
+      {locErr ? (
+        <View style={s.locNote}>
+          <Small style={{ color: locFix ? colors.ink : colors.redText }}>{locErr}</Small>
+          {locFix && !locating ? (
+            <Button
+              title={locFix === 'settings' ? t('near.openSettings') : t('near.turnOn')}
+              icon={locFix === 'settings' ? 'settings-outline' : 'locate'}
+              tone="outline"
+              size="sm"
+              full={false}
+              onPress={() => useHere(locFix === 'settings')}
+              style={{ marginTop: space.sm, alignSelf: 'flex-start' }}
+            />
+          ) : null}
+        </View>
+      ) : null}
 
       {mode === 'search' ? (
         <>
@@ -194,6 +223,7 @@ const s = StyleSheet.create({
   tabOn: { borderColor: colors.blue, backgroundColor: colors.blueSoft },
   tabText: { fontSize: 14.5, fontWeight: '700', color: colors.body },
   tabTextOn: { color: colors.blue },
+  locNote: { marginBottom: space.md },
   results: { maxHeight: 260, marginTop: space.sm },
   result: {
     flexDirection: 'row', gap: space.sm, alignItems: 'flex-start',

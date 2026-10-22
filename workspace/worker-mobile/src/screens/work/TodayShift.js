@@ -1,18 +1,58 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useTranslation } from 'react-i18next'
 import { useFocusEffect } from '@react-navigation/native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import {
   AppBar, Badge, Body, Button, Card, EmptyState, ErrorNote, H3, Loader, Row,
-  Small, hhmm, minutesLabel, timeOnly,
+  Small, distance, hhmm, minutesLabel, timeOnly,
 } from '../../ui'
 import * as attendanceApi from '../../api/attendance'
 import { errorText } from '../../api/client'
 import { colors, radius, space } from '../../theme'
 import Stamp, { milestoneFor } from '../../ui/Stamp'
 import AskForCall from '../../ui/AskForCall'
+import { Dialog } from '../../ui/Dialog'
+import { locateWithHelp, quietLocation } from '../../location/current'
+
+const ASKED_KEY = 'jobon.worker.punchLocationAsked.v1'
+
+const askedBefore = async () => {
+  try { return (await AsyncStorage.getItem(ASKED_KEY)) === 'yes' } catch { return true }
+}
+const markAsked = () => AsyncStorage.setItem(ASKED_KEY, 'yes').catch(() => {})
+
+/** Dialog.alert, as a promise of which button was pressed. */
+const choose = (title, message, yes, no) => new Promise((resolve) => {
+  Dialog.alert(title, message, [
+    { text: no, style: 'cancel', onPress: () => resolve(false) },
+    { text: yes, onPress: () => resolve(true) },
+  ], { tone: 'info' })
+})
+
+/**
+ * Where the worker is as they press start or finish - if the phone will say.
+ *
+ * Never a reason not to punch: every path ends with the punch going through,
+ * with or without a place. Permission is explained and asked for once only,
+ * because the shop seeing where you checked in is worth saying out loud. A
+ * switched-off location gets the same one-tap "turn on" every other screen
+ * uses; a "no" there is simply respected.
+ */
+async function punchLocation(t) {
+  const quiet = await quietLocation()
+  if (quiet.ok) return quiet
+  if (quiet.reason === 'off') return locateWithHelp({ ask: false })
+  if (quiet.reason === 'denied' && !(await askedBefore())) {
+    markAsked()
+    const yes = await choose(t('myWork.locAskTitle'), t('myWork.locAskBody'),
+      t('myWork.locAskYes'), t('myWork.locAskNo'))
+    if (yes) return locateWithHelp({ ask: true })
+  }
+  return quiet
+}
 
 /**
  * Starting and finishing work.
@@ -52,9 +92,29 @@ export default function TodayShift({ navigation }) {
   const punch = async (row, kind) => {
     setBusy(row.employmentId); setError('')
     try {
+      const where = await punchLocation(t).catch(() => null)
       const res = await (kind === 'IN'
-        ? attendanceApi.checkIn(row.employmentId)
-        : attendanceApi.checkOut(row.employmentId))
+        ? attendanceApi.checkIn(row.employmentId, where)
+        : attendanceApi.checkOut(row.employmentId, where))
+      // Calm, not a telling-off: phones drift, and the shop decides anyway.
+      if (kind === 'IN' && res?.locationFlag === 'FAR') {
+        const far = res.checkInDistanceM != null ? distance(Number(res.checkInDistanceM) / 1000) : null
+        Dialog.alert(
+          t('myWork.farTitle'),
+          far ? t('myWork.farBody', { distance: far }) : t('myWork.farBodyNoDistance'),
+          [{ text: t('myWork.farOk') }],
+          { tone: 'warning' },
+        )
+      }
+      // A permission refused for good can only be changed in Settings. Say so
+      // once, after the punch has gone through - never before it.
+      if (where?.reason === 'blocked' && !(await askedBefore())) {
+        markAsked()
+        Dialog.alert(t('myWork.locAskTitle'), t('myWork.locBlockedBody'), [
+          { text: t('myWork.locAskNo'), style: 'cancel' },
+          { text: t('near.openSettings'), onPress: () => Linking.openSettings().catch(() => {}) },
+        ], { tone: 'info' })
+      }
       // Finishing a day is the only moment a stamp can be earned. The server
       // sends the running total back with the check-out, so there is no second
       // call and no guessing in the app.
